@@ -1,24 +1,36 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS base 
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN dotnet tool install --global --no-cache dotnet-subset --version 0.3.2
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
-WORKDIR /app
-EXPOSE 8080
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
+FROM base as restore
 WORKDIR /src
-COPY ["src/Asteroids/Asteroids.csproj", "src/Asteroids/"]
-RUN dotnet restore "./src/Asteroids/./Asteroids.csproj"
 COPY . .
-WORKDIR "/src/src/Asteroids"
-RUN dotnet build "./Asteroids.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet subset restore Asteroids/Asteroids.csproj --root-directory /src --output /src/restored 
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Asteroids.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+COPY --from=restore /src/restored .
+RUN dotnet restore Asteroids/Asteroids.csproj
 
-FROM base AS final
+COPY . /src
+WORKDIR /src/Asteroids
+
+ARG TARGETARCH
+
+RUN dotnet publish -a ${TARGETARCH/amd64/x64} --use-current-runtime -o /app
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS development
+COPY --from=restore /src/restored .
+RUN dotnet restore Asteroids/Asteroids.csproj
+
+COPY . /src
+WORKDIR /src/Asteroids
+CMD dotnet watch run --no-launch-profile --non-interactive
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+COPY --from=build /app .
+
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "Asteroids.dll"]

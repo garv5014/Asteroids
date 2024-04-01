@@ -1,6 +1,5 @@
-# do the watch thing for the docker-compose.yml file
 include:
-  - "./ops/dev/observability/docker-compose.yml"
+  - ./ops/dev/observability/docker-compose.yml
 
 x-dotnet_sync: &dotnet_sync
   develop:
@@ -11,7 +10,7 @@ x-dotnet_sync: &dotnet_sync
 
 x-node_base: &node_base
   build:
-    context: ./src/Raft/
+    context: ./src/
     dockerfile: ./Raft_Node/Dockerfile
     target: development
   <<: *dotnet_sync
@@ -29,7 +28,7 @@ x-node-environment: &node-environment
 services:
   nginx:
     depends_on:
-      - shop
+      - asteroid-client
     build:
       context: ./ops/dev/
       dockerfile: nginx.Dockerfile
@@ -41,10 +40,10 @@ services:
           path: ./ops/dev/nginx.conf
           target: /etc/nginx/conf.d/default.conf
 
-  shop:
+  asteroid-client:
     build:
-      context: ./src/Raft/
-      dockerfile: ./Aster/Dockerfile
+      context: ./src/
+      dockerfile: ./Asteroids/Dockerfile
       target: development
     environment:
       ASPNETCORE_ENVIRONMENT: Development

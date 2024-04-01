@@ -1,25 +1,36 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS base 
+ENV PATH="${PATH}:/root/.dotnet/tools"
+RUN dotnet tool install --global --no-cache dotnet-subset --version 0.3.2
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
-RUN apk update && apk add net-tools
-RUN apk --no-cache add curl
-USER app
-WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
-ARG BUILD_CONFIGURATION=Release
+FROM base as restore
 WORKDIR /src
-COPY ["Raft_Gateway/Raft_Gateway.csproj", "Raft_Gateway/"]
-RUN dotnet restore "./Raft_Gateway/./Raft_Gateway.csproj"
 COPY . .
-WORKDIR "/src/Raft_Gateway"
-RUN dotnet build "./Raft_Gateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet subset restore Raft_Gateway/Raft_Gateway.csproj --root-directory /src --output /src/restored 
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Raft_Gateway.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+COPY --from=restore /src/restored .
+RUN dotnet restore Raft_Gateway/Raft_Gateway.csproj
 
-FROM base AS final
+COPY . /src
+WORKDIR /src/Raft_Gateway
+
+ARG TARGETARCH
+
+RUN dotnet publish -a ${TARGETARCH/amd64/x64} --use-current-runtime -o /app
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS development
+COPY --from=restore /src/restored .
+RUN dotnet restore Raft_Gateway/Raft_Gateway.csproj
+
+COPY . /src
+WORKDIR /src/Raft_Gateway
+CMD dotnet watch run --no-launch-profile --non-interactive
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+COPY --from=build /app .
+
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "Raft_Gateway.dll"]
