@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Library", "..\RAFT\Raf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealTimeCommunication", "src\RealTimeCommunication\RealTimeCommunication.csproj", "{B4C809D8-80CC-43A9-89C3-8991ACAF5ED0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Asteroids.Shared", "src\Asteroids.Shared\Asteroids.Shared.csproj", "{A2D70759-A00C-4694-89C4-1B270BA71F07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Asteroids.Shared", "src\Asteroids.Shared\Asteroids.Shared.csproj", "{73016D9C-D8A2-441E-B295-10080B160F67}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +47,10 @@ Global
 		{B4C809D8-80CC-43A9-89C3-8991ACAF5ED0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4C809D8-80CC-43A9-89C3-8991ACAF5ED0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4C809D8-80CC-43A9-89C3-8991ACAF5ED0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2D70759-A00C-4694-89C4-1B270BA71F07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2D70759-A00C-4694-89C4-1B270BA71F07}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2D70759-A00C-4694-89C4-1B270BA71F07}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2D70759-A00C-4694-89C4-1B270BA71F07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73016D9C-D8A2-441E-B295-10080B160F67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73016D9C-D8A2-441E-B295-10080B160F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73016D9C-D8A2-441E-B295-10080B160F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73016D9C-D8A2-441E-B295-10080B160F67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
