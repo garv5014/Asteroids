@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Asteroids", "src\Asteroids\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Observability", "src\Observability\Observability.csproj", "{88287DFC-FF2F-4BA4-A2EA-7F006A9E12EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Gateway", "..\RAFT\Raft_Gateway\Raft_Gateway.csproj", "{9BCE0187-DC6E-4459-8EEC-503AB7855B75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Gateway", "src\Raft_Gateway\Raft_Gateway.csproj", "{9BCE0187-DC6E-4459-8EEC-503AB7855B75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Node", "..\RAFT\Raft_Node\Raft_Node.csproj", "{DBEBF955-F1AA-4675-8E86-E940C5670C20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Node", "src\Raft_Node\Raft_Node.csproj", "{DBEBF955-F1AA-4675-8E86-E940C5670C20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Library", "..\RAFT\Raft_Library\Raft_Library.csproj", "{403F397C-DC60-4633-A64E-ACFF6F24C0D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Library", "src\Raft_Library\Raft_Library.csproj", "{403F397C-DC60-4633-A64E-ACFF6F24C0D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealTimeCommunication", "src\RealTimeCommunication\RealTimeCommunication.csproj", "{B4C809D8-80CC-43A9-89C3-8991ACAF5ED0}"
 EndProject
