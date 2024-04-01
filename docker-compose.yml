@@ -6,7 +6,7 @@ x-dotnet_sync: &dotnet_sync
   develop:
     watch:
       - action: sync
-        path: ./src/Raft_Gateway/
+        path: ./src/
         target: ./src/
 
 x-node_base: &node_base
