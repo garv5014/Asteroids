@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Node", "..\RAFT\Raft_N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raft_Library", "..\RAFT\Raft_Library\Raft_Library.csproj", "{403F397C-DC60-4633-A64E-ACFF6F24C0D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealTimeCommunication", "RealTimeCommunication\RealTimeCommunication.csproj", "{48894679-890C-4EDF-B16E-22A2163B12AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{403F397C-DC60-4633-A64E-ACFF6F24C0D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{403F397C-DC60-4633-A64E-ACFF6F24C0D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{403F397C-DC60-4633-A64E-ACFF6F24C0D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48894679-890C-4EDF-B16E-22A2163B12AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48894679-890C-4EDF-B16E-22A2163B12AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48894679-890C-4EDF-B16E-22A2163B12AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48894679-890C-4EDF-B16E-22A2163B12AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
