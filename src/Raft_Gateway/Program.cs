@@ -1,8 +1,4 @@
 using Observability;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Raft_Gateway.Options;
 
 var builder = WebApplication.CreateBuilder(args);

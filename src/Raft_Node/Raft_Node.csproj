@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Observability\Observability.csproj" />
     <ProjectReference Include="..\Raft_Library\Raft_Library.csproj" />
   </ItemGroup>
 
