@@ -11,7 +11,7 @@ builder.Services.AddSignalR();
 builder.AddObservability();
 
 builder.Services.AddAkka(
-    "AsteriodsSystem",
+    "AsteroidsSystem",
     configurationBuilder =>
     {
         configurationBuilder.WithActors(

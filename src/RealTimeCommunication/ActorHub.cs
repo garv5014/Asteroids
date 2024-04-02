@@ -2,15 +2,10 @@
 
 namespace RealTimeCommunication;
 
-public class ActorHub : Hub<IAsteriodClient>, IActorHub
+public class ActorHub : Hub<IAsteroidClient>, IActorHub
 {
-    public async Task SendMessage(string user, string message)
+    public async Task TellActor(string user, string message)
     {
-        await Clients.All.RecieveActorMessage(message);
-    }
-
-    public Task TellActor(string user, string message)
-    {
-        throw new NotImplementedException();
+        await Clients.All.ReceiveActorMessage(message);
     }
 }
