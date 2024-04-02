@@ -20,7 +20,7 @@ x-node-environment: &node-environment
   ASPNETCORE_URLS: http://+:8080
   ObservabilityOptions__CollectorUrl: http://collector:4317
   ApiOptions__NodeCount: 3
-  ApiOptions__NodeServiceName: node
+  ApiOptions__NodeServiceName: raftnode
   ApiOptions__NodeServicePort: 8080
   ApiOptions__LogMessageIntervalSeconds: 30 
   TZ: America/Denver
@@ -60,28 +60,28 @@ services:
       target: development
     environment:
       ApiOptions__NodeCount: 3
-      ApiOptions__NodeServiceName: node
+      ApiOptions__NodeServiceName: gateway
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ObservabilityOptions__CollectorUrl: http://collector:4317
       TZ: America/Denver
     <<: *dotnet_sync
 
-  node1:
+  raftnode1:
     <<: *node_base
     environment:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 1
       ObservabilityOptions__ServiceName: Node1
 
-  node2:
+  raftnode2:
     <<: *node_base
     environment:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 2
       ObservabilityOptions__ServiceName: Node2
 
-  node3:
+  raftnode3:
     <<: *node_base
     environment:
       <<: *node-environment
