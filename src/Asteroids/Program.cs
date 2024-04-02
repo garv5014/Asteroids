@@ -1,3 +1,4 @@
+using Asteroids;
 using Asteroids.Components;
 using Observability;
 
@@ -7,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.AddObservability();
+
+var signalREnv = new SignalREnv();
+builder.Configuration.GetRequiredSection(nameof(SignalREnv)).Bind(signalREnv);
+builder.Services.AddSingleton(signalREnv);
 
 var app = builder.Build();
 
