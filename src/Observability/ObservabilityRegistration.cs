@@ -110,7 +110,16 @@ public static class ObservabilityRegistration
             builder.Services.AddSingleton(meter);
 
             metrics
-                .AddMeter(meter.Name)
+                .AddMeter(
+                    meter.Name,
+                    DiagnosticsNames.MicrosoftAspNetCoreHosting,
+                    DiagnosticsNames.MicrosoftAspNetCoreHostingMetrics,
+                    DiagnosticsNames.MicrosoftAspNetCoreDiagnostics,
+                    DiagnosticsNames.MicrosoftAspNetCoreHeaderParsing,
+                    DiagnosticsNames.MicrosoftExtensionsDiagnosticsHealthChecks,
+                    DiagnosticsNames.MicrosoftExtensionsDiagnosticsResourceMonitoring,
+                    DiagnosticsNames.SystemNetHttp
+                )
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meter.Name))
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
