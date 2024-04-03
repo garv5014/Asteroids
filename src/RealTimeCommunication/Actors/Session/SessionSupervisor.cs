@@ -9,14 +9,14 @@ public class SessionSupervisor : ReceiveActor
 {
     // This is the supervisor strategy for the child actors
     // Make a list of session actors
-    private readonly List<IActorRef> _sessions = new();
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _relayActor;
 
     public SessionSupervisor()
     {
+        _log.Info("SessionSupervisor created");
         _relayActor = Context.ActorOf(
-            SessionSupervisorToClientActor.Props("http://localhost:80/ws/actorHub"),
+            SessionSupervisorToClientActor.Props("http://nginx:80/ws/actorHub"),
             "SessionSupervisorToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));

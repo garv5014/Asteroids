@@ -1,12 +1,33 @@
-﻿using Asteroids.Shared;
+﻿using Akka.Actor;
+using Akka.Hosting;
+using Asteroids.Shared;
+using Asteroids.Shared.Messages;
 using Microsoft.AspNetCore.SignalR;
+using RealTimeCommunication.Actors.Session;
 
 namespace RealTimeCommunication;
 
-public class ActorHub : Hub<IAsteroidClient>, IActorHub
+public class ActorHub : Hub<IAsteroidClientHub>, IActorHub
 {
-    public async Task TellActor(string user, string message)
+    private readonly IActorRef sessionSupervisor;
+    private readonly ILogger<Hub> _logger;
+
+    public ActorHub(ILogger<Hub> logger, ActorRegistry actorRegistry)
     {
-        await Clients.All.ReceiveActorMessage(message);
+        sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
+        _logger = logger;
+    }
+
+    public Task TellActor(string user, string message)
+    {
+        var sm = new SimpleMessage { Message = message, User = user };
+        sessionSupervisor.Tell(sm);
+        return Task.CompletedTask;
+    }
+
+    public Task TellClient(string message)
+    {
+        Clients.All.ReceiveActorMessage(message);
+        return Task.CompletedTask;
     }
 }

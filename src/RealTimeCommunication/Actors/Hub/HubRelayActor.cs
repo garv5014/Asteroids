@@ -15,10 +15,12 @@ public class HubRelayActor : ReceiveActor
         this.hubUrl = hubUrl;
     }
 
-    public void PreStart()
+    protected override void PreStart()
     {
         base.PreStart();
-        EstablishConnection();
+#pragma warning disable CS4014
+        EstablishConnection().Wait();
+#pragma warning restore CS4014
     }
 
     private async Task EstablishConnection()
@@ -68,7 +70,7 @@ public class HubRelayActor : ReceiveActor
             .PipeTo(Self);
     }
 
-    public void PostStop()
+    protected override void PostStop()
     {
         base.PostStop();
         hubConnection?.DisposeAsync();

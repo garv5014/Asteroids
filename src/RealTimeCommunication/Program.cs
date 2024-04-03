@@ -1,6 +1,7 @@
 using Akka.Hosting;
 using Observability;
 using RealTimeCommunication;
+using RealTimeCommunication.Actors.Session;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +16,10 @@ builder.Services.AddAkka(
     configurationBuilder =>
     {
         configurationBuilder.WithActors(
-            (system, registry) => {
-                //register actors here
+            (system, registry) =>
+            {
+                var ss = system.ActorOf(SessionSupervisor.Props(), "sessionSupervisor");
+                registry.TryRegister<SessionSupervisor>(ss);
             }
         );
     }

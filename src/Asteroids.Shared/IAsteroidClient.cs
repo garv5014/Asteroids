@@ -1,6 +1,6 @@
 ﻿namespace Asteroids.Shared;
 
-public interface IAsteroidClient
+public interface IAsteroidClientHub
 {
     Task ReceiveActorMessage(string Message);
 }

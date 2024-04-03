@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Asteroids.Components.Pages;
 
-public partial class Home : IAsteroidClient
+public partial class Home : IAsteroidClientHub
 {
     public string message;
     private IActorHub hubProxy = default!;
@@ -21,7 +21,7 @@ public partial class Home : IAsteroidClient
             Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
             throw;
         }
-        _ = connection.ClientRegistration<IAsteroidClient>(this);
+        _ = connection.ClientRegistration<IAsteroidClientHub>(this);
         await connection.StartAsync();
 
         await hubProxy.TellActor("chris", "Message");
@@ -30,7 +30,7 @@ public partial class Home : IAsteroidClient
 
     public Task ReceiveActorMessage(string Message)
     {
-        Console.WriteLine(Message);
+        Console.WriteLine("Client Message {0}", Message);
         message = Message;
 
         return Task.Run(() => StateHasChanged());
