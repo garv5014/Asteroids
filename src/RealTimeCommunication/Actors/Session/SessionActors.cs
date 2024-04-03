@@ -1,6 +1,6 @@
 ﻿using Akka.Actor;
 
-namespace RealTimeCommunication.Actors;
+namespace RealTimeCommunication.Actors.Session;
 
 public class SessionActors : ReceiveActor
 {

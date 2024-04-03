@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Asteroids.Shared\Asteroids.Shared.csproj" />
     <ProjectReference Include="..\Observability\Observability.csproj" />
     <ProjectReference Include="..\RealTimeCommunication\RealTimeCommunication.csproj" />
   </ItemGroup>

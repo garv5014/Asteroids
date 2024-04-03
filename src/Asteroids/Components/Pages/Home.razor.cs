@@ -1,18 +1,16 @@
-﻿using Asteroids.Client;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using RealTimeCommunication;
 
 namespace Asteroids.Components.Pages;
 
 public partial class Home : IAsteroidClient
 {
-    public string message = string.Empty;
+    public string message;
     private IActorHub hubProxy = default!;
     private HubConnection connection = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        message = "Hello, world!";
         connection = new HubConnectionBuilder().WithUrl(SignalREnv.ActorHubUrl).Build();
         hubProxy = connection.ServerProxy<IActorHub>();
         _ = connection.ClientRegistration<IAsteroidClient>(this);
@@ -26,7 +24,7 @@ public partial class Home : IAsteroidClient
     {
         Console.WriteLine(Message);
         message = Message;
-        StateHasChanged();
-        return Task.CompletedTask;
+
+        return Task.Run(() => StateHasChanged());
     }
 }
