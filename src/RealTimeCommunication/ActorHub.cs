@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Asteroids.Shared;
+using Microsoft.AspNetCore.SignalR;
 
 namespace RealTimeCommunication;
 

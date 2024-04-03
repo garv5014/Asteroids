@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 
-namespace RealTimeCommunication;
+namespace Asteroids.Shared;
 
 [AttributeUsage(AttributeTargets.Method)]
 internal class HubServerProxyAttribute : Attribute { }

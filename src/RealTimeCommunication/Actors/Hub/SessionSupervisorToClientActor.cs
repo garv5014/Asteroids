@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using Asteroids.Shared;
 using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication.Actors.Hub;
@@ -13,7 +14,7 @@ public class SessionSupervisorToClientActor : HubRelayActor
         Receive<SimpleMessage>(client =>
         {
             Client = hubConnection.ServerProxy<IAsteroidClient>();
-            Client.ReceiveActorMessage(client.Message);
+            Client.ReceiveActorMessage(client.Message + " " + client.User);
         });
     }
 

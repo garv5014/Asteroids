@@ -1,4 +1,4 @@
-﻿namespace RealTimeCommunication;
+﻿namespace Asteroids.Shared;
 
 public interface IAsteroidClient
 {

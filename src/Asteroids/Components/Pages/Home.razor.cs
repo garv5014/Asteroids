@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using RealTimeCommunication;
+﻿using Asteroids.Shared;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Asteroids.Components.Pages;
 
@@ -12,7 +12,15 @@ public partial class Home : IAsteroidClient
     protected override async Task OnInitializedAsync()
     {
         connection = new HubConnectionBuilder().WithUrl(SignalREnv.ActorHubUrl).Build();
-        hubProxy = connection.ServerProxy<IActorHub>();
+        try
+        {
+            hubProxy = connection.ServerProxy<IActorHub>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
+            throw;
+        }
         _ = connection.ClientRegistration<IAsteroidClient>(this);
         await connection.StartAsync();
 

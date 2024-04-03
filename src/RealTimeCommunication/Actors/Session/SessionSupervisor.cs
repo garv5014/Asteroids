@@ -17,14 +17,15 @@ public class SessionSupervisor : ReceiveActor
     {
         _relayActor = Context.ActorOf(
             SessionSupervisorToClientActor.Props("http://localhost:80/ws/actorHub"),
-            "HubRelayActor"
+            "SessionSupervisorToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));
     }
 
     private void HandleSimpleMessage(SimpleMessage sm)
     {
-        var message = sm.User + " says: " + sm.Message;
+        _log.Info("Received message: {0}", sm.Message);
+        _relayActor.Tell(sm);
     }
 
     public static Props Props()
