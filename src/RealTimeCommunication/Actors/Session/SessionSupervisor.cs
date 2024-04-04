@@ -19,7 +19,7 @@ public class SessionSupervisor : ReceiveActor
         _log.Info("SessionSupervisor created");
         _relayActor = Context.ActorOf(
             PublishToClientActor.Props(),
-            "SessionSupervisorToClientActor"
+            "PublishToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));
         Receive<CreateAccountMessage>(cam => HandleCreateAccountMessage(cam));
