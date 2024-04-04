@@ -25,6 +25,6 @@ public class LobbyActor : ReceiveActor
   }
   public static Props Props()
   {
-    return Akka.Actor.Props.Create(() => new LobbySupervisor());
+    return Akka.Actor.Props.Create(() => new LobbyActor());
   }
 }
