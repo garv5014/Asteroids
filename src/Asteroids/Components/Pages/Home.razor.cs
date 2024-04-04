@@ -51,16 +51,16 @@ public partial class Home : IAsteroidClientHub
             ToastService.ShowError("Login Failed");
             return;
         }
-        
+
         await LocalStorage.SetItemAsync("actorPath", message.SessionActorPath);
-        
+
         Console.WriteLine("Client Message Account {0}", message.Message);
         await InvokeAsync(StateHasChanged);
     }
 
     public void Login()
     {
-        hubProxy.LoginTell(
+        hubProxy.LoginCommand(
             new LoginMessage(username, password, connection.ConnectionId, null)
         );
     }

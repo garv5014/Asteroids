@@ -29,7 +29,7 @@ public class PublishToClientActor : ActorPublisher
             {
                 _log.Info("Sending response to client: {0}", response.Message);
                 Client = hubConnection.ServerProxy<IAccountHub>();
-                await Client.LoginResponsePublish(response);
+                await Client.LoginPublish(response);
             });
         });
     }

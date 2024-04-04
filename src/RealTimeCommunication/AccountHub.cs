@@ -34,15 +34,15 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
         return Task.CompletedTask;
     }
 
-    public Task LoginTell(LoginMessage message)
+    public Task LoginCommand(LoginMessage message)
     {
-        var loginMessage = new LoginMessage (message.User, message.Password, Context.ConnectionId, message.SessionActorPath);
+        var loginMessage = new LoginMessage(message.User, message.Password, Context.ConnectionId, message.SessionActorPath);
         sessionSupervisor.Tell(loginMessage);
         _logger.LogInformation("Create account message sent to actor: {0}", message.User);
         return Task.CompletedTask;
     }
 
-    public Task LoginResponsePublish(LoginResponseMessage message)
+    public Task LoginPublish(LoginResponseMessage message)
     {
         Clients.Client(message.ConnectionId).HandleLoginResponse(message);
         _logger.LogInformation("Login response sent to client: {0}", message.ConnectionId);

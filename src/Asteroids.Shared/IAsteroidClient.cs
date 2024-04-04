@@ -6,4 +6,5 @@ public interface IAsteroidClientHub
 {
     Task HandleActorMessage(string Message);
     Task HandleLoginResponse(LoginResponseMessage message);
+    Task HandleLobbiesResponse(AllLobbiesResponse message);
 }

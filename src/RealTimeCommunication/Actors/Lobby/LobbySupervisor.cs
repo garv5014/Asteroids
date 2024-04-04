@@ -9,7 +9,6 @@ public class LobbySupervisor : ReceiveActor
   // Forward messages to the lobby actor
   // Join Lobby passed to lobby actor
 
-
   private readonly ILoggingAdapter _log = Context.GetLogger();
 
   public LobbySupervisor()
