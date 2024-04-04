@@ -44,7 +44,8 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
 
     public Task LoginResponsePublish(LoginResponseMessage message)
     {
-        Clients.User(message.ConnectionId).HandleLoginResponse(message);
+        Clients.Client(message.ConnectionId).HandleLoginResponse(message);
+        _logger.LogInformation("Login response sent to client: {0}", message.ConnectionId);
         return Task.CompletedTask;
     }
 }

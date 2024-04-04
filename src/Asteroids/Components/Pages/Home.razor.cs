@@ -49,6 +49,7 @@ public partial class Home : IAsteroidClientHub
         else
         {
             ToastService.ShowError("Login Failed");
+            return Task.CompletedTask;
         }
         Console.WriteLine("Client Message Account {0}", message.Message);
         StateHasChanged();

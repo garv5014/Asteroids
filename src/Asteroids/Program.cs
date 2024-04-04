@@ -1,5 +1,6 @@
 using Asteroids;
 using Asteroids.Components;
+using Blazored.Toast;
 using Observability;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.AddObservability();
-
+builder.Services.AddBlazoredToast();
 var signalREnv = new SignalREnv();
 builder.Configuration.GetRequiredSection(nameof(SignalREnv)).Bind(signalREnv);
 builder.Services.AddSingleton(signalREnv);
