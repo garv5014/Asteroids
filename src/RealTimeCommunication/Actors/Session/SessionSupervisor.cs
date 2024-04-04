@@ -36,7 +36,7 @@ public class SessionSupervisor : ReceiveActor
                 {
                     ConnectionId = cam.ConnectionId,
                     Success = false,
-                    Message = "User already exists"
+                    Message = "Failed To log in"
                 }
             );
             return;
