@@ -42,7 +42,15 @@ public partial class Home : IAsteroidClientHub
     public Task HandleLoginResponse(LoginResponseMessage message)
     {
         this.message = message?.Message ?? "Message is null";
-        Console.WriteLine("Client Message Account {0}", message);
+        if (message?.Success ?? false)
+        {
+            ToastService.ShowSuccess("Login Success");
+        }
+        else
+        {
+            ToastService.ShowError("Login Failed");
+        }
+        Console.WriteLine("Client Message Account {0}", message.Message);
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -50,7 +58,7 @@ public partial class Home : IAsteroidClientHub
     public void Login()
     {
         hubProxy.LoginTell(
-            new LoginMessage() { User = "Bill", Password = "Hidden" }
+            new LoginMessage() { User = username, Password = password }
         );
     }
 }

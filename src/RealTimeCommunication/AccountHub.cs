@@ -36,19 +36,10 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
 
     public Task LoginTell(LoginMessage message)
     {
-        sessionSupervisor.Tell(message);
+        var loginMessage = new LoginMessage { User = message.User, Password = message.Password, ConnectionId = Context.ConnectionId };
+        sessionSupervisor.Tell(loginMessage);
         _logger.LogInformation("Create account message sent to actor: {0}", message.User);
         return Task.CompletedTask;
-    }
-
-    public Task LoginTell(LoginMessage message)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task LoginResponsePublish(LoginResponseMessage message)
-    {
-        throw new NotImplementedException();
     }
 
     public Task LoginResponsePublish(LoginResponseMessage message)
