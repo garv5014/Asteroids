@@ -34,7 +34,7 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
         return Task.CompletedTask;
     }
 
-    public Task CreateAccountTell(CreateAccountMessage message)
+    public Task LoginTell(LoginMessage message)
     {
         sessionSupervisor.Tell(message);
         _logger.LogInformation("Create account message sent to actor: {0}", message.User);
@@ -51,9 +51,9 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
         throw new NotImplementedException();
     }
 
-    public Task CreateAccountResponsePublish(CreateAccountResponseMessage message)
+    public Task LoginResponsePublish(LoginResponseMessage message)
     {
-        Clients.User(message.ConnectionId).HandleCreateAccountResponse(message);
+        Clients.User(message.ConnectionId).HandleLoginResponse(message);
         return Task.CompletedTask;
     }
 }

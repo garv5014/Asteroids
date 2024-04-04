@@ -7,6 +7,8 @@ namespace Asteroids.Components.Pages;
 public partial class Home : IAsteroidClientHub
 {
     public string message;
+    public string username { get; set; } = "";
+    public string password { get; set; } = "";
     private IAccountHub hubProxy = default!;
     private HubConnection connection = default!;
 
@@ -37,7 +39,7 @@ public partial class Home : IAsteroidClientHub
         return Task.Run(() => StateHasChanged());
     }
 
-    public Task HandleCreateAccountResponse(CreateAccountResponseMessage message)
+    public Task HandleLoginResponse(LoginResponseMessage message)
     {
         this.message = message?.Message ?? "Message is null";
         Console.WriteLine("Client Message Account {0}", message);
@@ -45,15 +47,10 @@ public partial class Home : IAsteroidClientHub
         return Task.CompletedTask;
     }
 
-    public void CreateAccount()
+    public void Login()
     {
-        hubProxy.CreateAccountTell(
-            new CreateAccountMessage() { User = "Bill", Password = "Hidden" }
+        hubProxy.LoginTell(
+            new LoginMessage() { User = "Bill", Password = "Hidden" }
         );
-    }
-
-    public Task HandleLoginResponse(LoginResponseMessage message)
-    {
-        throw new NotImplementedException();
     }
 }

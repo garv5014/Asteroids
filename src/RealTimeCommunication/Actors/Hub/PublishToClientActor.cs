@@ -23,13 +23,13 @@ public class PublishToClientActor : ActorPublisher
             });
         });
 
-        Receive<CreateAccountResponseMessage>(async response =>
+        Receive<LoginResponseMessage>(async response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {
                 _log.Info("Sending response to client: {0}", response.Message);
                 Client = hubConnection.ServerProxy<IAccountHub>();
-                await Client.CreateAccountResponsePublish(response);
+                await Client.LoginResponsePublish(response);
             });
         });
     }

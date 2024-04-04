@@ -22,17 +22,17 @@ public class SessionSupervisor : ReceiveActor
             "PublishToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));
-        Receive<CreateAccountMessage>(cam => HandleCreateAccountMessage(cam));
+        Receive<LoginMessage>(cam => HandleCreateAccountMessage(cam));
     }
 
-    private void HandleCreateAccountMessage(CreateAccountMessage cam)
+    private void HandleCreateAccountMessage(LoginMessage cam)
     {
         // Verify user doesn't already exist
         if (UserNameToSession.ContainsKey(cam.User))
         {
             _log.Info("User {0} already exists", cam.User);
             _relayActor.Tell(
-                new CreateAccountResponseMessage
+                new LoginResponseMessage
                 {
                     ConnectionId = cam.ConnectionId,
                     Success = false,
@@ -46,7 +46,7 @@ public class SessionSupervisor : ReceiveActor
         var session = Context.ActorOf(SessionActor.Props(cam.User, cam.ConnectionId), cam.User);
         UserNameToSession[cam.User] = session;
         _relayActor.Tell(
-            new CreateAccountResponseMessage
+            new LoginResponseMessage
             {
                 ConnectionId = cam.ConnectionId,
                 Success = true,
