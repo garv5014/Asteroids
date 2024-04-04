@@ -1,4 +1,5 @@
 ﻿using Asteroids.Shared;
+using Asteroids.Shared.Messages;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Asteroids.Components.Pages;
@@ -11,7 +12,7 @@ public partial class Home : IAsteroidClientHub
 
     protected override async Task OnInitializedAsync()
     {
-        connection = new HubConnectionBuilder().WithUrl(SignalREnv.ActorHubUrl).Build();
+        connection = new HubConnectionBuilder().WithUrl(SignalREnv.AccountHubUrl).Build();
         try
         {
             hubProxy = connection.ServerProxy<IAccountHub>();
@@ -34,5 +35,25 @@ public partial class Home : IAsteroidClientHub
         message = Message;
 
         return Task.Run(() => StateHasChanged());
+    }
+
+    public Task HandleCreateAccountResponse(CreateAccountResponseMessage message)
+    {
+        this.message = message?.Message ?? "Message is null";
+        Console.WriteLine("Client Message Account {0}", message);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    public void CreateAccount()
+    {
+        hubProxy.CreateAccountTell(
+            new CreateAccountMessage() { User = "Bill", Password = "Hidden" }
+        );
+    }
+
+    public Task HandleLoginResponse(LoginResponseMessage message)
+    {
+        throw new NotImplementedException();
     }
 }

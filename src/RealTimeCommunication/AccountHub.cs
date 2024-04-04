@@ -11,7 +11,7 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
 {
     private readonly IActorRef sessionSupervisor;
     private readonly ILogger<AccountHub> _logger;
-    public static string UrlPath = "ws/accountHub";
+    public static string UrlPath = "/ws/accountHub";
     public static string FullUrl = $"http://nginx:80{UrlPath}";
 
     public AccountHub(ILogger<AccountHub> logger, ActorRegistry actorRegistry)
@@ -31,6 +31,29 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
     public Task TellClient(string message)
     {
         Clients.All.HandleActorMessage(message);
+        return Task.CompletedTask;
+    }
+
+    public Task CreateAccountTell(CreateAccountMessage message)
+    {
+        sessionSupervisor.Tell(message);
+        _logger.LogInformation("Create account message sent to actor: {0}", message.User);
+        return Task.CompletedTask;
+    }
+
+    public Task LoginTell(LoginMessage message)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task LoginResponsePublish(LoginResponseMessage message)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task CreateAccountResponsePublish(CreateAccountResponseMessage message)
+    {
+        Clients.User(message.ConnectionId).HandleCreateAccountResponse(message);
         return Task.CompletedTask;
     }
 }

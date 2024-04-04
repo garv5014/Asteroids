@@ -11,15 +11,48 @@ public class SessionSupervisor : ReceiveActor
     // Make a list of session actors
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _relayActor;
+    public Dictionary<string, IActorRef> UserNameToSession { get; } = new();
+    public Dictionary<IActorRef, string> ActorRefToUserName { get; } = new();
 
     public SessionSupervisor()
     {
         _log.Info("SessionSupervisor created");
         _relayActor = Context.ActorOf(
-            PublishToClientActor.Props("http://nginx:80/ws/actorHub"),
+            PublishToClientActor.Props(),
             "SessionSupervisorToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));
+        Receive<CreateAccountMessage>(cam => HandleCreateAccountMessage(cam));
+    }
+
+    private void HandleCreateAccountMessage(CreateAccountMessage cam)
+    {
+        // Verify user doesn't already exist
+        if (UserNameToSession.ContainsKey(cam.User))
+        {
+            _log.Info("User {0} already exists", cam.User);
+            _relayActor.Tell(
+                new CreateAccountResponseMessage
+                {
+                    ConnectionId = cam.ConnectionId,
+                    Success = false,
+                    Message = "User already exists"
+                }
+            );
+            return;
+        }
+        // Create the user
+        _log.Info("Creating user {0}", cam.User);
+        var session = Context.ActorOf(SessionActor.Props(cam.User, cam.ConnectionId), cam.User);
+        UserNameToSession[cam.User] = session;
+        _relayActor.Tell(
+            new CreateAccountResponseMessage
+            {
+                ConnectionId = cam.ConnectionId,
+                Success = true,
+                Message = "User created"
+            }
+        );
     }
 
     private void HandleSimpleMessage(SimpleMessage sm)

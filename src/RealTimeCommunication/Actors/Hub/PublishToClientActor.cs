@@ -5,7 +5,7 @@ using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication.Actors.Hub;
 
-public class PublishToClientActor : PublishActor
+public class PublishToClientActor : ActorPublisher
 {
     private IAccountHub Client;
     private readonly ILoggingAdapter _log = Context.GetLogger();
@@ -22,6 +22,16 @@ public class PublishToClientActor : PublishActor
                 await Client.TellClient($"{client.Message} {client.User}");
             });
         });
+
+        Receive<CreateAccountResponseMessage>(async response =>
+        {
+            ExecuteAndPipeToSelf(async () =>
+            {
+                _log.Info("Sending response to client: {0}", response.Message);
+                Client = hubConnection.ServerProxy<IAccountHub>();
+                await Client.CreateAccountResponsePublish(response);
+            });
+        });
     }
 
     protected override void PreStart()
@@ -30,7 +40,7 @@ public class PublishToClientActor : PublishActor
         _log.Info($"{nameof(PublishToClientActor)} started");
     }
 
-    public static Props Props(string hubUrl)
+    public static Props Props()
     {
         return Akka.Actor.Props.Create(() => new PublishToClientActor());
     }

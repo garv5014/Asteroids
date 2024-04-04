@@ -2,5 +2,5 @@
 
 public class SignalREnv
 {
-  public string ActorHubUrl { get; set; } = default!;
+    public string AccountHubUrl { get; set; } = default!;
 }

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject SignalREnv SignalREnv
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
@@ -8,3 +9,6 @@
 Welcome to your new app.
 
 <p>Message: @message</p>
+
+<button class="btn btn-primary" @onclick="CreateAccount">Make Account</button>
+

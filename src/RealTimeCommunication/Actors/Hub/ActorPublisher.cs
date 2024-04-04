@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace RealTimeCommunication.Actors.Hub;
 
-public class PublishActor : ReceiveActor
+public class ActorPublisher : ReceiveActor
 {
     private readonly string hubUrl;
     internal HubConnection hubConnection;
     protected ILoggingAdapter Log { get; } = Context.GetLogger();
 
-    public PublishActor(string hubUrl)
+    public ActorPublisher(string hubUrl)
     {
         this.hubUrl = hubUrl;
     }
@@ -78,6 +78,6 @@ public class PublishActor : ReceiveActor
 
     public static Props Props(string hubUrl)
     {
-        return Akka.Actor.Props.Create(() => new PublishActor(hubUrl));
+        return Akka.Actor.Props.Create(() => new ActorPublisher(hubUrl));
     }
 }
