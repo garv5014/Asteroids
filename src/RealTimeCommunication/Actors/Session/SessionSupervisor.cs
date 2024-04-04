@@ -16,7 +16,7 @@ public class SessionSupervisor : ReceiveActor
     {
         _log.Info("SessionSupervisor created");
         _relayActor = Context.ActorOf(
-            SessionSupervisorToClientActor.Props("http://nginx:80/ws/actorHub"),
+            PublishToClientActor.Props("http://nginx:80/ws/actorHub"),
             "SessionSupervisorToClientActor"
         );
         Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));

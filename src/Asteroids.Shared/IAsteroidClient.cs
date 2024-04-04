@@ -1,6 +1,11 @@
-﻿namespace Asteroids.Shared;
+﻿using Asteroids.Shared.Messages;
+
+namespace Asteroids.Shared;
 
 public interface IAsteroidClientHub
 {
-    Task ReceiveActorMessage(string Message);
+    Task HandleActorMessage(string Message);
+    Task HandleCreateAccountResponse(CreateAccountResponseMessage message);
+
+    Task HandleLoginResponse(LoginResponseMessage message);
 }

@@ -5,20 +5,20 @@ using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication.Actors.Hub;
 
-public class SessionSupervisorToClientActor : HubRelayActor
+public class PublishToClientActor : PublishActor
 {
-    private IActorHub Client;
+    private IAccountHub Client;
     private readonly ILoggingAdapter _log = Context.GetLogger();
 
-    public SessionSupervisorToClientActor(string hubUrl)
-        : base(hubUrl)
+    public PublishToClientActor()
+        : base(AccountHub.FullUrl)
     {
         Receive<SimpleMessage>(async client =>
         {
             ExecuteAndPipeToSelf(async () =>
             {
                 _log.Info("Sending message to client: {0}", client.Message);
-                Client = hubConnection.ServerProxy<IActorHub>();
+                Client = hubConnection.ServerProxy<IAccountHub>();
                 await Client.TellClient($"{client.Message} {client.User}");
             });
         });
@@ -27,11 +27,11 @@ public class SessionSupervisorToClientActor : HubRelayActor
     protected override void PreStart()
     {
         base.PreStart();
-        _log.Info("SessionSupervisorToClientActor started");
+        _log.Info($"{nameof(PublishToClientActor)} started");
     }
 
     public static Props Props(string hubUrl)
     {
-        return Akka.Actor.Props.Create(() => new SessionSupervisorToClientActor(hubUrl));
+        return Akka.Actor.Props.Create(() => new PublishToClientActor());
     }
 }

@@ -18,11 +18,32 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" Version="7.0.0-preview.7.22376.6" />
+	  <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
+	  <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
+	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+	  <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.7.0-rc.1" />
+	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.9" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.4" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.7.0" />
+	  <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+	  <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.5" />
+	  <PackageReference Include="Serilog.Enrichers.Demystifier" Version="1.0.2" />
+	  <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" Version="8.4.0" />
+	  <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+	  <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.1-dev-00561" />
+	  <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Asteroids.Shared\Asteroids.Shared.csproj" />
     <ProjectReference Include="..\Observability\Observability.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Actors\Persistence\" />
   </ItemGroup>
 
 </Project>

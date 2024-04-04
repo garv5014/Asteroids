@@ -6,7 +6,7 @@ namespace Asteroids.Components.Pages;
 public partial class Home : IAsteroidClientHub
 {
     public string message;
-    private IActorHub hubProxy = default!;
+    private IAccountHub hubProxy = default!;
     private HubConnection connection = default!;
 
     protected override async Task OnInitializedAsync()
@@ -14,7 +14,7 @@ public partial class Home : IAsteroidClientHub
         connection = new HubConnectionBuilder().WithUrl(SignalREnv.ActorHubUrl).Build();
         try
         {
-            hubProxy = connection.ServerProxy<IActorHub>();
+            hubProxy = connection.ServerProxy<IAccountHub>();
         }
         catch (Exception ex)
         {
@@ -28,7 +28,7 @@ public partial class Home : IAsteroidClientHub
         StateHasChanged();
     }
 
-    public Task ReceiveActorMessage(string Message)
+    public Task HandleActorMessage(string Message)
     {
         Console.WriteLine("Client Message {0}", Message);
         message = Message;

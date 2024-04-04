@@ -34,5 +34,5 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHub<ActorHub>("/actorHub");
+app.MapHub<AccountHub>("/actorHub");
 app.Run();
