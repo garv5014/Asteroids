@@ -31,15 +31,15 @@ public partial class Home : IAsteroidClientHub
         StateHasChanged();
     }
 
-    public Task HandleActorMessage(string Message)
+    public async Task HandleActorMessage(string Message)
     {
         Console.WriteLine("Client Message {0}", Message);
         message = Message;
 
-        return Task.Run(() => StateHasChanged());
+        await InvokeAsync(StateHasChanged);
     }
 
-    public Task HandleLoginResponse(LoginResponseMessage message)
+    public async Task HandleLoginResponse(LoginResponseMessage message)
     {
         this.message = message?.Message ?? "Message is null";
         if (message?.Success ?? false)
@@ -49,17 +49,19 @@ public partial class Home : IAsteroidClientHub
         else
         {
             ToastService.ShowError("Login Failed");
-            return Task.CompletedTask;
+            return;
         }
+        
+        await LocalStorage.SetItemAsync("actorPath", message.SessionActorPath);
+        
         Console.WriteLine("Client Message Account {0}", message.Message);
-        StateHasChanged();
-        return Task.CompletedTask;
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Login()
     {
         hubProxy.LoginTell(
-            new LoginMessage() { User = username, Password = password }
+            new LoginMessage(username, password, connection.ConnectionId, null)
         );
     }
 }

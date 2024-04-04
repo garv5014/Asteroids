@@ -1,6 +1,3 @@
 ﻿namespace Asteroids.Shared.Messages;
 
-public class HubMessage
-{
-    public string ConnectionId { get; init; }
-}
+public record HubMessage(string ConnectionId, string SessionActorPath);

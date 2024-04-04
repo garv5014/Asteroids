@@ -1,13 +1,5 @@
 ﻿namespace Asteroids.Shared.Messages;
 
-public class LoginMessage : HubMessage
-{
-    public string User { get; set; }
-    public string Password { get; set; }
-}
+public record LoginMessage(string User, string Password, string ConnectionId, string SessionActorPath) : HubMessage(ConnectionId, SessionActorPath);
 
-public class LoginResponseMessage : HubMessage
-{
-    public bool Success { get; set; }
-    public string Message { get; set; }
-}
+public record LoginResponseMessage(string ConnectionId, bool Success, string Message, string SessionActorPath) : HubMessage(ConnectionId, SessionActorPath);
