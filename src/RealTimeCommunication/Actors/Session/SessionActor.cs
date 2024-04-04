@@ -4,6 +4,7 @@ using Akka.Event;
 namespace RealTimeCommunication.Actors.Session;
 
 // In charge of talking to the lobby(game) on behalf of the user
+// Return User Information.
 public class SessionActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();

@@ -4,10 +4,11 @@ namespace RealTimeCommunication;
 
 public class LobbySupervisor : ReceiveActor
 {
-  // return all the lobbies lobbies stored as a list of lobbies
+  // return all the lobbies lobbies stored as a Dictionary of lobbies
   // Create a lobby actor
   // Forward messages to the lobby actor
-  
+  // Join Lobby passed to lobby actor
+
 
   private readonly ILoggingAdapter _log = Context.GetLogger();
 
