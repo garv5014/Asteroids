@@ -24,7 +24,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     {
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
         _logger.LogInformation("Lobbies query sent to actor");
-        // More needed here 
+        // More needed here
     }
 
     public Task LobbiesPublish(AllLobbiesResponse message)
@@ -39,7 +39,8 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             LobbyName: message.LobbyName,
             ConnectionId: Context.ConnectionId
         );
-        var 
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        sessionActorRef.Tell(clc);
     }
 
     public Task JoinLobbyCommand(JoinLobbyMessage message)
@@ -47,11 +48,11 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         throw new NotImplementedException();
     }
 
-    private async Task<GetUserSessionResponse> GetSessionActor(string sessionActorPath)
+    private async Task<IActorRef> GetSessionActor(string sessionActorPath)
     {
         var gusr = await sessionSupervisor.Ask<GetUserSessionResponse>(
             new GetUserSessionMessage(ActorPath: sessionActorPath)
         );
-        return gusr;
+        return gusr.ActorRef;
     }
 }

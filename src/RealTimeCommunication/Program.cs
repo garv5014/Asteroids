@@ -18,9 +18,12 @@ builder.Services.AddAkka(
         configurationBuilder.WithActors(
             (system, registry) =>
             {
-                var ss = system.ActorOf(SessionSupervisor.Props(), "sessionSupervisor");
+                var ss = system.ActorOf(
+                    SessionSupervisor.Props(),
+                    ActorHelper.SessionSupervisorName
+                );
                 registry.TryRegister<SessionSupervisor>(ss);
-                var ls = system.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+                var ls = system.ActorOf(LobbySupervisor.Props(), ActorHelper.LobbySupervisorName);
                 registry.TryRegister<SessionSupervisor>(ls);
             }
         );
