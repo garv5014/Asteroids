@@ -4,6 +4,18 @@ using Asteroids.Shared;
 
 namespace RealTimeCommunication;
 
+public record CreateLobbyMessageWithId(
+    string SessionActorPath,
+    string ConnectionId,
+    string LobbyName,
+    int LobbyId
+)
+    : CreateLobbyMessage(
+        SessionActorPath: SessionActorPath,
+        LobbyName: LobbyName,
+        ConnectionId: ConnectionId
+    );
+
 public class LobbySupervisor : ReceiveActor
 {
     // return all the lobbies lobbies stored as a Dictionary of lobbies
@@ -26,6 +38,14 @@ public class LobbySupervisor : ReceiveActor
         var lobbyActor = Context.ActorOf(LobbyActor.Props(msg.LobbyName), msg.LobbyName);
         lobbies.Add(lobbyId, lobbyActor);
         lobbyId++;
+        lobbyActor.Forward(
+            new CreateLobbyMessageWithId(
+                msg.SessionActorPath,
+                msg.ConnectionId,
+                msg.LobbyName,
+                lobbyId
+            )
+        );
     }
 
     protected override void PreStart()

@@ -14,6 +14,9 @@ public class SessionActor : ReceiveActor
     private readonly string username;
     private readonly string connectionId;
 
+    private int? lobbyId = null;
+    private SessionState state = SessionState.JoinLobby;
+
     private readonly IActorRef lobbySupervisor;
 
     public SessionActor(string username, string connectionId)
@@ -22,15 +25,35 @@ public class SessionActor : ReceiveActor
         this.connectionId = connectionId;
         lobbySupervisor = (IActorRef)Context.ActorSelection(ActorHelper.LobbySupervisorName);
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
+        Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
+    }
+
+    private void JoinLobby(JoinLobbyMessage msg)
+    {
+        lobbyId = msg.LobbyId;
+        state = SessionState.InLobby;
+        Context.Parent.Tell(
+            new JoinLobbyResponse(
+                ConnectionId: msg.ConnectionId,
+                SessionActorPath: msg.SessionActorPath,
+                LobbyId: msg.LobbyId
+            )
+        );
     }
 
     private void CreateLobby(CreateLobbyMessage msg)
     {
-        lobbySupervisor.Forward(msg);
+        lobbySupervisor.Tell(msg);
     }
 
     public static Props Props(string username, string connectionId)
     {
         return Akka.Actor.Props.Create<SessionActor>(username, connectionId);
     }
+}
+
+public enum SessionState
+{
+    JoinLobby,
+    InLobby,
 }
