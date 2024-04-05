@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Asteroids.Shared;
-using Microsoft.AspNetCore.Components;
+﻿using Asteroids.Shared;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Asteroids.Components.Pages;
@@ -60,7 +57,25 @@ public partial class Lobby : ILobbyClient
 
     private async Task JoinLobby(string lobbyId) { }
 
-    private async Task CreateLobby() { }
+    private async Task CreateLobby()
+    {
+        try
+        {
+            var actorPath = await LocalStorage.GetItemAsync<string>("actorPath");
+            await hubProxy.CreateLobbyCommand(
+                new CreateLobbyMessage(
+                    SessionActorPath: actorPath,
+                    LobbyName: newLobbyName,
+                    ConnectionId: null
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception when creating lobby: {ex.Message}");
+            // Optionally, handle exceptions (e.g., show a message to the user)
+        }
+    }
 
     public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {

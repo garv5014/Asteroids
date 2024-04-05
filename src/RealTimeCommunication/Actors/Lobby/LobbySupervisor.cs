@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Event;
+using Akka.Hosting;
 using Asteroids.Shared;
 
 namespace RealTimeCommunication;
@@ -34,6 +35,10 @@ public class LobbySupervisor : ReceiveActor
     {
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
+        _lobbyRelayActor = Context
+            .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
+            .ResolveOne(TimeSpan.FromSeconds(3))
+            .Result;
     }
 
     private void JoinLobby(JoinLobbyMessage msg)

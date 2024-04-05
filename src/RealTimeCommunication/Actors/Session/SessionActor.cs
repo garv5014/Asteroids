@@ -13,7 +13,7 @@ public class SessionActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly string username;
-    private readonly string connectionId;
+    private string connectionId;
 
     private int? lobbyId = null;
     private SessionState state = SessionState.JoinLobby;
@@ -24,7 +24,10 @@ public class SessionActor : ReceiveActor
     {
         this.username = username;
         this.connectionId = connectionId;
-        lobbySupervisor = (IActorRef)Context.AsInstanceOf<LobbySupervisor>();
+        lobbySupervisor = Context
+            .ActorSelection($"/user/{ActorHelper.LobbySupervisorName}")
+            .ResolveOne(TimeSpan.FromSeconds(3))
+            .Result;
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
     }
@@ -33,11 +36,23 @@ public class SessionActor : ReceiveActor
     {
         lobbyId = msg.LobbyId;
         state = SessionState.InLobby;
+        connectionId = msg.ConnectionId;
         lobbySupervisor.Tell(msg);
+    }
+
+    protected override void PreStart()
+    {
+        _log.Info("SessionActor started");
+    }
+
+    protected override void PostStop()
+    {
+        _log.Info("SessionActor stopped");
     }
 
     private void CreateLobby(CreateLobbyMessage msg)
     {
+        connectionId = msg.ConnectionId;
         lobbySupervisor.Tell(msg);
     }
 

@@ -34,6 +34,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task CreateLobbyCommand(CreateLobbyMessage message)
     {
+        _logger.LogInformation("Create lobby command received");
         var clc = new CreateLobbyMessage(
             SessionActorPath: message.SessionActorPath,
             LobbyName: message.LobbyName,
@@ -58,11 +59,13 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task JoinLobbyPublish(JoinLobbyResponse response)
     {
+        _logger.LogInformation("Sending response to client: {0}", response.ConnectionId);
         await Clients.Client(response.ConnectionId).HandleJoinLobbyResponse(response);
     }
 
     public async Task CreateLobbyPublish(CreateLobbyResponse response)
     {
+        _logger.LogInformation("Sending response to client: {0}", response.ConnectionId);
         await Clients.All.HandleCreateLobbyResponse(response);
     }
 }

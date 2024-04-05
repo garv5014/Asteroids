@@ -2,7 +2,6 @@
 using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
-using RealTimeCommunication.Actors.Hub;
 
 namespace RealTimeCommunication.Actors.Session;
 
@@ -17,10 +16,15 @@ public class SessionSupervisor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _accountRelayActor;
 
+    private Dictionary<string, IActorRef> _sessions = new();
+
     public SessionSupervisor()
     {
         _log.Info("SessionSupervisor created");
-        _accountRelayActor = Context.ActorOf<AccountHubRelay>(ActorHelper.AccountRelayActorName);
+        _accountRelayActor = Context
+            .ActorSelection($"/user/{ActorHelper.AccountRelayActorName}")
+            .ResolveOne(TimeSpan.FromSeconds(3))
+            .Result;
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
         Receive<JoinLobbyResponse>(jlr => JoinLobbyResponse(jlr));
@@ -42,10 +46,11 @@ public class SessionSupervisor : ReceiveActor
                 lm.SessionActorPath
             )
         );
-
+        var g = new Guid();
         // Create the user
         _log.Info("Creating user {0}", lm.User);
-        var session = Context.ActorOf(SessionActor.Props(lm.User, lm.ConnectionId), lm.User);
+        var session = Context.ActorOf(SessionActor.Props(lm.User, lm.ConnectionId), g.ToString());
+        _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(
             new LoginResponseMessage(
                 lm.ConnectionId,
@@ -58,10 +63,8 @@ public class SessionSupervisor : ReceiveActor
 
     public void GetUserSessionMessage(GetUserSessionMessage gusm)
     {
-        var actor = Context
-            .ActorSelection(gusm.ActorPath)
-            .ResolveOne(TimeSpan.FromSeconds(1))
-            .Result;
+        _log.Info("Getting user session for {0}", gusm.ActorPath);
+        var actor = _sessions[gusm.ActorPath];
         Sender.Tell(new GetUserSessionResponse(actor));
     }
 

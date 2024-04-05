@@ -13,7 +13,7 @@ builder.Services.AddSignalR();
 builder.AddObservability();
 
 builder.Services.AddAkka(
-    "AsteroidsSystem",
+    ActorHelper.ProjectName,
     configurationBuilder =>
     {
         configurationBuilder.WithActors(
