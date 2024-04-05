@@ -15,8 +15,7 @@ services:
 
   loki:
     image: grafana/loki:latest
-    command: ["-config.file=/etc/loki/local-config.yaml"]
-
+    command: [ "-config.file=/etc/loki/local-config.yaml" ]
 
   grafana:
     image: grafana/grafana:latest

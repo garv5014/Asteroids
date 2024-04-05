@@ -13,6 +13,7 @@ services:
   nginx:
     depends_on:
       - asteroid-client
+      - grafana
     build:
       context: ./ops/dev/
       dockerfile: nginx.Dockerfile

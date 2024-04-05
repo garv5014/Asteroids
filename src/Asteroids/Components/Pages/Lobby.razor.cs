@@ -54,23 +54,11 @@ public partial class Lobby : ILobbyClient
     await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
   }
 
-  // private async Task JoinLobby(string lobbyId)
-  // {
-  //   try
-  //   {
-  //     // Replace "JoinLobby" with your actual Hub method for joining a lobby
-  //     await hubProxy
-  //     // Optionally, navigate to the lobby-specific page or perform other actions upon joining
-  //     NavManager.NavigateTo($"/lobby/join/{lobbyId}");
-  //   }
-  //   catch (Exception ex)
-  //   {
-  //     Console.WriteLine($"Exception when joining lobby: {ex.Message}");
-  //     // Optionally, handle exceptions (e.g., show a message to the user)
-  //   }
-  // }
+  private async Task JoinLobby(string lobbyId)
+  {
+  }
 
-  // private async Task CreateLobby()
-  // {
-  // }
+  private async Task CreateLobby()
+  {
+  }
 }
