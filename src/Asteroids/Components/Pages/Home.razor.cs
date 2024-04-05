@@ -30,31 +30,22 @@ public partial class Home : IAccountClient
         StateHasChanged();
     }
 
-    public async Task HandleActorMessage(string Message)
-    {
-        Console.WriteLine("Client Message {0}", Message);
-        message = Message;
-
-        await InvokeAsync(StateHasChanged);
-    }
-
     public async Task HandleLoginResponse(LoginResponseMessage message)
     {
         this.message = message?.Message ?? "Message is null";
         if (message?.Success ?? false)
         {
             ToastService.ShowSuccess("Login Success");
+            await LocalStorage.SetItemAsync("actorPath", message.SessionActorPath);
+            Console.WriteLine("Client Message Account {0}", message.Message);
+            NavManager.NavigateTo("/lobby");
+            return;
         }
         else
         {
             ToastService.ShowError("Login Failed");
-            return;
+            await InvokeAsync(StateHasChanged);
         }
-
-        await LocalStorage.SetItemAsync("actorPath", message.SessionActorPath);
-
-        Console.WriteLine("Client Message Account {0}", message.Message);
-        await InvokeAsync(StateHasChanged);
     }
 
     public void Login()
