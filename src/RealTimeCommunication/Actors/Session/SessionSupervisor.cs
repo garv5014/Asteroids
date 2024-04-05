@@ -21,7 +21,7 @@ public class SessionSupervisor : ReceiveActor
     {
         _log.Info("SessionSupervisor created");
         _AccountRelayActor = Context.ActorOf(
-            PublishToClientActor.Props(),
+            AccountHubRelay.Props(),
             ActorHelper.AccountRelayActorName
         );
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));

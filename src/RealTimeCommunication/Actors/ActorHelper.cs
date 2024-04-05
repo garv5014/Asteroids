@@ -6,4 +6,5 @@ public static class ActorHelper
     public static string SessionSupervisorName = "sessionSupervisor";
 
     public static string AccountRelayActorName = "accountRelayActor";
+    public static string LobbyRelayActorName = "lobbyRelayActor";
 }

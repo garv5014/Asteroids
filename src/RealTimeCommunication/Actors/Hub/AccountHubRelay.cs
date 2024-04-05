@@ -5,12 +5,12 @@ using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication.Actors.Hub;
 
-public class PublishToClientActor : ActorPublisher
+public class AccountHubRelay : ActorPublisher
 {
     private IAccountHub Client;
     private readonly ILoggingAdapter _log = Context.GetLogger();
 
-    public PublishToClientActor()
+    public AccountHubRelay()
         : base(AccountHub.FullUrl)
     {
         Receive<LoginResponseMessage>(async response =>
@@ -27,11 +27,11 @@ public class PublishToClientActor : ActorPublisher
     protected override void PreStart()
     {
         base.PreStart();
-        _log.Info($"{nameof(PublishToClientActor)} started");
+        _log.Info($"{nameof(AccountHubRelay)} started");
     }
 
     public static Props Props()
     {
-        return Akka.Actor.Props.Create(() => new PublishToClientActor());
+        return Akka.Actor.Props.Create(() => new AccountHubRelay());
     }
 }
