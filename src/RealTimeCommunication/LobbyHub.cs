@@ -13,8 +13,8 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
   private IActorRef sessionSupervisor;
   public static string UrlPath = "/ws/lobbyHub";
   public static string FullUrl = $"http://nginx:80{UrlPath}";
-  
-  public LobbyHub (ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
+
+  public LobbyHub(ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
   {
     _logger = logger;
     sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
