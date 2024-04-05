@@ -9,36 +9,49 @@ namespace RealTimeCommunication;
 
 public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 {
-  private ILogger<LobbyHub> _logger;
-  private IActorRef sessionSupervisor;
-  public static string UrlPath = "/ws/lobbyHub";
-  public static string FullUrl = $"http://nginx:80{UrlPath}";
+    private ILogger<LobbyHub> _logger;
+    private IActorRef sessionSupervisor;
+    public static string UrlPath = "/ws/lobbyHub";
+    public static string FullUrl = $"http://nginx:80{UrlPath}";
 
-  public LobbyHub(ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
-  {
-    _logger = logger;
-    sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
-  }
+    public LobbyHub(ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
+    {
+        _logger = logger;
+        sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
+    }
 
-  public Task LobbiesQuery(GetLobbiesMessage message)
-  {
-    var response = sessionSupervisor.Ask<GetUserSessionResponse>(message);
-    _logger.LogInformation("Lobbies query sent to actor");
-    return Task.CompletedTask;
-  }
+    public async Task LobbiesQuery(GetLobbiesMessage message)
+    {
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        _logger.LogInformation("Lobbies query sent to actor");
+        // More needed here 
+    }
 
-  public Task LobbiesPublish(AllLobbiesResponse message)
-  {
-    return Task.CompletedTask;
-  }
+    public Task LobbiesPublish(AllLobbiesResponse message)
+    {
+        return Task.CompletedTask;
+    }
 
-  public Task CreateLobbyCommand(CreateLobbyMessage message)
-  {
-    throw new NotImplementedException();
-  }
+    public async Task CreateLobbyCommand(CreateLobbyMessage message)
+    {
+        var clc = new CreateLobbyMessage(
+            SessionActorPath: message.SessionActorPath,
+            LobbyName: message.LobbyName,
+            ConnectionId: Context.ConnectionId
+        );
+        var 
+    }
 
-  public Task JoinLobbyCommand(JoinLobbyMessage message)
-  {
-    throw new NotImplementedException();
-  }
+    public Task JoinLobbyCommand(JoinLobbyMessage message)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task<GetUserSessionResponse> GetSessionActor(string sessionActorPath)
+    {
+        var gusr = await sessionSupervisor.Ask<GetUserSessionResponse>(
+            new GetUserSessionMessage(ActorPath: sessionActorPath)
+        );
+        return gusr;
+    }
 }

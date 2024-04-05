@@ -1,75 +1,75 @@
-﻿using Asteroids.Shared;
+﻿using System;
+using System.Threading.Tasks;
+using Asteroids.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
-using System;
-using System.Threading.Tasks;
 
 namespace Asteroids.Components.Pages;
 
 public partial class Lobby : ILobbyClient
 {
-  private HubConnection connection;
-  private GameLobby[] lobbies;
-  private ILobbyHub hubProxy;
-  private string newLobbyName = string.Empty;
+    private HubConnection connection;
+    private GameLobby[] lobbies;
+    private ILobbyHub hubProxy;
+    private string newLobbyName = string.Empty;
 
-  protected override async Task OnInitializedAsync()
-  {
-    connection = new HubConnectionBuilder()
-        .WithUrl(SignalREnv.LobbyHubUrl) // Make sure SignalREnv provides the correct URL for your LobbyHub
-        .Build();
-
-    try
+    protected override async Task OnInitializedAsync()
     {
-      hubProxy = connection.ServerProxy<ILobbyHub>();
+        connection = new HubConnectionBuilder()
+            .WithUrl(SignalREnv.LobbyHubUrl) // Make sure SignalREnv provides the correct URL for your LobbyHub
+            .Build();
+
+        try
+        {
+            hubProxy = connection.ServerProxy<ILobbyHub>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to establish SignalR connection LobbyHub: {ex.Message}");
+            throw;
+        }
+        connection.ClientRegistration<ILobbyClient>(this);
+        await connection.StartAsync();
+
+        await RequestLobbies();
     }
-    catch (Exception ex)
+
+    private async Task RequestLobbies()
     {
-      Console.WriteLine($"Failed to establish SignalR connection LobbyHub: {ex.Message}");
-      throw;
+        try
+        {
+            // Replace "GetLobbies" with the actual method name you're using in your Hub to request lobbies
+            var actorPath = await LocalStorage.GetItemAsync<string>("actorPath");
+            await hubProxy.LobbiesQuery(
+                new GetLobbiesMessage(SessionActorPath: actorPath, ConnectionId: null)
+            );
+        }
+        catch (Exception ex)
+        {
+
+            
+            Console.WriteLine($"Exception when requesting lobbies: {ex.Message}");
+            // Optionally, handle exceptions (e.g., show a message to the user)
+        }
     }
-    connection.ClientRegistration<ILobbyClient>(this);
-    await connection.StartAsync();
 
-    await RequestLobbies();
-  }
-
-  private async Task RequestLobbies()
-  {
-    try
+    public async Task HandleLobbiesResponse(AllLobbiesResponse message)
     {
-      // Replace "GetLobbies" with the actual method name you're using in your Hub to request lobbies
-      var actorPath = await LocalStorage.GetItemAsync<string>("actorPath");
-      await hubProxy.LobbiesQuery(new GetLobbiesMessage(SessionActorPath: actorPath));
+        lobbies = message.Lobbies;
+        await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
     }
-    catch (Exception ex)
+
+    private async Task JoinLobby(string lobbyId) { }
+
+    private async Task CreateLobby() { }
+
+    public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {
-      Console.WriteLine($"Exception when requesting lobbies: {ex.Message}");
-      // Optionally, handle exceptions (e.g., show a message to the user)
+        throw new NotImplementedException();
     }
-  }
 
-  public async Task HandleLobbiesResponse(AllLobbiesResponse message)
-  {
-    lobbies = message.Lobbies;
-    await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
-  }
-
-  private async Task JoinLobby(string lobbyId)
-  {
-  }
-
-  private async Task CreateLobby()
-  {
-  }
-
-  public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
-  {
-    throw new NotImplementedException();
-  }
-
-  public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
-  {
-    throw new NotImplementedException();
-  }
+    public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
+    {
+        throw new NotImplementedException();
+    }
 }
