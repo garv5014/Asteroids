@@ -32,6 +32,7 @@ public partial class Lobby : ILobbyClient
         await connection.StartAsync();
 
         await RequestLobbies();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task RequestLobbies()
@@ -46,8 +47,6 @@ public partial class Lobby : ILobbyClient
         }
         catch (Exception ex)
         {
-
-            
             Console.WriteLine($"Exception when requesting lobbies: {ex.Message}");
             // Optionally, handle exceptions (e.g., show a message to the user)
         }
@@ -65,11 +64,12 @@ public partial class Lobby : ILobbyClient
 
     public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {
-        throw new NotImplementedException();
+        ToastService.ShowSuccess("Joined lobby");
+        return Task.CompletedTask;
     }
 
-    public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
+    public async Task HandleCreateLobbyResponse(CreateLobbyResponse message)
     {
-        throw new NotImplementedException();
+        await InvokeAsync(OnInitializedAsync);
     }
 }

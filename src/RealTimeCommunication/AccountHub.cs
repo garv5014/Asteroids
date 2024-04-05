@@ -22,16 +22,20 @@ public class AccountHub : Hub<IAccountClient>, IAccountHub
 
     public Task LoginCommand(LoginMessage message)
     {
-        var loginMessage = new LoginMessage(message.User, message.Password, Context.ConnectionId, message.SessionActorPath);
+        var loginMessage = new LoginMessage(
+            message.User,
+            message.Password,
+            Context.ConnectionId,
+            message.SessionActorPath
+        );
         sessionSupervisor.Tell(loginMessage);
         _logger.LogInformation("Create account message sent to actor: {0}", message.User);
         return Task.CompletedTask;
     }
 
-    public Task LoginPublish(LoginResponseMessage message)
+    public async Task LoginPublish(LoginResponseMessage message)
     {
-        Clients.Client(message.ConnectionId).HandleLoginResponse(message);
+        await Clients.Client(message.ConnectionId).HandleLoginResponse(message);
         _logger.LogInformation("Login response sent to client: {0}", message.ConnectionId);
-        return Task.CompletedTask;
     }
 }

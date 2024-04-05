@@ -56,13 +56,13 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         return gusr.ActorRef;
     }
 
-    public Task JoinLobbyPublish(JoinLobbyResponse response)
+    public async Task JoinLobbyPublish(JoinLobbyResponse response)
     {
-        throw new NotImplementedException();
+        await Clients.Client(response.ConnectionId).HandleJoinLobbyResponse(response);
     }
 
-    public Task CreateLobbyPublish(CreateLobbyResponse response)
+    public async Task CreateLobbyPublish(CreateLobbyResponse response)
     {
-        throw new NotImplementedException();
+        await Clients.All.HandleCreateLobbyResponse(response);
     }
 }
