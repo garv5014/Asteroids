@@ -46,10 +46,12 @@ public class SessionSupervisor : ReceiveActor
                 lm.SessionActorPath
             )
         );
-        var g = new Guid();
         // Create the user
         _log.Info("Creating user {0}", lm.User);
-        var session = Context.ActorOf(SessionActor.Props(lm.User, lm.ConnectionId), g.ToString());
+        var session = Context.ActorOf(
+            SessionActor.Props(lm.User, lm.ConnectionId),
+            Guid.NewGuid().ToString()
+        );
         _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(
             new LoginResponseMessage(
