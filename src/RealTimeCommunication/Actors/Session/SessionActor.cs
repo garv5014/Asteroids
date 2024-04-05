@@ -16,7 +16,7 @@ public class SessionActor : ReceiveActor
 
     private readonly IActorRef lobbySupervisor;
 
-    public SessionActor(string username, string connectionId, ActorRegistry actorRegistry)
+    public SessionActor(string username, string connectionId)
     {
         this.username = username;
         this.connectionId = connectionId;
@@ -26,7 +26,7 @@ public class SessionActor : ReceiveActor
 
     private void CreateLobby(CreateLobbyMessage msg)
     {
-        throw new NotImplementedException();
+        lobbySupervisor.Forward(msg);
     }
 
     public static Props Props(string username, string connectionId)

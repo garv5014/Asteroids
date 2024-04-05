@@ -1,5 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Event;
+using Asteroids.Shared;
 namespace RealTimeCommunication;
 
 public class LobbySupervisor : ReceiveActor
@@ -13,10 +14,16 @@ public class LobbySupervisor : ReceiveActor
 
   public LobbySupervisor()
   {
-    // 
+    Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
   }
 
-  protected override void PreStart()
+    private void CreateLobby(CreateLobbyMessage msg)
+    {
+        var lobbyActor = Context.ActorOf(LobbyActor.Props(msg.LobbyName), msg.LobbyName);
+        lobbyActor.Forward(msg);
+    }
+
+    protected override void PreStart()
   {
     _log.Info("LobbySupervisor created");
   }

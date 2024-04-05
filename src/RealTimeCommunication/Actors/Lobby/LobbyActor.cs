@@ -5,26 +5,27 @@ namespace RealTimeCommunication;
 
 public class LobbyActor : ReceiveActor
 {
-  // Lobby actor is in charge of creating and managing lobbies
-  // respond to messages from the lobby supervisor after creation.
-  // Add user to lobby
-  private readonly ILoggingAdapter _log = Context.GetLogger();
+    // Lobby actor is in charge of creating and managing lobbies
+    // respond to messages from the lobby supervisor after creation.
+    // Add user to lobby'
 
-  public LobbyActor()
-  {
+    private string lobbyName { get; init; }
+    private readonly ILoggingAdapter _log = Context.GetLogger();
 
-  }
-  protected override void PreStart()
-  {
-    _log.Info("LobbyActor created");
-  }
+    public LobbyActor(string name) { }
 
-  protected override void PostStop()
-  {
-    _log.Info("LobbyActor stopped");
-  }
-  public static Props Props()
-  {
-    return Akka.Actor.Props.Create(() => new LobbyActor());
-  }
+    protected override void PreStart()
+    {
+        _log.Info("LobbyActor created");
+    }
+
+    protected override void PostStop()
+    {
+        _log.Info("LobbyActor stopped");
+    }
+
+    public static Props Props(string LobbyName)
+    {
+        return Akka.Actor.Props.Create(() => new LobbyActor(LobbyName));
+    }
 }
