@@ -38,7 +38,8 @@ public partial class Lobby : ILobbyClient
     try
     {
       // Replace "GetLobbies" with the actual method name you're using in your Hub to request lobbies
-      await connection.InvokeAsync("GetLobbies");
+      var actorPath = await LocalStorage.GetItemAsync<string>("actorPath");
+      await hubProxy.LobbiesQuery(new GetLobbiesMessage(SessionActorPath: actorPath));
     }
     catch (Exception ex)
     {
@@ -53,39 +54,23 @@ public partial class Lobby : ILobbyClient
     await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
   }
 
-  private async Task JoinLobby(string lobbyId)
-  {
-    try
-    {
-      // Replace "JoinLobby" with your actual Hub method for joining a lobby
-      await connection.InvokeAsync("JoinLobby", lobbyId);
-      // Optionally, navigate to the lobby-specific page or perform other actions upon joining
-      NavManager.NavigateTo($"/lobby/join/{lobbyId}");
-    }
-    catch (Exception ex)
-    {
-      Console.WriteLine($"Exception when joining lobby: {ex.Message}");
-      // Optionally, handle exceptions (e.g., show a message to the user)
-    }
-  }
+  // private async Task JoinLobby(string lobbyId)
+  // {
+  //   try
+  //   {
+  //     // Replace "JoinLobby" with your actual Hub method for joining a lobby
+  //     await hubProxy
+  //     // Optionally, navigate to the lobby-specific page or perform other actions upon joining
+  //     NavManager.NavigateTo($"/lobby/join/{lobbyId}");
+  //   }
+  //   catch (Exception ex)
+  //   {
+  //     Console.WriteLine($"Exception when joining lobby: {ex.Message}");
+  //     // Optionally, handle exceptions (e.g., show a message to the user)
+  //   }
+  // }
 
-  private async Task CreateLobby()
-  {
-    if (!string.IsNullOrWhiteSpace(newLobbyName))
-    {
-      try
-      {
-        // Replace "CreateLobby" with your actual Hub method for creating a new lobby
-        await connection.InvokeAsync("CreateLobby", newLobbyName);
-
-        newLobbyName = string.Empty; // Reset input field
-        await RequestLobbies(); // Refresh the lobby list
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine($"Exception when creating a new lobby: {ex.Message}");
-        // Optionally, handle exceptions (e.g., show a message to the user)
-      }
-    }
-  }
+  // private async Task CreateLobby()
+  // {
+  // }
 }

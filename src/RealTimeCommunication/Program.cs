@@ -20,6 +20,8 @@ builder.Services.AddAkka(
             {
                 var ss = system.ActorOf(SessionSupervisor.Props(), "sessionSupervisor");
                 registry.TryRegister<SessionSupervisor>(ss);
+                var ls = system.ActorOf(LobbySupervisor.Props(), "lobbySupervisor");
+                registry.TryRegister<SessionSupervisor>(ls);
             }
         );
     }
