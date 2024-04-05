@@ -7,7 +7,7 @@ using RealTimeCommunication.Actors.Session;
 
 namespace RealTimeCommunication;
 
-public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
+public class AccountHub : Hub<IAccountClient>, IAccountHub
 {
     private readonly IActorRef sessionSupervisor;
     private readonly ILogger<AccountHub> _logger;
@@ -18,20 +18,6 @@ public class AccountHub : Hub<IAsteroidClientHub>, IAccountHub
     {
         sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
         _logger = logger;
-    }
-
-    public Task TellActor(string user, string message)
-    {
-        var sm = new SimpleMessage { Message = message, User = user };
-        sessionSupervisor.Tell(sm);
-        _logger.LogInformation("Message sent to actor: {0}", message);
-        return Task.CompletedTask;
-    }
-
-    public Task TellClient(string message)
-    {
-        Clients.All.HandleActorMessage(message);
-        return Task.CompletedTask;
     }
 
     public Task LoginCommand(LoginMessage message)

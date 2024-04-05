@@ -13,16 +13,6 @@ public class PublishToClientActor : ActorPublisher
     public PublishToClientActor()
         : base(AccountHub.FullUrl)
     {
-        Receive<SimpleMessage>(async client =>
-        {
-            ExecuteAndPipeToSelf(async () =>
-            {
-                _log.Info("Sending message to client: {0}", client.Message);
-                Client = hubConnection.ServerProxy<IAccountHub>();
-                await Client.TellClient($"{client.Message} {client.User}");
-            });
-        });
-
         Receive<LoginResponseMessage>(async response =>
         {
             ExecuteAndPipeToSelf(async () =>

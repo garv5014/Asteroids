@@ -35,4 +35,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHub<AccountHub>("/accountHub");
+app.MapHub<LobbyHub>("/lobbyHub");
 app.Run();

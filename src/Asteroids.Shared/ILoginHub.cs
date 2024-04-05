@@ -2,9 +2,8 @@
 
 namespace Asteroids.Shared;
 
-public interface IAsteroidClientHub
+public interface IAccountClient
 {
     Task HandleActorMessage(string Message);
     Task HandleLoginResponse(LoginResponseMessage message);
-    Task HandleLobbiesResponse(AllLobbiesResponse message);
 }

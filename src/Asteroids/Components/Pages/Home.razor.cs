@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Asteroids.Components.Pages;
 
-public partial class Home : IAsteroidClientHub
+public partial class Home : IAccountClient
 {
     public string message;
     public string username { get; set; } = "";
@@ -24,10 +24,9 @@ public partial class Home : IAsteroidClientHub
             Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
             throw;
         }
-        _ = connection.ClientRegistration<IAsteroidClientHub>(this);
+        _ = connection.ClientRegistration<IAccountClient>(this);
         await connection.StartAsync();
 
-        await hubProxy.TellActor("chris", "Message");
         StateHasChanged();
     }
 

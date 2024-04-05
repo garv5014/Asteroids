@@ -5,14 +5,15 @@ using RealTimeCommunication.Actors.Hub;
 
 namespace RealTimeCommunication.Actors.Session;
 
+public record GetUserSessionMessage(string ActorPath);
+public record GetUserSessionResponse(IActorRef ActorRef);
+
 public class SessionSupervisor : ReceiveActor
 {
   // This is the supervisor strategy for the child actors
   // Make a list of session actors
   private readonly ILoggingAdapter _log = Context.GetLogger();
   private readonly IActorRef _relayActor;
-  public Dictionary<string, IActorRef> UserNameToSession { get; } = new();
-  public Dictionary<IActorRef, string> ActorRefToUserName { get; } = new();
 
   public SessionSupervisor()
   {
@@ -21,32 +22,26 @@ public class SessionSupervisor : ReceiveActor
       PublishToClientActor.Props(),
       "PublishToClientActor"
     );
-    Receive<SimpleMessage>(sm => HandleSimpleMessage(sm));
     Receive<LoginMessage>(cam => HandleCreateAccountMessage(cam));
+    Receive<GetUserSessionMessage>(gusm => HandleGetUserSessionMessage(gusm));
   }
 
   private void HandleCreateAccountMessage(LoginMessage lm)
   {
-    // Verify user doesn't already exist
-    if (UserNameToSession.ContainsKey(lm.User))
-    {
-      _log.Info("User {0} already exists", lm.User);
-      _relayActor.Tell(
-        new LoginResponseMessage
-        (
-          lm.ConnectionId,
-          false,
-          "Failed To log in",
-          lm.SessionActorPath
-        )
-      );
-      return;
-    }
+    _log.Info("User {0} already exists", lm.User);
+    _relayActor.Tell(
+      new LoginResponseMessage
+      (
+        lm.ConnectionId,
+        false,
+        "Failed To log in",
+        lm.SessionActorPath
+      )
+    );
 
     // Create the user
     _log.Info("Creating user {0}", lm.User);
     var session = Context.ActorOf(SessionActor.Props(lm.User, lm.ConnectionId), lm.User);
-    UserNameToSession[lm.User] = session;
     _relayActor.Tell(
       new LoginResponseMessage
       (
@@ -58,10 +53,10 @@ public class SessionSupervisor : ReceiveActor
     );
   }
 
-  private void HandleSimpleMessage(SimpleMessage sm)
-  {
-    _log.Info("Received message: {0}", sm.Message);
-    _relayActor.Tell(sm);
+  public void HandleGetUserSessionMessage(GetUserSessionMessage gusm)
+  { 
+    var actor = Context.ActorSelection(gusm.ActorPath).ResolveOne(TimeSpan.FromSeconds(1)).Result;
+    Sender.Tell(new GetUserSessionResponse(actor));
   }
 
   public static Props Props()

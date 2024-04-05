@@ -6,10 +6,6 @@ public interface IAccountHub
 {
     // For messages client -> hub -> actor use Tell
     // for messages hub -> client use Publish
-    Task TellActor(string user, string message);
-    Task TellClient(string message);
     Task LoginCommand(LoginMessage message);
     Task LoginPublish(LoginResponseMessage message);
-    Task LobbiesQuery(GetLobbiesMessage message);
-    Task LobbiesPublish(AllLobbiesResponse message);
 }
