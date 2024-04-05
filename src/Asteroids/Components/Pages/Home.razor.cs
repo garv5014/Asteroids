@@ -24,7 +24,7 @@ public partial class Home : IAccountClient
             Console.WriteLine($"Failed to establish SignalR connection: {ex.Message}");
             throw;
         }
-        _ = connection.ClientRegistration<IAccountClient>(this);
+        connection.ClientRegistration<IAccountClient>(this);
         await connection.StartAsync();
 
         StateHasChanged();

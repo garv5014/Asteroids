@@ -31,4 +31,14 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
   {
     return Task.CompletedTask;
   }
+
+  public Task CreateLobbyCommand(CreateLobbyMessage message)
+  {
+    throw new NotImplementedException();
+  }
+
+  public Task JoinLobbyCommand(JoinLobbyMessage message)
+  {
+    throw new NotImplementedException();
+  }
 }

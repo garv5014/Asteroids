@@ -28,6 +28,7 @@ public partial class Lobby : ILobbyClient
       Console.WriteLine($"Failed to establish SignalR connection LobbyHub: {ex.Message}");
       throw;
     }
+    connection.ClientRegistration<ILobbyClient>(this);
     await connection.StartAsync();
 
     await RequestLobbies();
@@ -60,5 +61,15 @@ public partial class Lobby : ILobbyClient
 
   private async Task CreateLobby()
   {
+  }
+
+  public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
+  {
+    throw new NotImplementedException();
+  }
+
+  public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
+  {
+    throw new NotImplementedException();
   }
 }
