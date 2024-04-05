@@ -55,4 +55,14 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         );
         return gusr.ActorRef;
     }
+
+    public Task JoinLobbyPublish(JoinLobbyResponse response)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task CreateLobbyPublish(CreateLobbyResponse response)
+    {
+        throw new NotImplementedException();
+    }
 }
