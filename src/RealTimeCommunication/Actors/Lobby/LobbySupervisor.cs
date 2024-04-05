@@ -28,9 +28,30 @@ public class LobbySupervisor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private int lobbyId = 0;
 
+    private IActorRef _lobbyRelayActor;
+
     public LobbySupervisor()
     {
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
+        Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
+    }
+
+    private void JoinLobby(JoinLobbyMessage msg)
+    {
+        Sender.Forward(
+            new JoinLobbyMessage(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
+        _lobbyRelayActor.Tell(
+            new JoinLobbyResponse(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
     }
 
     private void CreateLobby(CreateLobbyMessage msg)
@@ -38,20 +59,11 @@ public class LobbySupervisor : ReceiveActor
         var lobbyActor = Context.ActorOf(LobbyActor.Props(msg.LobbyName), msg.LobbyName);
         lobbies.Add(lobbyId, lobbyActor);
         lobbyId++;
-        lobbyActor.Forward(
-            new CreateLobbyMessage(msg.SessionActorPath, msg.ConnectionId, msg.LobbyName)
-        );
-        Sender.Tell(
+        _lobbyRelayActor.Tell(
             new CreateLobbyResponse(
-                ConnectionId: msg.ConnectionId,
-                SessionActorPath: msg.SessionActorPath,
-                lobbyId
-            )
-        );
-        Sender.Tell(
-            new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
+                LobbyName: msg.LobbyName,
                 LobbyId: lobbyId
             )
         );

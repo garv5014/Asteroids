@@ -32,16 +32,26 @@ public class LobbyHubRelay : ActorPublisher
                 await Client.JoinLobbyPublish(response);
             });
         });
+
+        Receive<CreateLobbyResponse>(async response =>
+        {
+            ExecuteAndPipeToSelf(async () =>
+            {
+                _log.Info("Sending response to client: {0}", response.ConnectionId);
+                Client = hubConnection.ServerProxy<ILobbyHub>();
+                await Client.CreateLobbyPublish(response);
+            });
+        });
     }
 
     protected override void PreStart()
     {
         base.PreStart();
-        _log.Info($"{nameof(AccountHubRelay)} started");
+        _log.Info($"{nameof(LobbyHubRelay)} started");
     }
 
     public static Props Props()
     {
-        return Akka.Actor.Props.Create(() => new AccountHubRelay());
+        return Akka.Actor.Props.Create(() => new LobbyHubRelay());
     }
 }

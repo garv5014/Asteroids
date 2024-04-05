@@ -2,6 +2,7 @@
 using Akka.Dispatch.SysMsg;
 using Akka.Event;
 using Akka.Hosting;
+using Akka.Util.Internal;
 using Asteroids.Shared;
 
 namespace RealTimeCommunication.Actors.Session;
@@ -23,7 +24,7 @@ public class SessionActor : ReceiveActor
     {
         this.username = username;
         this.connectionId = connectionId;
-        lobbySupervisor = (IActorRef)Context.ActorSelection(ActorHelper.LobbySupervisorName);
+        lobbySupervisor = (IActorRef)Context.AsInstanceOf<LobbySupervisor>();
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
     }
@@ -32,13 +33,7 @@ public class SessionActor : ReceiveActor
     {
         lobbyId = msg.LobbyId;
         state = SessionState.InLobby;
-        Context.Parent.Tell(
-            new JoinLobbyResponse(
-                ConnectionId: msg.ConnectionId,
-                SessionActorPath: msg.SessionActorPath,
-                LobbyId: msg.LobbyId
-            )
-        );
+        lobbySupervisor.Tell(msg);
     }
 
     private void CreateLobby(CreateLobbyMessage msg)
