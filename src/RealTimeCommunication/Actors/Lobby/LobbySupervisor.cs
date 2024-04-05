@@ -4,17 +4,17 @@ using Asteroids.Shared;
 
 namespace RealTimeCommunication;
 
-public record CreateLobbyMessageWithId(
-    string SessionActorPath,
-    string ConnectionId,
-    string LobbyName,
-    int LobbyId
-)
-    : CreateLobbyMessage(
-        SessionActorPath: SessionActorPath,
-        LobbyName: LobbyName,
-        ConnectionId: ConnectionId
-    );
+// public record CreateLobbyMessageWithId(
+//     string SessionActorPath,
+//     string ConnectionId,
+//     string LobbyName,
+//     int LobbyId
+// )
+//     : CreateLobbyMessage(
+//         SessionActorPath: SessionActorPath,
+//         LobbyName: LobbyName,
+//         ConnectionId: ConnectionId
+//     );
 
 public class LobbySupervisor : ReceiveActor
 {
@@ -39,11 +39,20 @@ public class LobbySupervisor : ReceiveActor
         lobbies.Add(lobbyId, lobbyActor);
         lobbyId++;
         lobbyActor.Forward(
-            new CreateLobbyMessageWithId(
-                msg.SessionActorPath,
-                msg.ConnectionId,
-                msg.LobbyName,
+            new CreateLobbyMessage(msg.SessionActorPath, msg.ConnectionId, msg.LobbyName)
+        );
+        Sender.Tell(
+            new CreateLobbyResponse(
+                ConnectionId: msg.ConnectionId,
+                SessionActorPath: msg.SessionActorPath,
                 lobbyId
+            )
+        );
+        Sender.Tell(
+            new JoinLobbyMessage(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
             )
         );
     }

@@ -24,24 +24,17 @@ public class LobbyActor : ReceiveActor
     {
         lobbyName = name;
         lobbyState = LobbyState.WaitingForPlayers;
-        Receive<CreateLobbyMessageWithId>(msg => CreateLobby(msg));
+        Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         // Receive<StartGameMessage>(msg => StartGame(msg));
         // Receive<EndGameMessage>(msg => EndGame(msg));
     }
 
-    private void CreateLobby(CreateLobbyMessageWithId msg)
+    private void CreateLobby(CreateLobbyMessage msg)
     {
         SessionsToUpdate.Add(Sender); // should be the session Actor.
         LobbyOwner = Sender;
         _log.Info("Lobby created");
-        Sender.Tell(
-            new JoinLobbyMessage(
-                ConnectionId: msg.ConnectionId,
-                LobbyId: msg.LobbyId,
-                SessionActorPath: msg.SessionActorPath
-            )
-        );
     }
 
     private void JoinLobby(JoinLobbyMessage msg)
