@@ -45,10 +45,6 @@ public class LobbySupervisor : ReceiveActor
     private void GetLobbies(GetLobbiesMessage msg)
     {
         var lobbiesState = new List<GameLobby>();
-        _lobbyRelayActor = Context
-            .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
-            .ResolveOne(TimeSpan.FromSeconds(3))
-            .Result;
         foreach (var lobby in lobbies)
         {
             var gl = lobby
@@ -94,7 +90,10 @@ public class LobbySupervisor : ReceiveActor
     private void CreateLobby(CreateLobbyMessage msg)
     {
         lobbyId++;
-        var lobbyActor = Context.ActorOf(LobbyActor.Props(msg.LobbyName), msg.LobbyName);
+        var lobbyActor = Context.ActorOf(
+            LobbyActor.Props(msg.LobbyName),
+            ActorHelper.SanitizeActorName(msg.LobbyName)
+        );
         lobbies.Add(lobbyId, lobbyActor);
         _log.Info("Lobby created with id {0}", lobbyId);
 
