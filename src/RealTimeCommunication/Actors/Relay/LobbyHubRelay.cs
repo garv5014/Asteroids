@@ -42,6 +42,16 @@ public class LobbyHubRelay : ActorPublisher
                 await Client.CreateLobbyPublish(response);
             });
         });
+
+        Receive<LobbyStateResponse>(async response =>
+        {
+            ExecuteAndPipeToSelf(async () =>
+            {
+                _log.Info("Sending response to client: {0}", response.ConnectionId);
+                Client = hubConnection.ServerProxy<ILobbyHub>();
+                await Client.LobbyStatePublish(response);
+            });
+        });
     }
 
     protected override void PreStart()

@@ -37,6 +37,7 @@ public class LobbyActor : ReceiveActor
 
     private void GetLobbyState(GetLobbyStateMessage msg)
     {
+        _log.Info("Getting lobby state in Lobby Actor: {0}", Self.Path.Name);
         Context.Parent.Tell(
             new LobbyStateResponse(
                 ConnectionId: msg.ConnectionId,
@@ -50,6 +51,7 @@ public class LobbyActor : ReceiveActor
 
     private void GetLobbies(GetLobbiesMessage msg)
     {
+        _log.Info("Getting lobbies in Lobby Actor: {0}", Self.Path.Name);
         var gl = new GameLobby(lobbyName, 0, numberOfPlayers);
         Sender.Tell(gl);
     }

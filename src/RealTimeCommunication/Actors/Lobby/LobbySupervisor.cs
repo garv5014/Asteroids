@@ -45,7 +45,7 @@ public class LobbySupervisor : ReceiveActor
             _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
             return;
         }
-
+        _log.Info("Getting lobby state from child");
         lobbyActor.Tell(msg);
     }
 
