@@ -95,12 +95,12 @@ public partial class Lobby : ILobbyClient
         }
     }
 
-    public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
+    public async Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {
         ToastService.ShowSuccess("Joined lobby");
         NavManager.NavigateTo($"/waitingroom/{message.LobbyId}");
         // on sucess navigate to waiting room passing in lobby Id
-        return Task.CompletedTask;
+        await InvokeAsync(StateHasChanged);
     }
 
     public async Task HandleCreateLobbyResponse(CreateLobbyResponse message)
