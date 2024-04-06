@@ -4,7 +4,7 @@ namespace RealTimeCommunication;
 
 public static class ActorHelper
 {
-    public static string SanitizeActorName(string input)
+    public static string SanitizeActorName(string input) //chat gpt
     {
         if (string.IsNullOrWhiteSpace(input))
         {

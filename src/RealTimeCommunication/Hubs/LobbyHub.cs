@@ -46,9 +46,16 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         sessionActorRef.Tell(clc);
     }
 
-    public Task JoinLobbyCommand(JoinLobbyMessage message)
+    public async Task JoinLobbyCommand(JoinLobbyMessage message)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Join lobby command received");
+        var jlc = new JoinLobbyMessage(
+            SessionActorPath: message.SessionActorPath,
+            ConnectionId: Context.ConnectionId,
+            LobbyId: message.LobbyId
+        );
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        sessionActorRef.Tell(jlc);
     }
 
     private async Task<IActorRef> GetSessionActor(string sessionActorPath)

@@ -1,9 +1,13 @@
 ﻿using Asteroids.Shared;
+using Microsoft.AspNetCore.Components;
 
-namespace Asteroids;
+namespace Asteroids.Components.Pages;
 
 public partial class WaitingRoom : ILobbyClient
 {
+    [Parameter]
+    public int LobbyId { get; set; }
+
     public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
     {
         throw new NotImplementedException();

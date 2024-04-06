@@ -5,18 +5,6 @@ using Asteroids.Shared;
 
 namespace RealTimeCommunication;
 
-// public record CreateLobbyMessageWithId(
-//     string SessionActorPath,
-//     string ConnectionId,
-//     string LobbyName,
-//     int LobbyId
-// )
-//     : CreateLobbyMessage(
-//         SessionActorPath: SessionActorPath,
-//         LobbyName: LobbyName,
-//         ConnectionId: ConnectionId
-//     );
-
 public class LobbySupervisor : ReceiveActor
 {
     // return all the lobbies lobbies stored as a Dictionary of lobbies
@@ -71,13 +59,21 @@ public class LobbySupervisor : ReceiveActor
 
     private void JoinLobby(JoinLobbyMessage msg)
     {
-        Sender.Forward(
+        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        {
+            // Eventually needs to send action failed message
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            return;
+        }
+
+        lobbyActor.Forward(
             new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
                 LobbyId: lobbyId
             )
         );
+        
         _lobbyRelayActor.Tell(
             new JoinLobbyResponse(
                 SessionActorPath: msg.SessionActorPath,
@@ -106,6 +102,14 @@ public class LobbySupervisor : ReceiveActor
         nameToActorRef.Add(msg.LobbyName, lobbyActor);
 
         _log.Info("Lobby created with id {0}", lobbyId);
+
+        Self.Tell(
+            new JoinLobbyMessage(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
 
         _lobbyRelayActor.Tell(
             new CreateLobbyResponse(

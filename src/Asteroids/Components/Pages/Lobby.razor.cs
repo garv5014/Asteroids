@@ -98,6 +98,7 @@ public partial class Lobby : ILobbyClient
     public Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {
         ToastService.ShowSuccess("Joined lobby");
+        // on sucess navigate to waiting room passing in lobby Id
         return Task.CompletedTask;
     }
 
