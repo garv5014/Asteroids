@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Folder Include="Actors\Persistence\" />
+    <Folder Include="Hubs\" />
   </ItemGroup>
 
 </Project>
