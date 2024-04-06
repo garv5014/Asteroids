@@ -28,6 +28,13 @@ public class SessionActor : ReceiveActor
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
+        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
+    }
+
+    private void GetLobbyState(GetLobbyStateMessage msg)
+    {
+        _log.Info("Getting lobby state");
+        lobbySupervisor.Forward(msg);
     }
 
     private void GetLobbies(GetLobbiesMessage msg)

@@ -12,7 +12,10 @@ public class LobbyActor : ReceiveActor
     // Add user to lobby'
 
     private string lobbyName { get; init; }
-    private int numberOfPlayers { get; init; }
+    private int numberOfPlayers
+    {
+        get => SessionsToUpdate.Count;
+    }
     private LobbyStatus lobbyStatus { get; set; }
 
     private IActorRef LobbyOwner { get; set; }
@@ -27,8 +30,22 @@ public class LobbyActor : ReceiveActor
         lobbyStatus = LobbyStatus.WaitingForPlayers;
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
+        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
         // Receive<StartGameMessage>(msg => StartGame(msg));
         // Receive<EndGameMessage>(msg => EndGame(msg));
+    }
+
+    private void GetLobbyState(GetLobbyStateMessage msg)
+    {
+        Context.Parent.Tell(
+            new LobbyStateResponse(
+                ConnectionId: msg.ConnectionId,
+                SessionActorPath: msg.SessionActorPath,
+                IsOwner: LobbyOwner == Sender,
+                PlayerCount: numberOfPlayers,
+                CurrentStatus: lobbyStatus
+            )
+        );
     }
 
     private void GetLobbies(GetLobbiesMessage msg)
