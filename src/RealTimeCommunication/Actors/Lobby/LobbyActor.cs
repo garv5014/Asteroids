@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.Event;
 using Asteroids.Shared;
+using Asteroids.Shared.GameEntities;
 
 namespace RealTimeCommunication;
 
@@ -12,7 +13,7 @@ public class LobbyActor : ReceiveActor
 
     private string lobbyName { get; init; }
     private int numberOfPlayers { get; init; }
-    private LobbyState lobbyState { get; set; }
+    private LobbyStatus lobbyStatus { get; set; }
 
     private IActorRef LobbyOwner { get; set; }
 
@@ -23,7 +24,7 @@ public class LobbyActor : ReceiveActor
     public LobbyActor(string name)
     {
         lobbyName = name;
-        lobbyState = LobbyState.WaitingForPlayers;
+        lobbyStatus = LobbyStatus.WaitingForPlayers;
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
         // Receive<StartGameMessage>(msg => StartGame(msg));
@@ -57,11 +58,4 @@ public class LobbyActor : ReceiveActor
     {
         return Akka.Actor.Props.Create(() => new LobbyActor(LobbyName));
     }
-}
-
-public enum LobbyState
-{
-    WaitingForPlayers,
-    InGame,
-    GameOver
 }
