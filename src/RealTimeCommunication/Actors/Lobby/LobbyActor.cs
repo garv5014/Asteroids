@@ -42,9 +42,11 @@ public class LobbyActor : ReceiveActor
             new LobbyStateResponse(
                 ConnectionId: msg.ConnectionId,
                 SessionActorPath: msg.SessionActorPath,
-                IsOwner: LobbyOwner == Sender,
-                PlayerCount: numberOfPlayers,
-                CurrentStatus: lobbyStatus
+                CurrentState: new LobbyState(
+                    isOwner: LobbyOwner == Sender,
+                    playerCount: numberOfPlayers,
+                    currentStatus: lobbyStatus
+                )
             )
         );
     }

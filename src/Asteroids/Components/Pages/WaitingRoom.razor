@@ -3,6 +3,15 @@
 @inject SignalREnv signalREnv
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
 @inject IToastService ToastService
+@rendermode InteractiveServer
 
 
 <p>WaitingRoom for LobbyId: @LobbyId</p>
+
+@if (lobbyState != null)
+{
+  @if (lobbyState.IsOwner)
+  {
+    <button @onclick="StartGame">Start Game</button>
+  }
+}

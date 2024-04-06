@@ -37,9 +37,7 @@ public record GetLobbyStateMessage(string SessionActorPath, string ConnectionId,
 public record LobbyStateResponse(
     string ConnectionId,
     string SessionActorPath,
-    bool IsOwner,
-    int PlayerCount,
-    LobbyStatus CurrentStatus
+    LobbyState CurrentState
 ) : HubMessage(ConnectionId, SessionActorPath);
 
 public record UpdateLobbyMessage(

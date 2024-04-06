@@ -1,5 +1,6 @@
 ﻿using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
+using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -34,6 +35,13 @@ public partial class WaitingRoom : ILobbyClient
 
         await GetLobbyState();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private Task StartGame()
+    {
+        // Implement this method to start the game
+        ToastService.ShowSuccess("Game started!");
+        return Task.CompletedTask;
     }
 
     private async Task GetLobbyState()
@@ -74,6 +82,7 @@ public partial class WaitingRoom : ILobbyClient
 
     public Task HandleLobbyStateResponse(LobbyStateResponse message)
     {
-        throw new NotImplementedException();
+        lobbyState = message.CurrentState;
+        return Task.CompletedTask;
     }
 }

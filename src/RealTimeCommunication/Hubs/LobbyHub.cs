@@ -92,7 +92,12 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public Task LobbyStatePublish(LobbyStateResponse response)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation(
+            "Sending {0} response to client : {1}",
+            nameof(LobbyStateResponse),
+            response.ConnectionId
+        );
+        return Clients.Client(response.ConnectionId).HandleLobbyStateResponse(response);
     }
 
     public Task UpdateLobbyStateCommand(UpdateLobbyMessage message)
