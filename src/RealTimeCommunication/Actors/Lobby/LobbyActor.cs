@@ -33,6 +33,7 @@ public class LobbyActor : ReceiveActor
     private void GetLobbies(GetLobbiesMessage msg)
     {
         var gl = new GameLobby(lobbyName, 0, numberOfPlayers);
+        Sender.Tell(gl);
     }
 
     private void JoinLobby(JoinLobbyMessage msg)

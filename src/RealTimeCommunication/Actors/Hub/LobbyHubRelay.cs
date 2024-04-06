@@ -17,7 +17,7 @@ public class LobbyHubRelay : ActorPublisher
         {
             ExecuteAndPipeToSelf(async () =>
             {
-                _log.Info("Sending response to client: {0}", response.ConnectionId);
+                _log.Info("Sending Lobby response to client: {0}", response.ConnectionId);
                 Client = hubConnection.ServerProxy<ILobbyHub>();
                 await Client.LobbiesPublish(response);
             });
@@ -52,8 +52,8 @@ public class LobbyHubRelay : ActorPublisher
 
     protected override void PostStop()
     {
-        base.PreStart();
-        _log.Info($"{nameof(LobbyHubRelay)} started");
+        base.PostStop();
+        _log.Info($"{nameof(LobbyHubRelay)} Stopped ");
     }
 
     public static Props Props()

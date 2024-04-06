@@ -6,7 +6,7 @@ namespace Asteroids.Components.Pages;
 public partial class Lobby : ILobbyClient
 {
     private HubConnection connection;
-    private GameLobby[] lobbies;
+    private List<GameLobby> lobbies;
     private ILobbyHub hubProxy;
     private string newLobbyName = string.Empty;
 

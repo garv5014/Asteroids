@@ -45,10 +45,14 @@ public class LobbySupervisor : ReceiveActor
     private void GetLobbies(GetLobbiesMessage msg)
     {
         var lobbiesState = new List<GameLobby>();
+        _lobbyRelayActor = Context
+            .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
+            .ResolveOne(TimeSpan.FromSeconds(3))
+            .Result;
         foreach (var lobby in lobbies)
         {
-            var gl = _lobbyRelayActor
-                .Ask<GameLobby>(
+            var gl = lobby
+                .Value.Ask<GameLobby>(
                     new GetLobbiesMessage(
                         SessionActorPath: msg.SessionActorPath,
                         ConnectionId: msg.ConnectionId
@@ -56,13 +60,15 @@ public class LobbySupervisor : ReceiveActor
                 )
                 .Result;
             var glId = new GameLobby(gl.Name, lobby.Key, gl.PlayerCount);
+            _log.Info("Lobby: {0}", glId);
             lobbiesState.Add(glId);
         }
+        _log.Info("There are {0} lobbies", lobbiesState.Count);
         _lobbyRelayActor.Tell(
             new AllLobbiesResponse(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                Lobbies: lobbiesState.ToArray()
+                Lobbies: lobbiesState ?? new List<GameLobby>()
             )
         );
     }
@@ -87,9 +93,11 @@ public class LobbySupervisor : ReceiveActor
 
     private void CreateLobby(CreateLobbyMessage msg)
     {
+        lobbyId++;
         var lobbyActor = Context.ActorOf(LobbyActor.Props(msg.LobbyName), msg.LobbyName);
         lobbies.Add(lobbyId, lobbyActor);
-        lobbyId++;
+        _log.Info("Lobby created with id {0}", lobbyId);
+
         _lobbyRelayActor.Tell(
             new CreateLobbyResponse(
                 SessionActorPath: msg.SessionActorPath,

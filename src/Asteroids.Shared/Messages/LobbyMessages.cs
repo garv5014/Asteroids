@@ -23,5 +23,8 @@ public record CreateLobbyResponse(
     int LobbyId
 ) : HubMessage(ConnectionId, SessionActorPath);
 
-public record AllLobbiesResponse(string ConnectionId, string SessionActorPath, GameLobby[] Lobbies)
-    : HubMessage(ConnectionId, SessionActorPath);
+public record AllLobbiesResponse(
+    string ConnectionId,
+    string SessionActorPath,
+    List<GameLobby> Lobbies
+) : HubMessage(ConnectionId, SessionActorPath);
