@@ -1,4 +1,5 @@
-﻿using Asteroids.Shared.Messages;
+﻿using Asteroids.Shared.GameEntities;
+using Asteroids.Shared.Messages;
 
 namespace Asteroids.Shared;
 
@@ -29,8 +30,28 @@ public record AllLobbiesResponse(
     List<GameLobby> Lobbies
 ) : HubMessage(ConnectionId, SessionActorPath);
 
+public record LobbyStateQuery(string SessionActorPath, string ConnectionId, int LobbyId)
+    : HubMessage(ConnectionId, SessionActorPath);
 
-// get lobby state by id
 // lobby state response Params: isOwner(bool) number of players(int) current state(lobby state enum).
-// Start game message Params: LobbyId(int) SessionActorPath(string) ConnectionId(string)
+public record LobbyStateResponse(
+    string ConnectionId,
+    string SessionActorPath,
+    bool IsOwner,
+    int PlayerCount,
+    LobbyStatus CurrentStatus
+) : HubMessage(ConnectionId, SessionActorPath);
+
+public record UpdateLobbyState(
+    string ConnectionId,
+    string SessionActorPath,
+    int LobbyId,
+    LobbyStatus CurrentStatus
+) : HubMessage(ConnectionId, SessionActorPath);
+
 // update lobby state response params: updated state
+public record UpdateLobbyStateResponse(
+    string ConnectionId,
+    string SessionActorPath,
+    LobbyStatus CurrentStatus
+) : HubMessage(ConnectionId, SessionActorPath);
