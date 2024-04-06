@@ -30,7 +30,7 @@ public record AllLobbiesResponse(
     List<GameLobby> Lobbies
 ) : HubMessage(ConnectionId, SessionActorPath);
 
-public record LobbyStateQuery(string SessionActorPath, string ConnectionId, int LobbyId)
+public record LobbyStateMessage(string SessionActorPath, string ConnectionId, int LobbyId)
     : HubMessage(ConnectionId, SessionActorPath);
 
 // lobby state response Params: isOwner(bool) number of players(int) current state(lobby state enum).
@@ -42,7 +42,7 @@ public record LobbyStateResponse(
     LobbyStatus CurrentStatus
 ) : HubMessage(ConnectionId, SessionActorPath);
 
-public record UpdateLobbyState(
+public record UpdateLobbyMessage(
     string ConnectionId,
     string SessionActorPath,
     int LobbyId,

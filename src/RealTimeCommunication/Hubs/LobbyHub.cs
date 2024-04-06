@@ -77,4 +77,19 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         _logger.LogInformation("Sending response to client: {0}", response.ConnectionId);
         await Clients.All.HandleCreateLobbyResponse(response);
     }
+
+    public Task LobbyStateQuery(LobbyStateMessage message)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task LobbyStatePublish(LobbyStateResponse response)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UpdateLobbyStateCommand(UpdateLobbyMessage message)
+    {
+        throw new NotImplementedException();
+    }
 }

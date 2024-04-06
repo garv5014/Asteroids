@@ -52,4 +52,9 @@ public partial class WaitingRoom : ILobbyClient
     {
         return Task.CompletedTask;
     }
+
+    public Task HandleLobbyStateResponse(LobbyStateResponse message)
+    {
+        throw new NotImplementedException();
+    }
 }

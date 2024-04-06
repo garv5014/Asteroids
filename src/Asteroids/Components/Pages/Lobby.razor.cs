@@ -106,4 +106,9 @@ public partial class Lobby : ILobbyClient
     {
         await InvokeAsync(OnInitializedAsync);
     }
+
+    public Task HandleLobbyStateResponse(LobbyStateResponse message)
+    {
+        return Task.CompletedTask;
+    }
 }
