@@ -91,18 +91,20 @@ public class LobbySupervisor : ReceiveActor
     {
         if (nameToActorRef.ContainsKey(msg.LobbyName))
         {
+            // Eventually needs to send action failed message
             _log.Info("Lobby with name {0} already exists", msg.LobbyName);
             return;
         }
         lobbyId++;
+
         var lobbyActor = Context.ActorOf(
             LobbyActor.Props(msg.LobbyName),
             ActorHelper.SanitizeActorName(msg.LobbyName)
         );
+
         idToActorRef.Add(lobbyId, lobbyActor);
         nameToActorRef.Add(msg.LobbyName, lobbyActor);
-        // Lobbies with the same name will overwrite each other
-        // this might invalidate the old lobbies if they are still in use
+
         _log.Info("Lobby created with id {0}", lobbyId);
 
         _lobbyRelayActor.Tell(
