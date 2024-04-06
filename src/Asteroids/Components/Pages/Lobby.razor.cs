@@ -55,7 +55,25 @@ public partial class Lobby : ILobbyClient
         await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
     }
 
-    private async Task JoinLobby(int lobbyId) { }
+    private async Task JoinLobby(int lobbyId)
+    {
+        try
+        {
+            var actorPath = await LocalStorage.GetItemAsync<string>("actorPath");
+            await hubProxy.JoinLobbyCommand(
+                new JoinLobbyMessage(
+                    SessionActorPath: actorPath,
+                    ConnectionId: null,
+                    LobbyId: lobbyId
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Failed to join lobby: {ex.Message}");
+            // Optionally, handle exceptions (e.g., show a message to the user)
+        }
+    }
 
     private async Task CreateLobby()
     {

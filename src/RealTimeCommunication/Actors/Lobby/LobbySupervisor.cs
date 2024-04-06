@@ -24,8 +24,8 @@ public class LobbySupervisor : ReceiveActor
     // Forward messages to the lobby actor
     // Join Lobby passed to lobby actor
 
-    private Dictionary<int, IActorRef> lobbies = new Dictionary<int, IActorRef>();
-
+    private Dictionary<int, IActorRef> idToActorRef = new Dictionary<int, IActorRef>();
+    private Dictionary<string, IActorRef> nameToActorRef = new Dictionary<string, IActorRef>();
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private int lobbyId = 0;
 
@@ -45,7 +45,7 @@ public class LobbySupervisor : ReceiveActor
     private void GetLobbies(GetLobbiesMessage msg)
     {
         var lobbiesState = new List<GameLobby>();
-        foreach (var lobby in lobbies)
+        foreach (var lobby in idToActorRef)
         {
             var gl = lobby
                 .Value.Ask<GameLobby>(
@@ -89,12 +89,20 @@ public class LobbySupervisor : ReceiveActor
 
     private void CreateLobby(CreateLobbyMessage msg)
     {
+        if (nameToActorRef.ContainsKey(msg.LobbyName))
+        {
+            _log.Info("Lobby with name {0} already exists", msg.LobbyName);
+            return;
+        }
         lobbyId++;
         var lobbyActor = Context.ActorOf(
             LobbyActor.Props(msg.LobbyName),
             ActorHelper.SanitizeActorName(msg.LobbyName)
         );
-        lobbies.Add(lobbyId, lobbyActor);
+        idToActorRef.Add(lobbyId, lobbyActor);
+        nameToActorRef.Add(msg.LobbyName, lobbyActor);
+        // Lobbies with the same name will overwrite each other
+        // this might invalidate the old lobbies if they are still in use
         _log.Info("Lobby created with id {0}", lobbyId);
 
         _lobbyRelayActor.Tell(
