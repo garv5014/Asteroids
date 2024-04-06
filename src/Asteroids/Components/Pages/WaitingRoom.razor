@@ -1,6 +1,8 @@
 ﻿@page "/waitingroom/{LobbyId:int}"
 @inject NavigationManager NavigationManager
 @inject SignalREnv signalREnv
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IToastService ToastService
+
 
 <p>WaitingRoom for LobbyId: @LobbyId</p>
-

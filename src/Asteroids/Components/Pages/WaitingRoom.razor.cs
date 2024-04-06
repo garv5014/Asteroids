@@ -1,4 +1,5 @@
 ﻿using Asteroids.Shared;
+using Asteroids.Shared.GameEntities;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -10,6 +11,8 @@ public partial class WaitingRoom : ILobbyClient
     public int LobbyId { get; set; }
     private HubConnection connection;
     private ILobbyHub hubProxy;
+
+    private LobbyState lobbyState;
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,7 +38,23 @@ public partial class WaitingRoom : ILobbyClient
 
     private async Task GetLobbyState()
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Replace "GetLobbyState" with the actual method name you're using in your Hub to request lobby state
+            var actorPath = await localStorage.GetItemAsync<string>("actorPath");
+            await hubProxy.LobbyStateQuery(
+                new GetLobbyStateMessage(
+                    SessionActorPath: actorPath,
+                    ConnectionId: null,
+                    LobbyId: LobbyId
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception when requesting lobby state: {ex.Message}");
+            // Optionally, handle exceptions (e.g., show a message to the user)
+        }
     }
 
     public Task HandleCreateLobbyResponse(CreateLobbyResponse message)

@@ -78,9 +78,16 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         await Clients.All.HandleCreateLobbyResponse(response);
     }
 
-    public Task LobbyStateQuery(LobbyStateMessage message)
+    public async Task LobbyStateQuery(GetLobbyStateMessage message)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Lobby state query received");
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        var lsm = new GetLobbyStateMessage(
+            SessionActorPath: message.SessionActorPath,
+            ConnectionId: message.ConnectionId,
+            LobbyId: message.LobbyId
+        );
+        sessionActorRef.Tell(lsm);
     }
 
     public Task LobbyStatePublish(LobbyStateResponse response)
