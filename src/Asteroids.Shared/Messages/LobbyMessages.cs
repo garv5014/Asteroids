@@ -28,3 +28,9 @@ public record AllLobbiesResponse(
     string SessionActorPath,
     List<GameLobby> Lobbies
 ) : HubMessage(ConnectionId, SessionActorPath);
+
+
+// get lobby state by id
+// lobby state response Params: isOwner(bool) number of players(int) current state(lobby state enum).
+// Start game message Params: LobbyId(int) SessionActorPath(string) ConnectionId(string)
+// update lobby state response params: updated state

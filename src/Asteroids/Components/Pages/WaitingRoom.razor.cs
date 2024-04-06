@@ -5,6 +5,7 @@ namespace Asteroids.Components.Pages;
 
 public partial class WaitingRoom : ILobbyClient
 {
+    //
     [Parameter]
     public int LobbyId { get; set; }
 
