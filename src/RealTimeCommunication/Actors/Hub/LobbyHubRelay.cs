@@ -50,6 +50,12 @@ public class LobbyHubRelay : ActorPublisher
         _log.Info($"{nameof(LobbyHubRelay)} started");
     }
 
+    protected override void PostStop()
+    {
+        base.PreStart();
+        _log.Info($"{nameof(LobbyHubRelay)} started");
+    }
+
     public static Props Props()
     {
         return Akka.Actor.Props.Create(() => new LobbyHubRelay());

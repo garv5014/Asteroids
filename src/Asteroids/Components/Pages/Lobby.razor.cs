@@ -55,7 +55,7 @@ public partial class Lobby : ILobbyClient
         await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
     }
 
-    private async Task JoinLobby(string lobbyId) { }
+    private async Task JoinLobby(int lobbyId) { }
 
     private async Task CreateLobby()
     {

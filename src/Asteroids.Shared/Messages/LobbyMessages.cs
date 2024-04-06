@@ -2,7 +2,7 @@
 
 namespace Asteroids.Shared;
 
-public record GameLobby(string Name, string Id, int PlayerCount);
+public record GameLobby(string Name, int Id, int PlayerCount);
 
 public record GetLobbiesMessage(string SessionActorPath, string ConnectionId)
     : HubMessage(ConnectionId, SessionActorPath);
@@ -16,8 +16,12 @@ public record JoinLobbyMessage(string SessionActorPath, string ConnectionId, int
 public record JoinLobbyResponse(string ConnectionId, string SessionActorPath, int LobbyId)
     : HubMessage(ConnectionId, SessionActorPath);
 
-public record CreateLobbyResponse(string ConnectionId, string SessionActorPath, string LobbyName, int LobbyId)
-    : HubMessage(ConnectionId, SessionActorPath);
+public record CreateLobbyResponse(
+    string ConnectionId,
+    string SessionActorPath,
+    string LobbyName,
+    int LobbyId
+) : HubMessage(ConnectionId, SessionActorPath);
 
 public record AllLobbiesResponse(string ConnectionId, string SessionActorPath, GameLobby[] Lobbies)
     : HubMessage(ConnectionId, SessionActorPath);

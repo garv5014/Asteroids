@@ -25,8 +25,14 @@ public class LobbyActor : ReceiveActor
         lobbyName = name;
         lobbyState = LobbyState.WaitingForPlayers;
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
+        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
         // Receive<StartGameMessage>(msg => StartGame(msg));
         // Receive<EndGameMessage>(msg => EndGame(msg));
+    }
+
+    private void GetLobbies(GetLobbiesMessage msg)
+    {
+        var gl = new GameLobby(lobbyName, 0, numberOfPlayers);
     }
 
     private void JoinLobby(JoinLobbyMessage msg)

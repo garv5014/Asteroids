@@ -24,12 +24,14 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     {
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
         _logger.LogInformation("Lobbies query sent to actor");
+        sessionActorRef.Tell(message);
         // More needed here
     }
 
     public Task LobbiesPublish(AllLobbiesResponse message)
     {
-        return Task.CompletedTask;
+        _logger.LogInformation("Sending lobby response to client: {0}", message.ConnectionId);
+        return Clients.All.HandleLobbiesResponse(message);
     }
 
     public async Task CreateLobbyCommand(CreateLobbyMessage message)

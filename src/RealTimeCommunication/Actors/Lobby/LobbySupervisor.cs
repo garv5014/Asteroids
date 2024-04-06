@@ -39,6 +39,32 @@ public class LobbySupervisor : ReceiveActor
             .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
             .ResolveOne(TimeSpan.FromSeconds(3))
             .Result;
+        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
+    }
+
+    private void GetLobbies(GetLobbiesMessage msg)
+    {
+        var lobbiesState = new List<GameLobby>();
+        foreach (var lobby in lobbies)
+        {
+            var gl = _lobbyRelayActor
+                .Ask<GameLobby>(
+                    new GetLobbiesMessage(
+                        SessionActorPath: msg.SessionActorPath,
+                        ConnectionId: msg.ConnectionId
+                    )
+                )
+                .Result;
+            var glId = new GameLobby(gl.Name, lobby.Key, gl.PlayerCount);
+            lobbiesState.Add(glId);
+        }
+        _lobbyRelayActor.Tell(
+            new AllLobbiesResponse(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                Lobbies: lobbiesState.ToArray()
+            )
+        );
     }
 
     private void JoinLobby(JoinLobbyMessage msg)
