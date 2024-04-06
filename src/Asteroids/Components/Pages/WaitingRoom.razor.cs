@@ -37,11 +37,11 @@ public partial class WaitingRoom : ILobbyClient
         await InvokeAsync(StateHasChanged);
     }
 
-    private Task StartGame()
+    private async Task StartGame()
     {
         // Implement this method to start the game
         ToastService.ShowSuccess("Game started!");
-        return Task.CompletedTask;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task GetLobbyState()
@@ -53,7 +53,7 @@ public partial class WaitingRoom : ILobbyClient
             await hubProxy.LobbyStateQuery(
                 new GetLobbyStateMessage(
                     SessionActorPath: actorPath,
-                    ConnectionId: null,
+                    ConnectionId: string.Empty,
                     LobbyId: LobbyId
                 )
             );
@@ -63,6 +63,7 @@ public partial class WaitingRoom : ILobbyClient
             Console.WriteLine($"Exception when requesting lobby state: {ex.Message}");
             // Optionally, handle exceptions (e.g., show a message to the user)
         }
+        await InvokeAsync(StateHasChanged);
     }
 
     public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
