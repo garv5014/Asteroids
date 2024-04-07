@@ -18,15 +18,17 @@ public class LobbyActor : ReceiveActor
     }
     private LobbyStatus lobbyStatus { get; set; }
 
-    private IActorRef LobbyOwner { get; set; }
+    private string LobbyOwner { get; init; }
 
     private readonly ILoggingAdapter _log = Context.GetLogger();
 
     private List<IActorRef> SessionsToUpdate = new List<IActorRef>();
 
-    public LobbyActor(string name)
+    public LobbyActor(string name, string owner)
     {
         lobbyName = name;
+        LobbyOwner = owner;
+        _log.Info("Lobby created with name: {0} and owner {1}", lobbyName, LobbyOwner);
         lobbyStatus = LobbyStatus.WaitingForPlayers;
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
@@ -37,13 +39,18 @@ public class LobbyActor : ReceiveActor
 
     private void GetLobbyState(GetLobbyStateMessage msg)
     {
-        _log.Info("Getting lobby state in Lobby Actor: {0}", Self.Path.Name);
+        _log.Info(
+            "Getting lobby state in Lobby Actor: {0} for user actor {1} here is the owner {2}",
+            Self.Path.Name,
+            msg.SessionActorPath,
+            LobbyOwner
+        );
         Context.Parent.Tell(
             new LobbyStateResponse(
                 ConnectionId: msg.ConnectionId,
                 SessionActorPath: msg.SessionActorPath,
                 CurrentState: new LobbyState(
-                    isOwner: LobbyOwner == Sender,
+                    isOwner: LobbyOwner == msg.SessionActorPath,
                     playerCount: numberOfPlayers,
                     currentStatus: lobbyStatus
                 )
@@ -61,7 +68,6 @@ public class LobbyActor : ReceiveActor
     private void JoinLobby(JoinLobbyMessage msg)
     {
         SessionsToUpdate.Add(Sender); // should be the session Actor.
-        LobbyOwner = Sender;
         _log.Info("Lobby created");
     }
 
@@ -75,8 +81,8 @@ public class LobbyActor : ReceiveActor
         _log.Info("LobbyActor stopped");
     }
 
-    public static Props Props(string LobbyName)
+    public static Props Props(string LobbyName, string LobbyOwner)
     {
-        return Akka.Actor.Props.Create(() => new LobbyActor(LobbyName));
+        return Akka.Actor.Props.Create(() => new LobbyActor(LobbyName, LobbyOwner));
     }
 }

@@ -113,7 +113,7 @@ public class LobbySupervisor : ReceiveActor
         lobbyId++;
 
         var lobbyActor = Context.ActorOf(
-            LobbyActor.Props(msg.LobbyName),
+            LobbyActor.Props(msg.LobbyName, msg.SessionActorPath),
             ActorHelper.SanitizeActorName(msg.LobbyName)
         );
 

@@ -3,7 +3,6 @@ using Akka.Hosting;
 using Asteroids.Shared;
 using Microsoft.AspNetCore.SignalR;
 using RealTimeCommunication.Actors.Session;
-using ILogger = Serilog.ILogger;
 
 namespace RealTimeCommunication;
 
@@ -84,7 +83,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
         var lsm = new GetLobbyStateMessage(
             SessionActorPath: message.SessionActorPath,
-            ConnectionId: message.ConnectionId,
+            ConnectionId: Context.ConnectionId,
             LobbyId: message.LobbyId
         );
         sessionActorRef.Tell(lsm);
@@ -93,9 +92,10 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     public Task LobbyStatePublish(LobbyStateResponse response)
     {
         _logger.LogInformation(
-            "Sending {0} response to client : {1}",
+            "Sending {0} response to client : {1} Is owner is {2}",
             nameof(LobbyStateResponse),
-            response.ConnectionId
+            response.ConnectionId,
+            response.CurrentState.IsOwner
         );
         return Clients.Client(response.ConnectionId).HandleLobbyStateResponse(response);
     }

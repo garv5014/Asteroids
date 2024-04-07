@@ -5,12 +5,16 @@
 @inject IToastService ToastService
 
 
-<p>WaitingRoom for LobbyId: @LobbyId</p>
-
 @if (lobbyState != null)
 {
+  <h1>WaitingRoom please wait</h1>
+
   @if (lobbyState.IsOwner)
   {
-    <button @onclick="StartGame">Start Game</button>
+    <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
   }
+}
+else
+{
+  <h1>Loading WaitingRoom Information </h1>
 }

@@ -81,9 +81,9 @@ public partial class WaitingRoom : ILobbyClient
         return Task.CompletedTask;
     }
 
-    public Task HandleLobbyStateResponse(LobbyStateResponse message)
+    public async Task HandleLobbyStateResponse(LobbyStateResponse message)
     {
         lobbyState = message.CurrentState;
-        return Task.CompletedTask;
+        await InvokeAsync(StateHasChanged);
     }
 }
