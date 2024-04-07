@@ -9,6 +9,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
+var raftConnection = new RaftConnectionOptions();
+builder.Configuration.GetRequiredSection(nameof(RaftConnectionOptions)).Bind(raftConnection);
+builder.Services.AddSingleton(raftConnection);
+builder.Services.AddHttpClient(
+    "Raft",
+    client =>
+        client.BaseAddress = new Uri(
+            builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
+                ?? throw new InvalidOperationException("GatewayUrl address not found.")
+        )
+);
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft"));
 
 builder.AddObservability();
 
