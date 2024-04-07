@@ -59,7 +59,14 @@ public class LobbySupervisor : ReceiveActor
 
     private void GetLobbies(GetLobbiesMessage msg)
     {
+        _log.Info($"{nameof(LobbySupervisor)}Getting lobbies in ");
+        GettingLobbyStates(msg).PipeTo(_lobbyRelayActor);
+    }
+
+    private Task<AllLobbiesResponse> GettingLobbyStates(GetLobbiesMessage msg)
+    {
         var lobbiesState = new List<GameLobby>();
+
         foreach (var lobby in idToActorRef)
         {
             var gl = lobby
@@ -74,8 +81,8 @@ public class LobbySupervisor : ReceiveActor
             _log.Info("Lobby: {0}", glId);
             lobbiesState.Add(glId);
         }
-        _log.Info("There are {0} lobbies", lobbiesState.Count);
-        _lobbyRelayActor.Tell(
+
+        return Task.FromResult(
             new AllLobbiesResponse(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
