@@ -1,19 +1,20 @@
 ﻿using Akka.Actor;
 using Akka.Event;
+using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication;
 
 public class RaftActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();
-    private readonly HttpClient raftClient;
+    private readonly AsteroidsPersistanceService _persistenceService;
 
-    public RaftActor(HttpClient raftGatewayClient)
+    public RaftActor(IServiceProvider serviceProvider)
     {
         // Make a http client to send requests to gateway
         // Send a request to the gateway
+        _persistenceService = serviceProvider.GetRequiredService<AsteroidsPersistanceService>();
         Receive<CompareAndSwapMessage<string>>(msg => CompareAndSwap(msg));
-        this.raftClient = raftGatewayClient;
     }
 
     private void CompareAndSwap(CompareAndSwapMessage<string> msg)
@@ -33,9 +34,9 @@ public class RaftActor : ReceiveActor
         _log.Info("RaftActor stopped");
     }
 
-    public static Props Props(HttpClient raftGatewayClient)
+    public static Props Props(IServiceProvider serviceProvider)
     {
-        return Akka.Actor.Props.Create(() => new RaftActor(raftGatewayClient));
+        return Akka.Actor.Props.Create(() => new RaftActor(serviceProvider));
     }
 }
 

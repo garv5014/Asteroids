@@ -1,5 +1,8 @@
 using Akka.Hosting;
+using Asteroids.Shared.Services;
 using Observability;
+using Raft_Library.Gateway.shared;
+using Raft_Library.Shop.shared.Services;
 using RealTimeCommunication;
 using RealTimeCommunication.Actors.Hub;
 using RealTimeCommunication.Actors.Session;
@@ -22,6 +25,8 @@ builder.Services.AddHttpClient(
 );
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft"));
+builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
+builder.Services.AddScoped<IAsteroidPersistence, AsteroidsPersistanceService>();
 
 builder.AddObservability();
 
