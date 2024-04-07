@@ -2,6 +2,7 @@
 using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
+using Npgsql.Replication;
 
 namespace RealTimeCommunication.Actors.Session;
 
@@ -15,43 +16,49 @@ public class SessionSupervisor : ReceiveActor
     // Make a list of session actors
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _accountRelayActor;
+    private readonly IActorRef? testProbe;
 
     private Dictionary<string, IActorRef> _sessions = new();
 
-    public SessionSupervisor()
+    public SessionSupervisor(IActorRef? testProbe = null)
     {
         _log.Info("SessionSupervisor created");
-        _accountRelayActor = Context
-            .ActorSelection($"/user/{ActorHelper.AccountRelayActorName}")
-            .ResolveOne(TimeSpan.FromSeconds(3))
-            .Result;
+
+        if (testProbe != null)
+        {
+            _accountRelayActor = testProbe;
+            this.testProbe = testProbe;
+        }
+        else
+        {
+            _accountRelayActor = Context
+                .ActorSelection($"/user/{ActorHelper.AccountRelayActorName}")
+                .ResolveOne(TimeSpan.FromSeconds(3))
+                .Result;
+        }
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
-        Receive<JoinLobbyResponse>(jlr => JoinLobbyResponse(jlr));
-    }
-
-    private void JoinLobbyResponse(JoinLobbyResponse jlr)
-    {
-        throw new NotImplementedException();
     }
 
     private void CreateAccountMessage(LoginMessage lm)
     {
         _log.Info("User {0} already exists", lm.User);
-        _accountRelayActor.Tell(
-            new LoginResponseMessage(
-                lm.ConnectionId,
-                false,
-                "Failed To log in",
-                lm.SessionActorPath
-            )
-        );
         // Create the user
         _log.Info("Creating user {0}", lm.User);
-        var session = Context.ActorOf(
-            SessionActor.Props(lm.User, lm.ConnectionId),
-            Guid.NewGuid().ToString()
-        );
+
+        IActorRef session;
+
+        if (testProbe != null)
+        {
+            session = testProbe;
+        }
+        else
+        {
+            session = Context.ActorOf(
+                SessionActor.Props(lm.User, lm.ConnectionId),
+                Guid.NewGuid().ToString()
+            );
+        }
         _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(
             new LoginResponseMessage(
@@ -70,8 +77,8 @@ public class SessionSupervisor : ReceiveActor
         Sender.Tell(new GetUserSessionResponse(actor));
     }
 
-    public static Props Props()
+    public static Props Props(IActorRef? testProbe = null)
     {
-        return Akka.Actor.Props.Create(() => new SessionSupervisor());
+        return Akka.Actor.Props.Create(() => new SessionSupervisor(testProbe));
     }
 }

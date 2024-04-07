@@ -19,14 +19,22 @@ public class LobbySupervisor : ReceiveActor
 
     private IActorRef _lobbyRelayActor;
 
-    public LobbySupervisor()
+    public LobbySupervisor(IActorRef testRelayActorRef = null)
     {
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
-        _lobbyRelayActor = Context
-            .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
-            .ResolveOne(TimeSpan.FromSeconds(3))
-            .Result;
+
+        if (testRelayActorRef != null)
+        {
+            _lobbyRelayActor = testRelayActorRef;
+        }
+        else
+        {
+            _lobbyRelayActor = Context
+                .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
+                .ResolveOne(TimeSpan.FromSeconds(3))
+                .Result;
+        }
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
         Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
         Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
@@ -150,8 +158,8 @@ public class LobbySupervisor : ReceiveActor
         _log.Info("LobbySupervisor stopped");
     }
 
-    public static Props Props()
+    public static Props Props(IActorRef actorRef = null)
     {
-        return Akka.Actor.Props.Create(() => new LobbySupervisor());
+        return Akka.Actor.Props.Create(() => new LobbySupervisor(actorRef));
     }
 }
