@@ -1,4 +1,4 @@
-name: Dotnet Format
+name: test
 
 on:
   workflow_dispatch:
