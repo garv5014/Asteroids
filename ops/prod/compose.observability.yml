@@ -29,7 +29,7 @@ services:
     environment:
       - config.file=/etc/prometheus/prometheus.yml
     volumes:
-      - ../../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - ../../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yaml
 
   loki:
     container_name: GD_Loki
