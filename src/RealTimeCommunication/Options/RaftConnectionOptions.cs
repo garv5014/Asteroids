@@ -2,5 +2,5 @@
 
 public class RaftConnectionOptions
 {
-  public string GatewayUrl { get; set; }
+    public string GatewayUrl { get; set; }
 }
