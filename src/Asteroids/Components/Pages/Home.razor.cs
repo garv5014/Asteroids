@@ -27,7 +27,7 @@ public partial class Home : IAccountClient
         connection.ClientRegistration<IAccountClient>(this);
         await connection.StartAsync();
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     public async Task HandleLoginResponse(LoginResponseMessage message)
@@ -50,8 +50,6 @@ public partial class Home : IAccountClient
 
     public void Login()
     {
-        hubProxy.LoginCommand(
-            new LoginMessage(username, password, connection.ConnectionId, null)
-        );
+        hubProxy.LoginCommand(new LoginMessage(username, password, connection.ConnectionId, null));
     }
 }

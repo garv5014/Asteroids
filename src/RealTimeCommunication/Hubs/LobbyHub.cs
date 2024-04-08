@@ -11,14 +11,13 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     private ILogger<LobbyHub> _logger;
     private IActorRef sessionSupervisor;
     private IActorRef lobbySupervisor;
-    public static string UrlPath = "/ws/lobbyHub";
-    public static string FullUrl = $"http://nginx:80{UrlPath}";
+    public static string UrlPath = "/lobbyHub";
+    public static string FullUrl = $"http://realtime:8080{UrlPath}";
 
     public LobbyHub(ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
     {
         _logger = logger;
         sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
-        lobbySupervisor = actorRegistry.Get<LobbySupervisor>();
     }
 
     public async Task LobbiesQuery(GetLobbiesMessage message)
@@ -126,4 +125,3 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         return res.LobbyActorRef;
     }
 }
-
