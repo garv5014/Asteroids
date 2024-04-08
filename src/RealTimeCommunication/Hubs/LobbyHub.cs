@@ -10,8 +10,8 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 {
     private ILogger<LobbyHub> _logger;
     private IActorRef sessionSupervisor;
-    public static string UrlPath = "/ws/lobbyHub";
-    public static string FullUrl = $"http://nginx:80{UrlPath}";
+    public static string UrlPath = "/lobbyHub";
+    public static string FullUrl = $"http://realtime:8080{UrlPath}";
 
     public LobbyHub(ILogger<LobbyHub> logger, ActorRegistry actorRegistry)
     {
