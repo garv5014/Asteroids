@@ -1,5 +1,6 @@
 include:
   - compose.observability.yml
+  - compose.raft.yml
 
 version: '3.9'
 
