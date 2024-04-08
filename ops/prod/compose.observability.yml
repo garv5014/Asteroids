@@ -14,7 +14,7 @@ services:
     # - 4317:4317 # OTLP gRPC receiver
     # - 4318:4318 # OTLP http receiver
     volumes:
-      - ../../shared/config-files/otel-collector.yaml:/etc/otel-collector.yaml
+      - ./../shared/config-files/otel-collector.yaml:/etc/otel-collector.yaml
     depends_on:
       - tempo
       - prometheus
@@ -29,7 +29,7 @@ services:
     environment:
       - config.file=/etc/prometheus/prometheus.yml
     volumes:
-      - ../../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yaml
 
   loki:
     container_name: GD_Loki
@@ -40,10 +40,10 @@ services:
     container_name: GD_Grafana
     image: grafana/grafana:latest
     volumes:
-      - ../../shared/config-files/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-      - ../../shared/config-files/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/default.yaml
-      - ../../shared/dashboards:/var/lib/grafana/dashboards
-      - ../../shared/config-files/grafana.ini:/etc/grafana/grafana.ini
+      - ./../shared/config-files/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./../shared/config-files/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/default.yaml
+      - ./../shared/dashboards:/var/lib/grafana/dashboards
+      - ./../shared/config-files/grafana.ini:/etc/grafana/grafana.ini
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -62,4 +62,4 @@ services:
     # - "3200:3200" # tempo
     # - "4317" # otlp grpc
     volumes:
-      - ../../shared/config-files/tempo.yaml:/etc/tempo.yaml
+      - ./../shared/config-files/tempo.yaml:/etc/tempo.yaml
