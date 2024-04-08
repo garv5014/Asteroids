@@ -64,6 +64,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
 app.MapHub<AccountHub>("/accountHub");
 app.MapHub<LobbyHub>("/lobbyHub");
 app.Run();
