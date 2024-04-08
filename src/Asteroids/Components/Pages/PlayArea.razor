@@ -1,0 +1,22 @@
+@using Asteroids.Components.Sprites
+
+<div class="play-area">
+    @foreach (var ship in Ships)
+    {
+        <ShipComponent XCoordinate="@ship.XCoordinate" YCoordinate="@ship.YCoordinate" Rotation="@ship.Rotation" />
+    }
+    
+    @foreach (var asteroid in Asteroids)
+    {
+        <AsteroidComponent XCoordinate="@asteroid.XCoordinate" YCoordinate="@asteroid.YCoordinate" Rotation="@asteroid.Rotation" Size="@asteroid.Size" />
+    }
+</div>
+
+<style>
+    .play-area {
+        position: relative;
+        width: 100%;
+        height: 600px;
+        background-color: #000;
+    }
+</style>

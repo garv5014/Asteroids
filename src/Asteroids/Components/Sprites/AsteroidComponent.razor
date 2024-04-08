@@ -1,0 +1,40 @@
+@using System.Drawing
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+  [Parameter]
+  public int XCoordinate { get; set; }
+
+  [Parameter]
+  public int YCoordinate { get; set; }
+
+  [Parameter]
+  public int Rotation { get; set; }
+
+  [Parameter]
+  public int Size { get; set; }
+
+  private string GetTransformStyle()
+  {
+    var transform = $"translate({XCoordinate}px, {YCoordinate}px) rotate({Rotation}deg)";
+    return transform;
+  }
+
+  private string GetSizeStyle()
+  {
+    return $"width: {Size}px; height: {Size}px;";
+  }
+}
+
+<div class="asteroid" style="@($"{GetTransformStyle()}; {GetSizeStyle()}")">
+  &#9679;
+</div>
+
+<style>
+    .asteroid {
+        position: absolute;
+        font-size: 1rem;
+        text-align: center;
+        transition: transform 0.1s linear;
+    }
+</style>

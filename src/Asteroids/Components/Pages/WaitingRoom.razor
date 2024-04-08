@@ -1,4 +1,5 @@
 ﻿@page "/waitingroom/{LobbyId:int}"
+@using Asteroids.Shared.GameEntities
 @inject NavigationManager NavigationManager
 @inject SignalREnv signalREnv
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
@@ -7,11 +8,18 @@
 
 @if (lobbyState != null)
 {
-  <h1>WaitingRoom please wait</h1>
-
-  @if (lobbyState.IsOwner)
+  @if (lobbyState.CurrentStatus == LobbyStatus.InGame)
   {
-    <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
+    <PlayArea/>
+  }
+  else
+  {
+    <h1>WaitingRoom please wait</h1>
+
+    @if (lobbyState.IsOwner)
+    {
+      <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
+    }
   }
 }
 else

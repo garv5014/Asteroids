@@ -1,0 +1,28 @@
+@code {
+  [Parameter]
+  public int XCoordinate { get; set; }
+
+  [Parameter]
+  public int YCoordinate { get; set; }
+
+  [Parameter]
+  public int Rotation { get; set; } // Rotation in degrees
+
+  private string GetTransformStyle()
+  {
+    var transform = $"translate({XCoordinate}px, {YCoordinate}px) rotate({Rotation}deg)";
+    return transform;
+  }
+}
+
+<div class="ship" style="@($"transform: {GetTransformStyle()};")">
+  &#9650;
+</div>
+
+<style>
+    .ship {
+        position: absolute;
+        text-align: center;
+        transition: transform 0.1s linear;
+    }
+</style>

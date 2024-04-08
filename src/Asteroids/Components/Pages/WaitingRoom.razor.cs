@@ -41,6 +41,9 @@ public partial class WaitingRoom : ILobbyClient
     {
         // Implement this method to start the game
         ToastService.ShowSuccess("Game started!");
+        
+        NavigationManager.NavigateTo($"/playarea/{LobbyId}");
+        
         await InvokeAsync(StateHasChanged);
     }
 
