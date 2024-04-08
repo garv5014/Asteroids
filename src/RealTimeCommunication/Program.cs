@@ -26,7 +26,7 @@ builder.Services.AddHttpClient(
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft"));
 builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
-builder.Services.AddScoped<IAsteroidPersistence, AsteroidsPersistanceService>();
+builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
 
 builder.AddObservability();
 
