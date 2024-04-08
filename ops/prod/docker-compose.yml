@@ -1,0 +1,55 @@
+include:
+  - compose.observability.yml
+
+version: '3.9'
+
+services:
+
+  swag:
+    container_name: GD_asteroids_swag
+    image: lscr.io/linuxserver/swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Denver
+      - URL={update}.duckdns.org
+      - VALIDATION=duckdns
+      - DUCKDNSTOKEN=${DUCKDNSTOKEN}
+      - STAGING=false
+    volumes:
+      - /home/caleb/data/swag:/config
+      - ./swag-default.conf:/config/nginx/site-confs/default.conf
+    ports:
+      - 0.0.0.0:{add}:443
+    restart: unless-stopped
+
+  realtime:
+    container_name: GD_asteroids_realtime
+    build:
+      context: ./src/
+      dockerfile: ./RealTimeCommunication/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ObservabilityOptions__ServiceName: "Websockets"
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      RaftConnectionOptions__GatewayUrl: http://gateway:8080
+      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
+      TZ: America/Denver
+
+  asteroid-client:
+    container_name: GD_asteroids_client
+    build:
+      context: ./src/
+      dockerfile: ./Asteroids/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      SignalREnv__AccountHubUrl: http://nginx:80/ws/accountHub
+      SignalREnv__LobbyHubUrl: http://nginx:80/ws/lobbyHub
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      ObservabilityOptions__ServiceName: "AsteroidClient"
+      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
+      TZ: America/Denver

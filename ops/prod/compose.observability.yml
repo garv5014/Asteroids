@@ -2,24 +2,26 @@ include:
 
 services:
   collector:
-  image: otel/opentelemetry-collector-contrib:latest
-  command: [ "--config=/etc/otel-collector.yaml" ]
-  # ports:
-  # - 1888:1888 # pprof extension
-  # - 13133:13133 # health_check extension
-  # - 55679:55679 # zpages extension
-  # - 8888:8888 # Prometheus metrics exposed by the collector
-  # - 8889:8889 # Prometheus exporter metrics
-  # - 4317:4317 # OTLP gRPC receiver
-  # - 4318:4318 # OTLP http receiver
-  volumes:
-    - ../../shared/config-files/otel-collector.yaml:/etc/otel-collector.yaml
-  depends_on:
-    - tempo
-    - prometheus
-    - loki
+    container_name: GD_Collector
+    image: otel/opentelemetry-collector-contrib:latest
+    command: [ "--config=/etc/otel-collector.yaml" ]
+    # ports:
+    # - 1888:1888 # pprof extension
+    # - 13133:13133 # health_check extension
+    # - 55679:55679 # zpages extension
+    # - 8888:8888 # Prometheus metrics exposed by the collector
+    # - 8889:8889 # Prometheus exporter metrics
+    # - 4317:4317 # OTLP gRPC receiver
+    # - 4318:4318 # OTLP http receiver
+    volumes:
+      - ../../shared/config-files/otel-collector.yaml:/etc/otel-collector.yaml
+    depends_on:
+      - tempo
+      - prometheus
+      - loki
 
   prometheus:
+    container_name: Gd_Prometheus
     image: prom/prometheus:latest
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -30,10 +32,12 @@ services:
       - ../../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yml
 
   loki:
+    container_name: GD_Loki
     image: grafana/loki:latest
     command: [ "-config.file=/etc/loki/local-config.yaml" ]
 
   grafana:
+    container_name: GD_Grafana
     image: grafana/grafana:latest
     volumes:
       - ../../shared/config-files/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
@@ -51,6 +55,7 @@ services:
       - collector
 
   tempo:
+    container_name: GD_Tempo
     image: grafana/tempo:latest
     command: [ "-config.file=/etc/tempo.yaml" ]
     # ports:
