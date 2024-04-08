@@ -12,7 +12,7 @@ public class AccountHub : Hub<IAccountClient>, IAccountHub
     private readonly IActorRef sessionSupervisor;
     private readonly ILogger<AccountHub> _logger;
     public static string UrlPath = "/accountHub";
-    public static string FullUrl = $"http://realtime:80{UrlPath}";
+    public static string FullUrl = $"http://realtime:8080{UrlPath}";
 
     public AccountHub(ILogger<AccountHub> logger, ActorRegistry actorRegistry)
     {
