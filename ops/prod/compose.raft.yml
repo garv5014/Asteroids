@@ -1,6 +1,6 @@
 x-node_base: &node_base
   build:
-    context: ./../src/
+    context: ./../../src/
     dockerfile: ./Raft_Node/Dockerfile
 
 x-node-environment: &node-environment
@@ -16,7 +16,7 @@ x-node-environment: &node-environment
 services:
   gateway:
     build:
-      context: ./../src/
+      context: ./../../src/
       dockerfile: ./Raft_Gateway/Dockerfile
     environment:
       ApiOptions__NodeCount: 3

@@ -27,7 +27,7 @@ services:
   realtime:
     container_name: GD_asteroids_realtime
     build:
-      context: ../src/
+      context: ./../../src/
       dockerfile: ./RealTimeCommunication/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
@@ -41,7 +41,7 @@ services:
   asteroid-client:
     container_name: GD_asteroids_client
     build:
-      context: ../src/
+      context: ./../../src/
       dockerfile: ./Asteroids/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
