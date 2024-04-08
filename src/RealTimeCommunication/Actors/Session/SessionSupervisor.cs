@@ -1,8 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Event;
-using Asteroids.Shared;
 using Asteroids.Shared.Messages;
-using Npgsql.Replication;
 
 namespace RealTimeCommunication.Actors.Session;
 
