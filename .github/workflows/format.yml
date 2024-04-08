@@ -13,6 +13,6 @@ jobs:
             with:
              dotnet-version: 8.0.x
           - name: Restore dependencies
-            run: dotnet restore ./src/Asteroids.sln 
+            run: dotnet restore ./Asteroids.sln 
           - name: Format
-            run: dotnet format ./src/Asteroids.sln --verify-no-changes --verbosity diagnostic    
+            run: dotnet format ./Asteroids.sln --verify-no-changes --verbosity diagnostic    
