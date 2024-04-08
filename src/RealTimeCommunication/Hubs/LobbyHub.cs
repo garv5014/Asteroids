@@ -10,6 +10,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 {
     private ILogger<LobbyHub> _logger;
     private IActorRef sessionSupervisor;
+    private IActorRef lobbySupervisor;
     public static string UrlPath = "/ws/lobbyHub";
     public static string FullUrl = $"http://nginx:80{UrlPath}";
 
@@ -17,6 +18,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     {
         _logger = logger;
         sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
+        lobbySupervisor = actorRegistry.Get<LobbySupervisor>();
     }
 
     public async Task LobbiesQuery(GetLobbiesMessage message)
@@ -100,8 +102,28 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         return Clients.Client(response.ConnectionId).HandleLobbyStateResponse(response);
     }
 
-    public Task UpdateLobbyStateCommand(UpdateLobbyMessage message)
+    public async Task UpdateLobbyStateCommand(UpdateLobbyMessage message)
     {
-        throw new NotImplementedException();
+        _logger.LogInformation("Update lobby state command received");
+        
+        var mes = new UpdateLobbyMessage(
+            SessionActorPath: message.SessionActorPath,
+            ConnectionId: Context.ConnectionId,
+            LobbyId: message.LobbyId,
+            CurrentStatus: message.CurrentStatus
+        );
+        
+        var lobbyActorRef = await GetLobbyById(message.LobbyId);
+        lobbyActorRef.Tell(mes);
+    }
+    
+    private async Task<IActorRef> GetLobbyById(int lobbyId)
+    {
+        _logger.LogInformation("Getting lobby id");
+        var res = await lobbySupervisor.Ask<GetLobbyResponse>(
+            new GetLobbyMessage(LobbyId: lobbyId)
+        );
+        return res.LobbyActorRef;
     }
 }
+
