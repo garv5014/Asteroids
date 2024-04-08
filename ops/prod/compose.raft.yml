@@ -1,0 +1,65 @@
+include:
+  - ./ops/dev/observability/docker-compose.yml
+  # - ./ops/dev/raft/docker-compose.yml
+
+services:
+  nginx:
+    depends_on:
+      - asteroid-client
+      - grafana
+    build:
+      context: ./ops/dev/
+      dockerfile: nginx.Dockerfile
+    ports:
+      - "3001:80"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ops/dev/nginx.conf
+          target: /etc/nginx/conf.d/default.conf
+
+  realtime:
+    build:
+      context: ./src/
+      dockerfile: ./RealTimeCommunication/Dockerfile
+      target: development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ObservabilityOptions__ServiceName: "Websockets"
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      RaftConnectionOptions__GatewayUrl: http://gateway:8080
+      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
+      TZ: America/Denver
+    <<: *dotnet_sync
+
+  asteroid-client:
+    build:
+      context: ./src/
+      dockerfile: ./Asteroids/Dockerfile
+      target: development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      SignalREnv__AccountHubUrl: http://nginx:80/ws/accountHub
+      SignalREnv__LobbyHubUrl: http://nginx:80/ws/lobbyHub
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      ObservabilityOptions__ServiceName: "AsteroidClient"
+      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
+      TZ: America/Denver
+    <<: *dotnet_sync
+
+  gateway:
+    build:
+      context: ./src/
+      dockerfile: ./Raft_Gateway/Dockerfile
+      target: development
+    environment:
+      ApiOptions__NodeCount: 3
+      ApiOptions__NodeServiceName: gateway
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ObservabilityOptions__ServiceName: "gateway"
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      TZ: America/Denver
+    <<: *dotnet_sync
