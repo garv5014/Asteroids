@@ -118,10 +118,10 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     
     private async Task<IActorRef> GetLobbyById(int lobbyId)
     {
-        _logger.LogInformation("Getting lobby id");
+        _logger.LogInformation("Getting lobby id {lobbyId}", lobbyId);
         var res = await lobbySupervisor.Ask<GetLobbyResponse>(
             new GetLobbyMessage(LobbyId: lobbyId)
         );
         return res.LobbyActorRef;
     }
-}
+}   
