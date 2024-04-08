@@ -3,6 +3,7 @@ name: Deploy
 env:
   DUCKDNSTOKEN: ${{ secrets.DUCKDNSTOKEN }}
 
+
 on:
   push:
     branches:
