@@ -18,7 +18,7 @@ services:
       - DUCKDNSTOKEN=${DUCKDNSTOKEN}
       - STAGING=false
     volumes:
-      - /home/caleb/data/swag:/config
+      - /home/garrett/data/swag:/config
       - ./swag-default.conf:/config/nginx/site-confs/default.conf
     ports:
       - 0.0.0.0:4325:443
