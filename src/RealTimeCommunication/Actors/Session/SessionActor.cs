@@ -17,10 +17,9 @@ public class SessionActor : ReceiveActor
 
     private readonly IActorRef lobbySupervisor;
 
-    public SessionActor(string username, string connectionId)
+    public SessionActor(string username)
     {
         this.username = username;
-        this.connectionId = connectionId;
         lobbySupervisor = Context
             .ActorSelection($"/user/{ActorHelper.LobbySupervisorName}")
             .ResolveOne(TimeSpan.FromSeconds(3))
@@ -66,9 +65,9 @@ public class SessionActor : ReceiveActor
         lobbySupervisor.Tell(msg);
     }
 
-    public static Props Props(string username, string connectionId)
+    public static Props Props(string username)
     {
-        return Akka.Actor.Props.Create<SessionActor>(username, connectionId);
+        return Akka.Actor.Props.Create<SessionActor>(username);
     }
 }
 

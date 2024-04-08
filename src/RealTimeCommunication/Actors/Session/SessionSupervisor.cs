@@ -54,10 +54,7 @@ public class SessionSupervisor : ReceiveActor
         }
         else
         {
-            session = Context.ActorOf(
-                SessionActor.Props(lm.User, lm.ConnectionId),
-                Guid.NewGuid().ToString()
-            );
+            session = Context.ActorOf(SessionActor.Props(lm.User), Guid.NewGuid().ToString());
         }
         _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(

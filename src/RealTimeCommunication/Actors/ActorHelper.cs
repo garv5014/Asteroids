@@ -4,6 +4,12 @@ namespace RealTimeCommunication;
 
 public static class ActorHelper
 {
+    public static string GetActorNameFromPath(string path)
+    {
+        var actorName = path.Split('/').Last();
+        return actorName;
+    }
+
     public static string SanitizeActorName(string input) //chat gpt
     {
         if (string.IsNullOrWhiteSpace(input))
