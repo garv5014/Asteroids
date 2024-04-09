@@ -1,7 +1,7 @@
 @using Asteroids.Components.Sprites
 @using Asteroids.Shared.GameEntities
-
-<div class="play-area">
+@inject IToastService ToastService
+<div class="play-area" tabindex="0" @onkeydown="@Keydown">
     @foreach (var ship in State.Ships)
     {
         <ShipComponent XCoordinate="@ship.XCoordinate" YCoordinate="@ship.YCoordinate" Rotation="@ship.Rotation" />
@@ -21,6 +21,10 @@
         height: 600px;
         background-color: #000;
     }
+
+    .play-area:focus {
+        border-color: #fa0202;
+    }
 </style>
 
 @code {
@@ -31,5 +35,10 @@
     {
         Console.WriteLine("Initialized");
         Console.WriteLine($"The number of ships is {State.Ships.Count}");
+    }
+
+    private void Keydown()
+    {
+        ToastService.ShowSuccess("Keydown");
     }
 }
