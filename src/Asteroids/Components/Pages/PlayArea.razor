@@ -26,4 +26,10 @@
 @code {
     [Parameter]
     public LobbyState State { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("Initialized");
+        Console.WriteLine($"The number of ships is {State.Ships.Count}");
+    }
 }
