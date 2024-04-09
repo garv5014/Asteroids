@@ -110,7 +110,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             SessionActorPath: message.SessionActorPath,
             ConnectionId: Context.ConnectionId,
             LobbyId: message.LobbyId,
-            CurrentStatus: message.CurrentStatus
+            NewStatus: message.NewStatus
         );
 
         var lobbyActorRef = await GetLobbyById(message.LobbyId);

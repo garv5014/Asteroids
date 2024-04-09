@@ -44,7 +44,7 @@ public record UpdateLobbyMessage(
     string ConnectionId,
     string SessionActorPath,
     int LobbyId,
-    LobbyStatus CurrentStatus
+    LobbyStatus NewStatus
 ) : HubMessage(ConnectionId, SessionActorPath);
 
 // update lobby state response params: updated state

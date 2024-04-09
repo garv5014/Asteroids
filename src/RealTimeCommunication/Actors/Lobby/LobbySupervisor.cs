@@ -27,6 +27,10 @@ public class LobbySupervisor : ReceiveActor
         Receive<CreateLobbyMessage>(CreateLobby);
         Receive<JoinLobbyMessage>(JoinLobby);
         Receive<UpdateLobbyMessage>(UpdateLobby);
+        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
+        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
+        Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
+        Receive<GetLobbyMessage>(msg => HandleGetLobbyMessage(msg));
 
         if (testRelayActorRef != null)
         {
@@ -39,10 +43,17 @@ public class LobbySupervisor : ReceiveActor
                 .ResolveOne(TimeSpan.FromSeconds(3))
                 .Result;
         }
+    }
 
-        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
-        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
-        Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
+    private void HandleGetLobbyMessage(GetLobbyMessage msg)
+    {
+        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        {
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            return;
+        }
+
+        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor));
     }
 
     private void UpdateLobby(UpdateLobbyMessage msg)

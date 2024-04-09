@@ -1,14 +1,16 @@
 @using Asteroids.Components.Sprites
+@using Asteroids.Shared.GameEntities
 
 <div class="play-area">
-    @foreach (var ship in Ships)
+    @foreach (var ship in State.Ships)
     {
         <ShipComponent XCoordinate="@ship.XCoordinate" YCoordinate="@ship.YCoordinate" Rotation="@ship.Rotation" />
     }
-    
-    @foreach (var asteroid in Asteroids)
+
+    @foreach (var asteroid in State.Asteroids)
     {
-        <AsteroidComponent XCoordinate="@asteroid.XCoordinate" YCoordinate="@asteroid.YCoordinate" Rotation="@asteroid.Rotation" Size="@asteroid.Size" />
+        <AsteroidComponent XCoordinate="@asteroid.XCoordinate" YCoordinate="@asteroid.YCoordinate"
+            Rotation="@asteroid.Rotation" Size="@asteroid.Size" />
     }
 </div>
 
@@ -20,3 +22,8 @@
         background-color: #000;
     }
 </style>
+
+@code {
+    [Parameter]
+    public LobbyState State { get; set; }
+}
