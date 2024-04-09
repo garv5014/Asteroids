@@ -1,7 +1,7 @@
 @using Asteroids.Components.Sprites
 @using Asteroids.Shared.GameEntities
 @inject IToastService ToastService
-<div class="play-area" tabindex="0" @onkeydown="@Keydown">
+<div class="play-area" tabindex="0" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp">
     @foreach (var ship in State.Ships)
     {
         <ShipComponent XCoordinate="@ship.XCoordinate" YCoordinate="@ship.YCoordinate" Rotation="@ship.Rotation" />
@@ -37,8 +37,25 @@
         Console.WriteLine($"The number of ships is {State.Ships.Count}");
     }
 
-    private void Keydown()
+    private void HandleKeyDown(KeyboardEventArgs e)
     {
-        ToastService.ShowSuccess("Keydown");
+        if (string.Equals(e.Key, "w", StringComparison.OrdinalIgnoreCase))
+        {
+            // Logic for when the "W" key is pressed
+            ToastService.ShowSuccess("W Key Pressed");
+
+            // Implement your movement or action logic here
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (string.Equals(e.Key, "w", StringComparison.OrdinalIgnoreCase))
+        {
+            // Logic for when the "W" key is released
+            ToastService.ShowSuccess("W Key Released");
+
+            // Implement your movement or action logic here
+        }
     }
 }

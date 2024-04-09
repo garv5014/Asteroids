@@ -27,6 +27,7 @@ public class LobbyActor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
 
     private List<IActorRef> SessionsToUpdate = new List<IActorRef>();
+    private Dictionary<string, Ship> Ships = new Dictionary<string, Ship>();
 
     public LobbyActor(string name, string owner)
     {
