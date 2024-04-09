@@ -31,7 +31,10 @@
     [Parameter]
     public LobbyState State { get; set; }
     [Parameter]
-    public EventCallback<UpdateShipParams> EventCallback { get; set; }
+    public EventCallback<HashSet<string>> EventCallback { get; set; }
+
+    private string[] _movementKeys = ["w", "a", "d"];
+    private HashSet<string> _pressedKeys = [];
 
     protected override void OnInitialized()
     {
@@ -41,17 +44,17 @@
 
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        EventCallback.InvokeAsync(new UpdateShipParams (e.Key == "w", e.Key == "a", e.Key == "d"));
+        if (_movementKeys.Contains(e.Key))
+        {
+            _pressedKeys.Add(e.Key);
+        }
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)
     {
-        if (string.Equals(e.Key, "w", StringComparison.OrdinalIgnoreCase))
+        if (_movementKeys.Contains(e.Key))
         {
-            // Logic for when the "W" key is released
-            ToastService.ShowSuccess("W Key Released");
-
-            // Implement your movement or action logic here
+            _pressedKeys.Remove(e.Key);
         }
     }
 }

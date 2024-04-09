@@ -1,6 +1,7 @@
 using Akka.Actor;
 using Akka.Hosting;
 using Asteroids.Shared;
+using Asteroids.Shared.Messages;
 using Microsoft.AspNetCore.SignalR;
 using RealTimeCommunication.Actors.Session;
 
@@ -115,6 +116,12 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
         var lobbyActorRef = await GetLobbyById(message.LobbyId);
         lobbyActorRef.Tell(mes);
+    }
+
+    public Task UpdateShipCommand(UpdateShipMessage message)
+    {
+        _logger.LogInformation("Update ship command received");
+        return Task.CompletedTask;
     }
 
     private async Task<IActorRef> GetLobbyById(int lobbyId)

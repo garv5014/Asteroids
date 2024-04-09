@@ -18,7 +18,7 @@ public partial class WaitingRoom : ILobbyClient
     private LobbyState lobbyState;
     private Timer timer;
     private Ship localPlayer;
-    private UpdateShipParams shipParams;
+    private HashSet<string> pressedKeys;
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,18 +94,22 @@ public partial class WaitingRoom : ILobbyClient
 
     private async void PublishClientState(object? sender, ElapsedEventArgs e)
     {
+        var thrust = pressedKeys.Contains("w");
+        var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
+        var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
+        
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,
                 SessionActorPath: string.Empty,
-                ShipParams: new UpdateShipParams(false, false, false)
+                ShipParams: new UpdateShipParams(thrust, left, right)
             )
         );
     }
-    
-    public void HandleKeyPress(UpdateShipParams newParams)
+
+    private void HandleKeyPress(HashSet<string> pressedKeySet)
     {
-        shipParams = newParams;
+        pressedKeys = pressedKeySet;
     }
 
     public Task HandleCreateLobbyResponse(CreateLobbyResponse message)
