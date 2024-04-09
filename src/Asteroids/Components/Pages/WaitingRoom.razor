@@ -10,7 +10,7 @@
 {
   @if (lobbyState.CurrentStatus == LobbyStatus.InGame)
   {
-    <PlayArea State=@lobbyState />
+    <PlayArea State=@lobbyState EventCallback=@HandleKeyPress />
   }
   else
   {

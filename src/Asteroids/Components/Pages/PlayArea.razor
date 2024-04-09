@@ -30,6 +30,8 @@
 @code {
     [Parameter]
     public LobbyState State { get; set; }
+    [Parameter]
+    public EventCallback<UpdateShipParams> EventCallback { get; set; }
 
     protected override void OnInitialized()
     {
@@ -39,13 +41,7 @@
 
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        if (string.Equals(e.Key, "w", StringComparison.OrdinalIgnoreCase))
-        {
-            // Logic for when the "W" key is pressed
-            ToastService.ShowSuccess("W Key Pressed");
-
-            // Implement your movement or action logic here
-        }
+        EventCallback.InvokeAsync(new UpdateShipParams (e.Key == "w", e.Key == "a", e.Key == "d"));
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)

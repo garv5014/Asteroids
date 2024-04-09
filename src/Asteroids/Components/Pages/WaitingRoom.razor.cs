@@ -1,8 +1,11 @@
-﻿using Asteroids.Shared;
+﻿using System.Timers;
+using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
+using Asteroids.Shared.Messages;
 using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Timer = System.Timers.Timer;
 
 namespace Asteroids.Components.Pages;
 
@@ -12,8 +15,10 @@ public partial class WaitingRoom : ILobbyClient
     public int LobbyId { get; set; }
     private HubConnection connection;
     private ILobbyHub hubProxy;
-
     private LobbyState lobbyState;
+    private Timer timer;
+    private Ship localPlayer;
+    private UpdateShipParams shipParams;
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,6 +37,7 @@ public partial class WaitingRoom : ILobbyClient
         }
         connection.ClientRegistration<ILobbyClient>(this);
         await connection.StartAsync();
+        
 
         await GetLobbyState();
         await InvokeAsync(StateHasChanged);
@@ -50,6 +56,8 @@ public partial class WaitingRoom : ILobbyClient
                 NewStatus: LobbyStatus.InGame
             )
         );
+        
+        SetTimer();
 
         await InvokeAsync(StateHasChanged);
     }
@@ -74,6 +82,30 @@ public partial class WaitingRoom : ILobbyClient
             // Optionally, handle exceptions (e.g., show a message to the user)
         }
         await InvokeAsync(StateHasChanged);
+    }
+    
+    private void SetTimer()
+    {
+        timer = new Timer(10);
+        timer.Elapsed += PublishClientState;
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private async void PublishClientState(object? sender, ElapsedEventArgs e)
+    {
+        await hubProxy.UpdateShipCommand(
+            new UpdateShipMessage(
+                ConnectionId: string.Empty,
+                SessionActorPath: string.Empty,
+                ShipParams: new UpdateShipParams(false, false, false)
+            )
+        );
+    }
+    
+    public void HandleKeyPress(UpdateShipParams newParams)
+    {
+        shipParams = newParams;
     }
 
     public Task HandleCreateLobbyResponse(CreateLobbyResponse message)

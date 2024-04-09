@@ -1,3 +1,5 @@
+using Asteroids.Shared.Messages;
+
 namespace Asteroids.Shared;
 
 public interface ILobbyHub
@@ -11,4 +13,5 @@ public interface ILobbyHub
     Task LobbyStateQuery(GetLobbyStateMessage message);
     Task LobbyStatePublish(LobbyStateResponse response);
     Task UpdateLobbyStateCommand(UpdateLobbyMessage message);
+    Task UpdateShipCommand(UpdateShipMessage message);
 }
