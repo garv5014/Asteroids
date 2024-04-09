@@ -1,6 +1,5 @@
 ﻿using Akka.Actor;
 using Akka.Event;
-using Akka.Hosting;
 using Asteroids.Shared;
 
 namespace RealTimeCommunication;
@@ -11,186 +10,182 @@ public record GetLobbyResponse(IActorRef LobbyActorRef);
 
 public class LobbySupervisor : ReceiveActor
 {
-  // return all the lobbies lobbies stored as a Dictionary of lobbies
-  // Create a lobby actor
-  // Forward messages to the lobby actor
-  // Join Lobby passed to lobby actor
+    // return all the lobbies lobbies stored as a Dictionary of lobbies
+    // Create a lobby actor
+    // Forward messages to the lobby actor
+    // Join Lobby passed to lobby actor
 
-  private Dictionary<int, IActorRef> idToActorRef = new Dictionary<int, IActorRef>();
-  private Dictionary<string, IActorRef> nameToActorRef = new Dictionary<string, IActorRef>();
-  private readonly ILoggingAdapter _log = Context.GetLogger();
-  private int lobbyId = 0;
+    private Dictionary<int, IActorRef> idToActorRef = new Dictionary<int, IActorRef>();
+    private Dictionary<string, IActorRef> nameToActorRef = new Dictionary<string, IActorRef>();
+    private readonly ILoggingAdapter _log = Context.GetLogger();
+    private int lobbyId = 0;
 
-  private IActorRef _lobbyRelayActor;
+    private IActorRef _lobbyRelayActor;
 
-  public LobbySupervisor(IActorRef testRelayActorRef = null)
-  {
-    Receive<CreateLobbyMessage>(CreateLobby);
-    Receive<JoinLobbyMessage>(JoinLobby);
-    Receive<UpdateLobbyMessage>(UpdateLobby);
-
-    if (testRelayActorRef != null)
+    public LobbySupervisor(IActorRef testRelayActorRef = null)
     {
-      _lobbyRelayActor = testRelayActorRef;
-    }
-    else
-    {
-      _lobbyRelayActor = Context
-        .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
-        .ResolveOne(TimeSpan.FromSeconds(3))
-        .Result;
-    }
+        Receive<CreateLobbyMessage>(CreateLobby);
+        Receive<JoinLobbyMessage>(JoinLobby);
+        Receive<UpdateLobbyMessage>(UpdateLobby);
 
-    Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
-    Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
-    Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
-  }
+        if (testRelayActorRef != null)
+        {
+            _lobbyRelayActor = testRelayActorRef;
+        }
+        else
+        {
+            _lobbyRelayActor = Context
+                .ActorSelection($"/user/{ActorHelper.LobbyRelayActorName}")
+                .ResolveOne(TimeSpan.FromSeconds(3))
+                .Result;
+        }
 
-  private void UpdateLobby(UpdateLobbyMessage msg)
-  {
-    if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
-    {
-      // Eventually needs to send action failed message
-      _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
-      return;
+        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
+        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
+        Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
     }
 
-    Sender.Tell(
-      new GetLobbyResponse(
-        LobbyActorRef: lobbyActor
-      )
-    );
-  }
-
-  private void HandleStateResponse(LobbyStateResponse msg)
-  {
-    _lobbyRelayActor.Tell(msg);
-  }
-
-  private void GetLobbyState(GetLobbyStateMessage msg)
-  {
-    if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+    private void UpdateLobby(UpdateLobbyMessage msg)
     {
-      // Eventually needs to send action failed message
-      _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
-      return;
+        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        {
+            // Eventually needs to send action failed message
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            return;
+        }
+
+        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor));
     }
 
-    _log.Info("Getting lobby state from child");
-    lobbyActor.Tell(msg);
-  }
-
-  private void GetLobbies(GetLobbiesMessage msg)
-  {
-    _log.Info($"{nameof(LobbySupervisor)}Getting lobbies in ");
-    GettingLobbyStates(msg).PipeTo(_lobbyRelayActor);
-  }
-
-  private Task<AllLobbiesResponse> GettingLobbyStates(GetLobbiesMessage msg)
-  {
-    var lobbiesState = new List<GameLobby>();
-
-    foreach (var lobby in idToActorRef)
+    private void HandleStateResponse(LobbyStateResponse msg)
     {
-      var gl = lobby
-        .Value.Ask<GameLobby>(
-          new GetLobbiesMessage(
-            SessionActorPath: msg.SessionActorPath,
-            ConnectionId: msg.ConnectionId
-          )
-        )
-        .Result;
-      var glId = new GameLobby(gl.Name, lobby.Key, gl.PlayerCount);
-      _log.Info("Lobby: {0}", glId);
-      lobbiesState.Add(glId);
+        _lobbyRelayActor.Tell(msg);
     }
 
-    return Task.FromResult(
-      new AllLobbiesResponse(
-        SessionActorPath: msg.SessionActorPath,
-        ConnectionId: msg.ConnectionId,
-        Lobbies: lobbiesState ?? new List<GameLobby>()
-      )
-    );
-  }
-
-  private void JoinLobby(JoinLobbyMessage msg)
-  {
-    if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+    private void GetLobbyState(GetLobbyStateMessage msg)
     {
-      // Eventually needs to send action failed message
-      _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
-      return;
+        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        {
+            // Eventually needs to send action failed message
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            return;
+        }
+
+        _log.Info("Getting lobby state from child");
+        lobbyActor.Tell(msg);
     }
 
-    lobbyActor.Forward(
-      new JoinLobbyMessage(
-        SessionActorPath: msg.SessionActorPath,
-        ConnectionId: msg.ConnectionId,
-        LobbyId: lobbyId
-      )
-    );
-
-    _lobbyRelayActor.Tell(
-      new JoinLobbyResponse(
-        SessionActorPath: msg.SessionActorPath,
-        ConnectionId: msg.ConnectionId,
-        LobbyId: lobbyId
-      )
-    );
-  }
-
-  private void CreateLobby(CreateLobbyMessage msg)
-  {
-    if (nameToActorRef.ContainsKey(msg.LobbyName))
+    private void GetLobbies(GetLobbiesMessage msg)
     {
-      // Eventually needs to send action failed message
-      _log.Info("Lobby with name {0} already exists", msg.LobbyName);
-      return;
+        _log.Info($"{nameof(LobbySupervisor)}Getting lobbies in ");
+        GettingLobbyStates(msg).PipeTo(_lobbyRelayActor);
     }
 
-    lobbyId++;
+    private Task<AllLobbiesResponse> GettingLobbyStates(GetLobbiesMessage msg)
+    {
+        var lobbiesState = new List<GameLobby>();
 
-    var lobbyActor = Context.ActorOf(
-      LobbyActor.Props(msg.LobbyName, msg.SessionActorPath),
-      ActorHelper.SanitizeActorName(msg.LobbyName)
-    );
+        foreach (var lobby in idToActorRef)
+        {
+            var gl = lobby
+                .Value.Ask<GameLobby>(
+                    new GetLobbiesMessage(
+                        SessionActorPath: msg.SessionActorPath,
+                        ConnectionId: msg.ConnectionId
+                    )
+                )
+                .Result;
+            var glId = new GameLobby(gl.Name, lobby.Key, gl.PlayerCount);
+            _log.Info("Lobby: {0}", glId);
+            lobbiesState.Add(glId);
+        }
 
-    idToActorRef.Add(lobbyId, lobbyActor);
-    nameToActorRef.Add(msg.LobbyName, lobbyActor);
+        return Task.FromResult(
+            new AllLobbiesResponse(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                Lobbies: lobbiesState ?? new List<GameLobby>()
+            )
+        );
+    }
 
-    _log.Info("Lobby created with id {0}", lobbyId);
+    private void JoinLobby(JoinLobbyMessage msg)
+    {
+        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        {
+            // Eventually needs to send action failed message
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            return;
+        }
 
-    Self.Tell(
-      new JoinLobbyMessage(
-        SessionActorPath: msg.SessionActorPath,
-        ConnectionId: msg.ConnectionId,
-        LobbyId: lobbyId
-      )
-    );
+        lobbyActor.Forward(
+            new JoinLobbyMessage(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
 
-    _lobbyRelayActor.Tell(
-      new CreateLobbyResponse(
-        SessionActorPath: msg.SessionActorPath,
-        ConnectionId: msg.ConnectionId,
-        LobbyName: msg.LobbyName,
-        LobbyId: lobbyId
-      )
-    );
-  }
+        _lobbyRelayActor.Tell(
+            new JoinLobbyResponse(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
+    }
 
-  protected override void PreStart()
-  {
-    _log.Info("LobbySupervisor created");
-  }
+    private void CreateLobby(CreateLobbyMessage msg)
+    {
+        if (nameToActorRef.ContainsKey(msg.LobbyName))
+        {
+            // Eventually needs to send action failed message
+            _log.Info("Lobby with name {0} already exists", msg.LobbyName);
+            return;
+        }
 
-  protected override void PostStop()
-  {
-    _log.Info("LobbySupervisor stopped");
-  }
+        lobbyId++;
 
-  public static Props Props(IActorRef actorRef = null)
-  {
-    return Akka.Actor.Props.Create(() => new LobbySupervisor(actorRef));
-  }
+        var lobbyActor = Context.ActorOf(
+            LobbyActor.Props(msg.LobbyName, msg.SessionActorPath),
+            ActorHelper.SanitizeActorName(msg.LobbyName)
+        );
+
+        idToActorRef.Add(lobbyId, lobbyActor);
+        nameToActorRef.Add(msg.LobbyName, lobbyActor);
+
+        _log.Info("Lobby created with id {0}", lobbyId);
+
+        Self.Tell(
+            new JoinLobbyMessage(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyId: lobbyId
+            )
+        );
+
+        _lobbyRelayActor.Tell(
+            new CreateLobbyResponse(
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                LobbyName: msg.LobbyName,
+                LobbyId: lobbyId
+            )
+        );
+    }
+
+    protected override void PreStart()
+    {
+        _log.Info("LobbySupervisor created");
+    }
+
+    protected override void PostStop()
+    {
+        _log.Info("LobbySupervisor stopped");
+    }
+
+    public static Props Props(IActorRef actorRef = null)
+    {
+        return Akka.Actor.Props.Create(() => new LobbySupervisor(actorRef));
+    }
 }

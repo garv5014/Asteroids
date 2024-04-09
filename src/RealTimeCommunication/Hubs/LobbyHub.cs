@@ -18,6 +18,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     {
         _logger = logger;
         sessionSupervisor = actorRegistry.Get<SessionSupervisor>();
+        lobbySupervisor = actorRegistry.Get<LobbySupervisor>();
     }
 
     public async Task LobbiesQuery(GetLobbiesMessage message)
@@ -104,18 +105,18 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     public async Task UpdateLobbyStateCommand(UpdateLobbyMessage message)
     {
         _logger.LogInformation("Update lobby state command received");
-        
+
         var mes = new UpdateLobbyMessage(
             SessionActorPath: message.SessionActorPath,
             ConnectionId: Context.ConnectionId,
             LobbyId: message.LobbyId,
             CurrentStatus: message.CurrentStatus
         );
-        
+
         var lobbyActorRef = await GetLobbyById(message.LobbyId);
         lobbyActorRef.Tell(mes);
     }
-    
+
     private async Task<IActorRef> GetLobbyById(int lobbyId)
     {
         _logger.LogInformation("Getting lobby id {lobbyId}", lobbyId);
@@ -124,4 +125,4 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         );
         return res.LobbyActorRef;
     }
-}   
+}

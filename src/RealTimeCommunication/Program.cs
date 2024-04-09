@@ -49,7 +49,7 @@ builder.Services.AddAkka(
                 );
                 registry.TryRegister<SessionSupervisor>(ss);
                 var ls = system.ActorOf(LobbySupervisor.Props(), ActorHelper.LobbySupervisorName);
-                registry.TryRegister<SessionSupervisor>(ls);
+                registry.TryRegister<LobbySupervisor>(ls);
             }
         );
     }
