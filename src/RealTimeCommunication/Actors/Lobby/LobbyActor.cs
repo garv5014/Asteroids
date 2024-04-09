@@ -2,6 +2,7 @@
 using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
+using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication;
 
@@ -39,6 +40,16 @@ public class LobbyActor : ReceiveActor
         Receive<GetLobbiesMessage>(GetLobbies);
         Receive<GetLobbyStateMessage>(GetLobbyState);
         Receive<UpdateLobbyMessage>(UpdateLobby);
+        Receive<UpdateShipMessage>(UpdateShip);
+    }
+
+    private void UpdateShip(UpdateShipMessage obj)
+    {
+        if (lobbyStatus != LobbyStatus.InGame) return;
+        if (Ships.TryGetValue(obj.SessionActorPath, out var ship))
+        {
+            ship.UpdateShipParams = obj.ShipParams;
+        }
     }
 
     private void UpdateLobby(UpdateLobbyMessage msg)

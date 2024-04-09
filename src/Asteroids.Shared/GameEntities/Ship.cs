@@ -7,6 +7,7 @@ public class Ship(int id, int xCoordinate, int yCoordinate, int rotation)
   public int XCoordinate { get; set; } = xCoordinate;
   public int YCoordinate { get; set; } = yCoordinate;
   public int Rotation { get; set; } = rotation;
+  public UpdateShipParams UpdateShipParams { get; set; } = new UpdateShipParams(false, false, false);
 }
 
 public record UpdateShipParams(bool IsThrusting, bool IsRotatingRight, bool IsRotatingLeft);

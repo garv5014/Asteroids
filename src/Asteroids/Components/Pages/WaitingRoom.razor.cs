@@ -102,7 +102,8 @@ public partial class WaitingRoom : ILobbyClient
             new UpdateShipMessage(
                 ConnectionId: string.Empty,
                 SessionActorPath: string.Empty,
-                ShipParams: new UpdateShipParams(thrust, left, right)
+                ShipParams: new UpdateShipParams(thrust, left, right),
+                LobbyId: LobbyId
             )
         );
     }

@@ -118,10 +118,18 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         lobbyActorRef.Tell(mes);
     }
 
-    public Task UpdateShipCommand(UpdateShipMessage message)
+    public async Task UpdateShipCommand(UpdateShipMessage message)
     {
-        _logger.LogInformation("Update ship command received");
-        return Task.CompletedTask;
+        var lobbyActorRef = await GetLobbyById(message.LobbyId);
+        
+        var mes = new UpdateShipMessage(
+            ConnectionId: Context.ConnectionId,
+            SessionActorPath: message.SessionActorPath,
+            ShipParams: message.ShipParams,
+            LobbyId: message.LobbyId
+        );
+        
+        lobbyActorRef.Tell(mes);
     }
 
     private async Task<IActorRef> GetLobbyById(int lobbyId)
