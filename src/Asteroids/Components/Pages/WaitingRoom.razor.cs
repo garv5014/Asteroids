@@ -37,7 +37,6 @@ public partial class WaitingRoom : ILobbyClient
         }
         connection.ClientRegistration<ILobbyClient>(this);
         await connection.StartAsync();
-        
 
         await GetLobbyState();
         await InvokeAsync(StateHasChanged);
@@ -56,7 +55,7 @@ public partial class WaitingRoom : ILobbyClient
                 NewStatus: LobbyStatus.InGame
             )
         );
-        
+
         SetTimer();
 
         await InvokeAsync(StateHasChanged);
@@ -83,7 +82,7 @@ public partial class WaitingRoom : ILobbyClient
         }
         await InvokeAsync(StateHasChanged);
     }
-    
+
     private void SetTimer()
     {
         timer = new Timer(10);
@@ -97,7 +96,7 @@ public partial class WaitingRoom : ILobbyClient
         var thrust = pressedKeys.Contains("w");
         var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
-        
+
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,

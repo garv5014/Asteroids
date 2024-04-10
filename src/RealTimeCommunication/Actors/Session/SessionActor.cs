@@ -6,6 +6,9 @@ namespace RealTimeCommunication.Actors.Session;
 
 // In charge of talking to the lobby(game) on behalf of the user
 // Return User Information.
+
+public record RefreshConnectionId(string ConnectionId);
+
 public class SessionActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();
@@ -28,6 +31,19 @@ public class SessionActor : ReceiveActor
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
         Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
+        Receive<RefreshConnectionId>(msg => ConnectionIdRefresh(msg));
+        Receive<LobbyStateResponse>(msg => PassToLobbySupervisor(msg));
+    }
+
+    private void PassToLobbySupervisor(LobbyStateResponse msg)
+    {
+        var mes = new LobbyStateResponse(connectionId, msg.SessionActorPath, msg.CurrentState);
+        lobbySupervisor.Tell(mes);
+    }
+
+    private void ConnectionIdRefresh(RefreshConnectionId msg)
+    {
+        connectionId = msg.ConnectionId;
     }
 
     private void GetLobbyState(GetLobbyStateMessage msg)
