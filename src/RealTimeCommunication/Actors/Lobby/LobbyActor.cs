@@ -54,7 +54,23 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void UpdateClients()
     {
-        throw new NotImplementedException();
+        List<Ship> ships = [];
+        foreach (var ship in Ships)
+        {
+            ships.Add(ship.Value);
+        }
+
+        lobbyState.Ships = ships;
+        foreach (var session in SessionsToUpdate)
+        {
+            session.Tell(
+                new LobbyStateResponse(
+                    ConnectionId: "",
+                    SessionActorPath: session.Path.ToString(),
+                    CurrentState: lobbyState
+                )
+            );
+        }
     }
 
     private void MoveAsteroids()
@@ -140,7 +156,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
                     CurrentState: lobbyState
                 )
             );
-            
+
             Timers.StartPeriodicTimer(
                 "gameLoop",
                 new GameLoopMessage(),
