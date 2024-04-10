@@ -2,7 +2,6 @@
 using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Messages;
-using Blazored.Toast.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Timer = System.Timers.Timer;
@@ -18,7 +17,7 @@ public partial class WaitingRoom : ILobbyClient
     private LobbyState lobbyState;
     private Timer timer;
     private Ship localPlayer;
-    private HashSet<string> pressedKeys;
+    private HashSet<string> pressedKeys = new HashSet<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,7 +84,7 @@ public partial class WaitingRoom : ILobbyClient
 
     private void SetTimer()
     {
-        timer = new Timer(10);
+        timer = new Timer(1000);
         timer.Elapsed += PublishClientState;
         timer.AutoReset = true;
         timer.Enabled = true;
@@ -97,10 +96,12 @@ public partial class WaitingRoom : ILobbyClient
         var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
 
+        Console.WriteLine($"Sending ship state: thrust: {thrust}, left: {left}, right: {right}");
+        var path = await localStorage.GetItemAsync<string>("actorPath");
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,
-                SessionActorPath: string.Empty,
+                SessionActorPath: path,
                 ShipParams: new UpdateShipParams(thrust, left, right),
                 LobbyId: LobbyId
             )
@@ -109,6 +110,7 @@ public partial class WaitingRoom : ILobbyClient
 
     private void HandleKeyPress(HashSet<string> pressedKeySet)
     {
+        Console.WriteLine($"Pressed keys: {string.Join(", ", pressedKeySet)}");
         pressedKeys = pressedKeySet;
     }
 
@@ -130,6 +132,7 @@ public partial class WaitingRoom : ILobbyClient
     public async Task HandleLobbyStateResponse(LobbyStateResponse message)
     {
         lobbyState = message.CurrentState;
+        Console.WriteLine($"Received lobby state: {lobbyState.PlayerCount}");
         await InvokeAsync(StateHasChanged);
     }
 }

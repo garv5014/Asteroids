@@ -120,15 +120,19 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task UpdateShipCommand(UpdateShipMessage message)
     {
+        _logger.LogInformation("Update ship command received");
+
         var lobbyActorRef = await GetLobbyById(message.LobbyId);
-        
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+
+        sessionActorRef.Tell(new RefreshConnectionId(ConnectionId: Context.ConnectionId));
         var mes = new UpdateShipMessage(
             ConnectionId: Context.ConnectionId,
             SessionActorPath: message.SessionActorPath,
             ShipParams: message.ShipParams,
             LobbyId: message.LobbyId
         );
-        
+
         lobbyActorRef.Tell(mes);
     }
 

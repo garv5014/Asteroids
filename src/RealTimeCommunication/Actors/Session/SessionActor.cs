@@ -37,12 +37,14 @@ public class SessionActor : ReceiveActor
 
     private void PassToLobbySupervisor(LobbyStateResponse msg)
     {
+        _log.Info("Passing lobby state to LobbySupervisor for {0}", Self.Path.Name);
         var mes = new LobbyStateResponse(connectionId, msg.SessionActorPath, msg.CurrentState);
         lobbySupervisor.Tell(mes);
     }
 
     private void ConnectionIdRefresh(RefreshConnectionId msg)
     {
+        _log.Info("ConnectionId Refreshed for {0}", Self.Path.Name);
         connectionId = msg.ConnectionId;
     }
 

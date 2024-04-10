@@ -30,6 +30,7 @@
 @code {
     [Parameter]
     public LobbyState State { get; set; }
+
     [Parameter]
     public EventCallback<HashSet<string>> EventCallback { get; set; }
 
@@ -48,6 +49,7 @@
         {
             _pressedKeys.Add(e.Key);
         }
+        EventCallback.InvokeAsync(_pressedKeys);
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)
@@ -56,5 +58,6 @@
         {
             _pressedKeys.Remove(e.Key);
         }
+        EventCallback.InvokeAsync(_pressedKeys);
     }
 }

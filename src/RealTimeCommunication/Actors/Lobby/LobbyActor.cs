@@ -54,6 +54,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void UpdateClients()
     {
+        _log.Info("Updating clients");
         List<Ship> ships = [];
         foreach (var ship in Ships)
         {
@@ -119,6 +120,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void UpdateShip(UpdateShipMessage obj)
     {
+        _log.Info("Updating ship for {0} in LobbyActor", obj.SessionActorPath);
         if (lobbyStatus != LobbyStatus.InGame)
             return;
         if (Ships.TryGetValue(obj.SessionActorPath, out var ship))
