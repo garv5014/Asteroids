@@ -6,7 +6,7 @@ using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication;
 
-public class LobbyActor : ReceiveActor
+public class LobbyActor : ReceiveActor, IWithTimers
 {
     // Lobby actor is in charge of creating and managing lobbies
     // respond to messages from the lobby supervisor after creation.
@@ -22,6 +22,7 @@ public class LobbyActor : ReceiveActor
     private LobbyStatus lobbyStatus { get; set; }
 
     private string LobbyOwner { get; init; }
+    public ITimerScheduler Timers { get; set; }
 
     private LobbyState lobbyState;
 
@@ -41,14 +42,72 @@ public class LobbyActor : ReceiveActor
         Receive<GetLobbyStateMessage>(GetLobbyState);
         Receive<UpdateLobbyMessage>(UpdateLobby);
         Receive<UpdateShipMessage>(UpdateShip);
+        Receive<GameLoopMessage>(GameLoop);
+    }
+
+    private void GameLoop(GameLoopMessage message)
+    {
+        MoveShips();
+        MoveAsteroids();
+        UpdateClients();
+    }
+
+    private void UpdateClients()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void MoveAsteroids()
+    {
+        _log.Info("Moving asteroids");
+    }
+
+    private void MoveShips()
+    {
+        foreach (var shipEntry in Ships)
+        {
+            var ship = shipEntry.Value;
+
+            // Handle rotation
+            if (ship.ShipMovement.IsRotatingRight)
+            {
+                ship.Rotation += 5; // Adjust as needed
+            }
+            else if (ship.ShipMovement.IsRotatingLeft)
+            {
+                ship.Rotation -= 5; // Adjust as needed
+            }
+            ship.Rotation = (ship.Rotation + 360) % 360; // Normalize rotation
+
+            // Handle thrust
+            if (ship.ShipMovement.IsThrusting)
+            {
+                double radians = Math.PI * ship.Rotation / 180.0;
+                ship.VelocityX += Math.Cos(radians) * 0.1; // Adjust thrust power
+                ship.VelocityY += Math.Sin(radians) * 0.1; // Adjust thrust power
+            }
+
+            // Apply friction/drag to slow down the ship over time
+            ship.VelocityX *= 0.99; // Adjust friction level
+            ship.VelocityY *= 0.99; // Adjust friction level
+
+            // Update ship position based on velocity
+            ship.XCoordinate += (int)ship.VelocityX;
+            ship.YCoordinate += (int)ship.VelocityY;
+
+            // Screen wrapping
+            ship.XCoordinate = (ship.XCoordinate + lobbyState.boardWidth) % lobbyState.boardWidth;
+            ship.YCoordinate = (ship.YCoordinate + lobbyState.boardHeight) % lobbyState.boardHeight;
+        }
     }
 
     private void UpdateShip(UpdateShipMessage obj)
     {
-        if (lobbyStatus != LobbyStatus.InGame) return;
+        if (lobbyStatus != LobbyStatus.InGame)
+            return;
         if (Ships.TryGetValue(obj.SessionActorPath, out var ship))
         {
-            ship.UpdateShipParams = obj.ShipParams;
+            ship.ShipMovement = obj.ShipParams;
         }
     }
 
@@ -80,6 +139,12 @@ public class LobbyActor : ReceiveActor
                     SessionActorPath: msg.SessionActorPath,
                     CurrentState: lobbyState
                 )
+            );
+            
+            Timers.StartPeriodicTimer(
+                "gameLoop",
+                new GameLoopMessage(),
+                TimeSpan.FromMilliseconds(100)
             );
         }
     }
@@ -135,3 +200,5 @@ public class LobbyActor : ReceiveActor
         return Akka.Actor.Props.Create(() => new LobbyActor(LobbyName, LobbyOwner));
     }
 }
+
+internal record GameLoopMessage { }
