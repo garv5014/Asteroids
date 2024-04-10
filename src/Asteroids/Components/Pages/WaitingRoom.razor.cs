@@ -16,7 +16,6 @@ public partial class WaitingRoom : ILobbyClient
     private ILobbyHub hubProxy;
     private LobbyState lobbyState;
     private Timer timer;
-    private Ship localPlayer;
     private HashSet<string> pressedKeys = new HashSet<string>();
 
     protected override async Task OnInitializedAsync()
@@ -132,7 +131,7 @@ public partial class WaitingRoom : ILobbyClient
     public async Task HandleLobbyStateResponse(LobbyStateResponse message)
     {
         lobbyState = message.CurrentState;
-        Console.WriteLine($"Received lobby state: {lobbyState.PlayerCount}");
+        Console.WriteLine($"Received lobby state: {message.CurrentState.Ships.Count}");
         await InvokeAsync(StateHasChanged);
     }
 }

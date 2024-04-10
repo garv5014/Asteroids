@@ -167,7 +167,7 @@ public class LobbySupervisor : ReceiveActor
 
         _log.Info("Lobby created with id {0}", lobbyId);
 
-        Self.Tell(
+        Self.Forward(
             new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,

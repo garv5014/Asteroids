@@ -64,6 +64,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
         lobbyState.Ships = ships;
         foreach (var session in SessionsToUpdate)
         {
+            _log.Info("Sending lobby state to {0}", session.Path);
             session.Tell(
                 new LobbyStateResponse(
                     ConnectionId: "",
@@ -200,7 +201,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void JoinLobby(JoinLobbyMessage msg)
     {
         SessionsToUpdate.Add(Sender); // should be the session Actor.
-        _log.Info("Lobby created");
+        _log.Info("Lobby Joined by {0}", Sender.Path.Name);
     }
 
     protected override void PreStart()
