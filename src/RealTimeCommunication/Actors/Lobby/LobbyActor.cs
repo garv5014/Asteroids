@@ -111,8 +111,8 @@ public class LobbyActor : ReceiveActor, IWithTimers
             }
 
             // Apply friction/drag to slow down the ship over time
-            ship.VelocityX *= 0.99; // Adjust friction level
-            ship.VelocityY *= 0.99; // Adjust friction level
+            ship.VelocityX *= 1; // Adjust friction level
+            ship.VelocityY *= 1; // Adjust friction level
 
             // Update ship position based on velocity
             ship.XCoordinate += (int)ship.VelocityX;
@@ -168,6 +168,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
             Timers.StartPeriodicTimer(
                 "gameLoop",
                 new GameLoopMessage(),
+                TimeSpan.FromMilliseconds(50),
                 TimeSpan.FromMilliseconds(100)
             );
         }

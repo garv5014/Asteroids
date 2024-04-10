@@ -83,7 +83,7 @@ public partial class WaitingRoom : ILobbyClient
 
     private void SetTimer()
     {
-        timer = new Timer(1000);
+        timer = new Timer(100);
         timer.Elapsed += PublishClientState;
         timer.AutoReset = true;
         timer.Enabled = true;
