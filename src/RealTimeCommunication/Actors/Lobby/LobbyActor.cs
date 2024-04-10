@@ -47,21 +47,24 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void GameLoop(GameLoopMessage message)
     {
-        MoveShips();
-        MoveAsteroids();
-        UpdateClients();
+        if (lobbyStatus.Equals(LobbyStatus.InGame))
+        {
+            MoveShips();
+            MoveAsteroids();
+            UpdateClients();
+        }
     }
 
     private void UpdateClients()
     {
         _log.Info("Updating clients");
-        List<Ship> ships = [];
+        List<Ship> newShips = [];
         foreach (var ship in Ships)
         {
-            ships.Add(ship.Value);
+            newShips.Add(ship.Value);
         }
 
-        lobbyState.Ships = ships;
+        lobbyState.Ships = newShips;
         foreach (var session in SessionsToUpdate)
         {
             _log.Info("Sending lobby state to {0}", session.Path);
@@ -82,8 +85,10 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void MoveShips()
     {
+        _log.Info("Moving ships");
         foreach (var shipEntry in Ships)
         {
+            _log.Info("Moving ship {0}", shipEntry.Key);
             var ship = shipEntry.Value;
 
             // Handle rotation
@@ -121,11 +126,11 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void UpdateShip(UpdateShipMessage obj)
     {
-        _log.Info("Updating ship for {0} in LobbyActor", obj.SessionActorPath);
         if (lobbyStatus != LobbyStatus.InGame)
             return;
         if (Ships.TryGetValue(obj.SessionActorPath, out var ship))
         {
+            _log.Info("Updating ship for {0} in LobbyActor", obj.SessionActorPath);
             ship.ShipMovement = obj.ShipParams;
         }
     }
@@ -148,7 +153,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
                 isOwner: LobbyOwner == msg.SessionActorPath,
                 playerCount: numberOfPlayers,
                 currentStatus: lobbyStatus,
-                ships: [new Ship(id: 0, xCoordinate: 10, yCoordinate: 10, rotation: 45)],
+                ships: Ships.Values.ToList(),
                 asteroids: []
             );
 
@@ -201,6 +206,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void JoinLobby(JoinLobbyMessage msg)
     {
         SessionsToUpdate.Add(Sender); // should be the session Actor.
+        Ships[msg.SessionActorPath] = new Ship(id: 0, xCoordinate: 0, yCoordinate: 0, rotation: 0);
         _log.Info("Lobby Joined by {0}", Sender.Path.Name);
     }
 
