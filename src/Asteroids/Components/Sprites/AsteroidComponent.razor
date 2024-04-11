@@ -16,7 +16,7 @@
 
   private string GetTransformStyle()
   {
-    var transform = $"translate({XCoordinate}px, {YCoordinate}px) rotate({Rotation}deg)";
+    var transform = $"translate({XCoordinate}px, {YCoordinate}px) rotate({Rotation + 90}deg)";
     return transform;
   }
 
@@ -31,10 +31,10 @@
 </div>
 
 <style>
-    .asteroid {
-        position: absolute;
-        font-size: 1rem;
-        text-align: center;
-        transition: transform 0.1s linear;
-    }
+  .asteroid {
+    position: absolute;
+    font-size: 1rem;
+    text-align: center;
+    transition: transform 0.1s linear;
+  }
 </style>

@@ -4,7 +4,7 @@
 <div class="play-area" tabindex="0" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp">
     @foreach (var ship in State.Ships)
     {
-        <ShipComponent XCoordinate="@ship.XCoordinate" YCoordinate="@ship.YCoordinate" Rotation="@ship.Rotation" />
+        <ShipComponent Ship="@ship" />
     }
 
     @foreach (var asteroid in State.Asteroids)

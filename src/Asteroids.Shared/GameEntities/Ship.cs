@@ -10,6 +10,9 @@ public class Ship(int xCoordinate, int yCoordinate, int rotation) : IGameObject
     // New properties for velocity
     public double VelocityX { get; set; } = 0;
     public double VelocityY { get; set; } = 0;
+
+    public int Health { get; set; } = 50; // Default health
+    public int Size { get; set; } = 20;
 }
 
 public record UpdateShipParams(bool IsThrusting, bool IsRotatingRight, bool IsRotatingLeft);

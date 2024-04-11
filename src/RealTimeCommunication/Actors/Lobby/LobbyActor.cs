@@ -12,9 +12,9 @@ public class LobbyActor : ReceiveActor, IWithTimers
     public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
         new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
         {
-            ((595, 0), (0, 180)),// top
-            ((0, 595), (180, 360)),// left
-            ((595, 595), (90, 270)),// bottom
+            ((595, 0), (0, 180)), // top
+            ((0, 595), (180, 360)), // left
+            ((595, 595), (90, 270)), // bottom
             ((595, 0), (270, 430)) // right
         };
     private int NumberOfPlayers
@@ -56,6 +56,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
         {
             MoveShips();
             MoveAsteroids();
+            CheckCollisions();
             UpdateClients();
         }
     }
@@ -187,6 +188,43 @@ public class LobbyActor : ReceiveActor, IWithTimers
             ship.XCoordinate = (ship.XCoordinate + _lobbyState.boardWidth) % _lobbyState.boardWidth;
             ship.YCoordinate =
                 (ship.YCoordinate + _lobbyState.boardHeight) % _lobbyState.boardHeight;
+        }
+    }
+
+    private void CheckCollisions()
+    {
+        var asteroidsToRemove = new List<Asteroid>();
+        foreach (var asteroid in _lobbyState.Asteroids)
+        {
+            foreach (var shipEntry in _ships)
+            {
+                var ship = shipEntry.Value;
+                // Calculate distance between ship and asteroid
+                double distance = Math.Sqrt(
+                    Math.Pow(asteroid.XCoordinate - ship.XCoordinate, 2)
+                        + Math.Pow(asteroid.YCoordinate - ship.YCoordinate, 2)
+                );
+
+                // Check if distance is less than sum of their radii (size / 2 for simplicity)
+                if (distance < (asteroid.Size / 2) + (ship.Size / 2))
+                {
+                    ship.Health -= 10;
+                    asteroidsToRemove.Add(asteroid);
+
+                    // Optional: Add logic to handle what happens when health reaches 0
+                    if (ship.Health <= 0)
+                    {
+                        // Ship destroyed
+                        _ships.Remove(shipEntry.Key);
+                    }
+
+                    // Optional: Remove asteroid or split into smaller asteroids
+                }
+            }
+        }
+        foreach (var asteroid in asteroidsToRemove)
+        {
+            _lobbyState.Asteroids.Remove(asteroid);
         }
     }
 

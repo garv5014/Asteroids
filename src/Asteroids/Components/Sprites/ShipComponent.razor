@@ -1,23 +1,17 @@
+@using Asteroids.Shared.GameEntities
 @code {
   [Parameter]
-  public int XCoordinate { get; set; }
-
-  [Parameter]
-  public int YCoordinate { get; set; }
-
-  [Parameter]
-  public int Rotation { get; set; } // Rotation in degrees
-
+  public Ship Ship { get; set; }
   private string GetTransformStyle()
   {
-    var transform = $"translate({XCoordinate}px, {YCoordinate}px) rotate({Rotation + 90}deg)";
+    var transform = $"translate({Ship.XCoordinate}px, {Ship.YCoordinate}px) rotate({Ship.Rotation + 90}deg)";
     return transform;
   }
 }
 
 <div class="ship" style="@($"transform: {GetTransformStyle()};")">
-  <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792.87 735.34" height="20px"
-    width="20px">
+  <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792.87 735.34"
+    height="@(Ship.Size)px" width="@(Ship.Size)px">
     <g id="SVGRepo_iconCarrier" data-name="SVGRepo iconCarrier">
       <path
         d="M787.12,665.64L438.01,24.6C429.75,9.44,413.87,0,396.61,0h0c-17.26,0-33.15,9.42-41.41,24.58L5.76,665.42c-9.59,17.58-7.02,39.31,6.4,54.17,3.65,4.04,7.88,7.33,12.48,9.83,12.33,6.7,27.31,7.69,40.76,2.05l331.06-138.9h0l330.99,139.09c18.47,7.76,39.82,3,53.25-11.85,13.43-14.85,16.01-36.58,6.43-54.17Z"
@@ -27,9 +21,28 @@
         style="fill: #dddddf; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
     </g>
   </svg>
+  <div class="health-bar-container">
+    <div class="health-bar" style="width: @(Ship.Health)px"></div> <!-- Assuming max health is 100 -->
+  </div>
 </div>
 
+
 <style>
+  .health-bar-container {
+    width: 50px;
+    /* Maximum width corresponding to max health */
+    height: 10px;
+    background-color: #555;
+    margin-top: 10px;
+    position: absolute;
+    /* Adjust based on your layout */
+  }
+
+  .health-bar {
+    height: 100%;
+    background-color: #4CAF50;
+  }
+
   .ship {
     position: absolute;
     text-align: center;
