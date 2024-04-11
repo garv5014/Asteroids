@@ -58,6 +58,18 @@ public class LobbyActor : ReceiveActor, IWithTimers
             MoveAsteroids();
             CheckCollisions();
             UpdateClients();
+            CheckGameOver();
+        }
+    }
+
+    private void CheckGameOver()
+    {
+        if (_ships.Count == 0)
+        {
+            _log.Info("Game over");
+            LobbyStatus = LobbyStatus.GameOver;
+            Timers.Cancel("gameLoop");
+            Timers.Cancel("spawnAsteroid");
         }
     }
 
