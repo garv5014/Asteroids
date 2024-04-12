@@ -1,12 +1,9 @@
-using Microsoft.Extensions.Logging;
-
 namespace Asteroids.Shared.GameEntities;
 
 public class Game
 {
     private int boardHeight { get; set; }
     private int boardWidth { get; set; }
-
     public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
         new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
         {
@@ -98,6 +95,7 @@ public class Game
             }
             else
             {
+                asteroid.Rotation += 6;
                 asteroid.XCoordinate += (int)asteroid.VelocityX;
                 asteroid.YCoordinate += (int)asteroid.VelocityY;
             }
@@ -150,14 +148,13 @@ public class Game
             {
                 var ship = shipEntry.Value;
 
-                if (ship.CheckCollisions(asteroid))
+                if (ship.CheckCollisionAsteroid(asteroid))
                 {
                     ship.Health -= 10;
                     asteroidsToRemove.Add(asteroid);
 
                     if (ship.Health <= 0)
                     {
-                        // Ship destroyed
                         ships.Remove(shipEntry.Key);
                     }
                 }
