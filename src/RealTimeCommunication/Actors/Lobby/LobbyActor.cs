@@ -173,9 +173,11 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void JoinLobby(JoinLobbyMessage msg)
     {
         _sessionsToUpdate.Add(Sender); // should be the session Actor.
+        var ranX = _random.Next(0, GameState.boardWidth);
+        var ranY = _random.Next(0, GameState.boardHeight);
         GameState.AddShip(
             msg.SessionActorPath,
-            new Ship(xCoordinate: 0, yCoordinate: 0, rotation: 0)
+            new Ship(xCoordinate: ranX, yCoordinate: ranY, rotation: 0)
         );
         _log.Info("Lobby Joined by {0}", Sender.Path.Name);
     }

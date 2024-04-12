@@ -2,8 +2,8 @@ namespace Asteroids.Shared.GameEntities;
 
 public class Game
 {
-    private int boardHeight { get; set; }
-    private int boardWidth { get; set; }
+    public int boardHeight { get; set; }
+    public int boardWidth { get; set; }
     public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
         new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
         {
