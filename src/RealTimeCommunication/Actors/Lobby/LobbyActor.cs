@@ -104,7 +104,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
         var edge = edges[randomEdge];
         var spawnX = _random.Next(edge.Item1.xEdge);
         var spawnY = randomEdge == 2 ? edge.Item1.yEdge : _random.Next(edge.Item1.yEdge);
-
+        var size = _random.Next(20, 100);
         var heading = _random.Next(edge.Item2.headingMin, edge.Item2.headingMax);
         double headingRadians = Math.PI * heading / 180.0;
         double speedFactor = 4; // Adjust this value to control asteroid speed
@@ -113,7 +113,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
             xCoordinate: spawnX,
             yCoordinate: spawnY,
             rotation: heading,
-            size: 20,
+            size: size,
             velocityX: Math.Cos(headingRadians) * speedFactor,
             velocityY: Math.Sin(headingRadians) * speedFactor
         );
@@ -124,7 +124,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void ScheduleNextAsteroidSpawn()
     {
-        var nextSpawnInMilliseconds = _random.Next(1000, 5000); // Random interval between spawns
+        var nextSpawnInMilliseconds = _random.Next(500, 3000); // Random interval between spawns
         Timers.StartSingleTimer(
             "spawnAsteroid",
             new SpawnAsteroidMessage(),
@@ -157,7 +157,6 @@ public class LobbyActor : ReceiveActor, IWithTimers
             }
         }
 
-        // Now remove the asteroids that need to be removed.
         foreach (var asteroid in asteroidsToRemove)
         {
             _lobbyState.Asteroids.Remove(asteroid);
@@ -172,24 +171,22 @@ public class LobbyActor : ReceiveActor, IWithTimers
             _log.Info("Moving ship {0}", shipEntry.Key);
             var ship = shipEntry.Value;
 
-            // Handle rotation
             if (ship.ShipMovement.IsRotatingRight)
             {
-                ship.Rotation -= 5; // Adjust as needed
+                ship.Rotation -= 10;
             }
             else if (ship.ShipMovement.IsRotatingLeft)
             {
-                ship.Rotation += 5; // Adjust as needed
+                ship.Rotation += 10;
             }
 
-            ship.Rotation = (ship.Rotation + 360) % 360; // Normalize rotation
+            ship.Rotation = (ship.Rotation + 360) % 360;
 
-            // Handle thrust
             if (ship.ShipMovement.IsThrusting)
             {
                 double radians = Math.PI * ship.Rotation / 180.0;
-                ship.VelocityX += Math.Cos(radians) * 0.1; // Adjust thrust power
-                ship.VelocityY += Math.Sin(radians) * 0.1; // Adjust thrust power
+                ship.VelocityX += Math.Cos(radians) * 0.1;
+                ship.VelocityY += Math.Sin(radians) * 0.1;
             }
 
             // Update ship position based on velocity
