@@ -23,7 +23,7 @@ public class Ship(int xCoordinate, int yCoordinate, int rotation) : IGameObject
         Console.WriteLine(
             $"Distance: {distance} {this.XCoordinate} {this.YCoordinate} {other.XCoordinate} {other.YCoordinate} {this.Size} {other.Size}"
         );
-        return distance < (other.Size / 2) + (this.Size / 2);
+        return distance < ((other.Size / 2) + (this.Size / 2));
     }
 }
 

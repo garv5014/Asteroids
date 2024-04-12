@@ -7,10 +7,10 @@ public class Game
     public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
         new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
         {
-            ((595, 0), (0, 180)), // top
-            ((0, 595), (180, 360)), // left
-            ((595, 595), (90, 270)), // bottom
-            ((595, 0), (270, 430)) // right
+            ((600, 0), (0, 180)), // top
+            ((0, 600), (180, 360)), // left
+            ((600, 600), (90, 270)), // bottom
+            ((600, 0), (270, 430)) // right
         };
     private readonly Random _random = new();
     private Dictionary<string, Ship> ships { get; set; } = new();

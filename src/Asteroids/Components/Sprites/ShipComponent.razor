@@ -7,7 +7,7 @@
   {
     return $"transform: translate({Ship.XCoordinate}px, {Ship.YCoordinate}px)";
   }
-  
+
   private string GetRotationStyle()
   {
     return $"transform: rotate({Ship.Rotation + 90}deg)";
@@ -18,14 +18,14 @@
 <div class="ship-container" style="@GetTranslateStyle()">
   <div class="ship" style="@GetRotationStyle()">
     <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 792.87 735.34"
-         height="@(Ship.Size)px" width="@(Ship.Size)px">
+      height="@(Ship.Size)px" width="@(Ship.Size)px">
       <g id="SVGRepo_iconCarrier" data-name="SVGRepo iconCarrier">
         <path
           d="M787.12,665.64L438.01,24.6C429.75,9.44,413.87,0,396.61,0h0c-17.26,0-33.15,9.42-41.41,24.58L5.76,665.42c-9.59,17.58-7.02,39.31,6.4,54.17,3.65,4.04,7.88,7.33,12.48,9.83,12.33,6.7,27.31,7.69,40.76,2.05l331.06-138.9h0l330.99,139.09c18.47,7.76,39.82,3,53.25-11.85,13.43-14.85,16.01-36.58,6.43-54.17Z"
-          style="fill: #fff; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;"/>
+          style="fill: #fff; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
         <path
           d="M355.21,24.58L5.76,665.42c-9.59,17.58-7.02,39.31,6.4,54.17,3.65,4.04,7.88,7.33,12.48,9.83,12.33,6.7,27.31,7.69,40.76,2.05l331.06-138.9L396.61,0c-17.26,0-33.15,9.42-41.41,24.58Z"
-          style="fill: #dddddf; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;"/>
+          style="fill: #dddddf; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
       </g>
     </svg>
   </div>
@@ -36,36 +36,36 @@
 
 
 <style>
-.ship-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  height: 50px;
-  width: 50px;
-}
+  .ship-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 50px;
+    width: 50px;
+  }
 
-.ship {
-  position: relative;
-  transition: transform 0.1s linear;
-  transform-origin: center;
-}
+  .ship {
+    position: relative;
+    transition: transform 0.1s linear;
+    transform-origin: center;
+  }
 
-.health-bar-container {
-  position: absolute;
-  width: 100%;
-  height: 10px;
-  background-color: #555;
-  border-radius: 5px;
-  bottom: 0;
-  left: 0;
-  right: 50px;
-  overflow-x: visible;
-}
+  .health-bar-container {
+    position: absolute;
+    width: 100%;
+    height: 10px;
+    background-color: #555;
+    border-radius: 5px;
+    bottom: 0;
+    left: 0;
+    right: 50px;
+    overflow-x: visible;
+  }
 
-.health-bar {
-  height: 100%;
-  background-color: #4CAF50;
-  border-radius: 5px;
-}
+  .health-bar {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 5px;
+  }
 </style>
