@@ -24,6 +24,8 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private LobbyStatus LobbyStatus { get; set; }
 
+    private Game GameState { get; set; }
+
     private string LobbyOwner { get; init; }
     public ITimerScheduler Timers { get; set; }
 
@@ -54,9 +56,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     {
         if (LobbyStatus.Equals(LobbyStatus.InGame))
         {
-            MoveShips();
-            MoveAsteroids();
-            CheckCollisions();
+            GameState.Tick();
             UpdateClients();
             CheckGameOver();
         }
@@ -244,6 +244,8 @@ public class LobbyActor : ReceiveActor, IWithTimers
     {
         if (LobbyStatus != LobbyStatus.InGame)
             return;
+
+        // Update ship movement in game state
         if (_ships.TryGetValue(obj.SessionActorPath, out var ship))
         {
             _log.Info("Updating ship for {0} in LobbyActor", obj.SessionActorPath);
