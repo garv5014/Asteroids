@@ -1,22 +1,28 @@
-using Akka.Util;
 using Microsoft.Extensions.Logging;
 
 namespace Asteroids.Shared.GameEntities;
 
 public class Game
 {
-    private readonly ILogger<Game> _log;
     private int boardHeight { get; set; }
     private int boardWidth { get; set; }
 
+    public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
+        new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
+        {
+            ((595, 0), (0, 180)), // top
+            ((0, 595), (180, 360)), // left
+            ((595, 595), (90, 270)), // bottom
+            ((595, 0), (270, 430)) // right
+        };
+    private readonly Random _random = new();
     private Dictionary<string, Ship> ships { get; set; } = new();
     private List<Asteroid> asteroids { get; set; } = new();
 
-    public Game(int boardHeight, int boardWidth, ILogger<Game> logger)
+    public Game(int boardHeight, int boardWidth)
     {
-        boardHeight = boardHeight;
-        boardWidth = boardWidth;
-        _log = logger;
+        this.boardHeight = boardHeight;
+        this.boardWidth = boardWidth;
     }
 
     public void AddShip(string key, Ship ship)
@@ -31,12 +37,29 @@ public class Game
         CheckCollisions();
     }
 
+    public List<Ship> GetShips()
+    {
+        return ships.Values.ToList();
+    }
+
+    public List<Asteroid> GetAsteroids()
+    {
+        return asteroids;
+    }
+
+    public void UpdateShip(string key, UpdateShipParams value)
+    {
+        // Update ship movement in game state
+        if (ships.TryGetValue(key, out var ship))
+        {
+            ship.ShipMovement = value;
+        }
+    }
+
     private void MoveShips()
     {
-        _log.LogInformation("Moving ships");
         foreach (var shipEntry in ships)
         {
-            _log.LogInformation("Moving ship {0}", shipEntry.Key);
             var ship = shipEntry.Value;
 
             // Handle rotation
@@ -48,8 +71,6 @@ public class Game
             {
                 ship.Rotation += 5;
             }
-
-            ship.Rotation = (ship.Rotation + 360) % 360;
 
             if (ship.ShipMovement.IsThrusting)
             {
@@ -68,8 +89,6 @@ public class Game
 
     private void MoveAsteroids()
     {
-        _log.LogInformation("Moving asteroids");
-
         var asteroidsToRemove = new List<Asteroid>();
         foreach (var asteroid in asteroids)
         {
@@ -97,6 +116,29 @@ public class Game
             || asteroid.YCoordinate < 0
             || asteroid.XCoordinate > boardWidth
             || asteroid.XCoordinate < 0;
+    }
+
+    public void SpawnAsteroids()
+    {
+        var randomEdge = _random.Next(0, edges.Count);
+        var edge = edges[randomEdge];
+        var spawnX = _random.Next(edge.Item1.xEdge);
+        var spawnY = randomEdge == 2 ? edge.Item1.yEdge : _random.Next(edge.Item1.yEdge);
+        var size = _random.Next(20, 100);
+        var heading = _random.Next(edge.Item2.headingMin, edge.Item2.headingMax);
+        double headingRadians = Math.PI * heading / 180.0;
+        double speedFactor = 4; // Adjust this value to control asteroid speed
+
+        var asteroid = new Asteroid(
+            xCoordinate: spawnX,
+            yCoordinate: spawnY,
+            rotation: heading,
+            size: size,
+            velocityX: Math.Cos(headingRadians) * speedFactor,
+            velocityY: Math.Sin(headingRadians) * speedFactor
+        );
+
+        asteroids.Add(asteroid);
     }
 
     private void CheckCollisions()
@@ -127,5 +169,22 @@ public class Game
         {
             asteroids.Remove(asteroid);
         }
+    }
+}
+
+public static class GameExtensions
+{
+    public static LobbyState LobbyStateSnapShot(this Game game, LobbyStatus currentStatus)
+    {
+        var ships = game.GetShips();
+        var lobbyState = new LobbyState(
+            isOwner: false,
+            playerCount: ships.Count,
+            currentStatus: currentStatus,
+            ships: ships,
+            asteroids: game.GetAsteroids()
+        );
+
+        return lobbyState;
     }
 }
