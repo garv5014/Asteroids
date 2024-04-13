@@ -112,4 +112,9 @@ public partial class Lobby : ILobbyClient
     {
         return Task.CompletedTask;
     }
+
+    public Task HandleRefreshConnectionId()
+    {
+        return Task.CompletedTask;
+    }
 }

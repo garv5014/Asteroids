@@ -6,17 +6,17 @@
 @inject IToastService ToastService
 
 
-@if (lobbyState != null)
+@if (gameState != null)
 {
-  @if (lobbyState.CurrentStatus == LobbyStatus.InGame)
+  @if (gameState.CurrentStatus == LobbyStatus.InGame)
   {
-    <PlayArea State=@lobbyState EventCallback=@HandleKeyPress />
+    <PlayArea State=@gameState EventCallback=@HandleKeyPress />
   }
   else
   {
     <h1>WaitingRoom please wait</h1>
 
-    @if (lobbyState.IsOwner)
+    @if (gameState.IsOwner)
     {
       <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
     }

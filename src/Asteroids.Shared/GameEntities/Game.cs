@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Asteroids.Shared.GameEntities;
 
 public class Game
@@ -171,17 +173,23 @@ public class Game
 
 public static class GameExtensions
 {
-    public static LobbyState LobbyStateSnapShot(this Game game, LobbyStatus currentStatus)
+    public static GameSnapShot ToGameSnapShot(
+        this Game game,
+        LobbyStatus currentStatus,
+        bool isOwner = false
+    )
     {
         var ships = game.GetShips();
-        var lobbyState = new LobbyState(
-            isOwner: false,
+        var asteroids = game.GetAsteroids();
+        var gameState = new GameSnapShot(
+            isOwner: isOwner,
             playerCount: ships.Count,
             currentStatus: currentStatus,
             ships: ships,
-            asteroids: game.GetAsteroids()
+            asteroids: asteroids,
+            boardWidth: game.boardWidth,
+            boardHeight: game.boardHeight
         );
-
-        return lobbyState;
+        return gameState;
     }
 }

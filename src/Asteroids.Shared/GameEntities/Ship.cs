@@ -20,9 +20,6 @@ public class Ship(int xCoordinate, int yCoordinate, int rotation) : IGameObject
             Math.Pow(other.XCoordinate - this.XCoordinate, 2)
                 + Math.Pow(other.YCoordinate - this.YCoordinate, 2)
         );
-        Console.WriteLine(
-            $"Distance: {distance} {this.XCoordinate} {this.YCoordinate} {other.XCoordinate} {other.YCoordinate} {this.Size} {other.Size}"
-        );
         return distance < ((other.Size / 2) + (this.Size / 2));
     }
 }

@@ -1,23 +1,25 @@
 ﻿namespace Asteroids.Shared.GameEntities;
 
-public class LobbyState(
+public class GameSnapShot(
     bool isOwner,
     int playerCount,
     LobbyStatus currentStatus,
     List<Ship> ships,
-    List<Asteroid> asteroids
+    List<Asteroid> asteroids,
+    int boardWidth,
+    int boardHeight
 )
 {
-    public bool IsOwner { get; set; } = isOwner;
-    public int PlayerCount { get; set; } = playerCount;
-    public LobbyStatus CurrentStatus { get; set; } = currentStatus;
+    public bool IsOwner { get; init; } = isOwner;
+    public int PlayerCount { get; init; } = playerCount;
+    public LobbyStatus CurrentStatus { get; init; } = currentStatus;
 
-    public List<Ship> Ships { get; set; } = ships;
+    public List<Ship> Ships { get; init; } = ships;
 
-    public List<Asteroid> Asteroids { get; set; } = asteroids;
+    public List<Asteroid> Asteroids { get; init; } = asteroids;
 
-    public int boardWidth { get; init; } = 600;
-    public int boardHeight { get; init; } = 600;
+    public int boardWidth { get; init; } = boardWidth;
+    public int boardHeight { get; init; } = boardHeight;
 }
 
 public enum LobbyStatus

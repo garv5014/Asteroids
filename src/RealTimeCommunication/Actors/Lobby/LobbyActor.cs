@@ -75,7 +75,10 @@ public class LobbyActor : ReceiveActor, IWithTimers
                 new LobbyStateResponse(
                     ConnectionId: "",
                     SessionActorPath: session.Path.ToString(),
-                    CurrentState: GameState.LobbyStateSnapShot(LobbyStatus)
+                    CurrentState: GameState.ToGameSnapShot(
+                        LobbyStatus,
+                        session.Path.ToString() == LobbyOwner
+                    )
                 )
             );
         }
@@ -124,7 +127,10 @@ public class LobbyActor : ReceiveActor, IWithTimers
                 new LobbyStateResponse(
                     ConnectionId: msg.ConnectionId,
                     SessionActorPath: msg.SessionActorPath,
-                    CurrentState: GameState.LobbyStateSnapShot(LobbyStatus)
+                    CurrentState: GameState.ToGameSnapShot(
+                        LobbyStatus,
+                        isOwner: msg.SessionActorPath == LobbyOwner
+                    )
                 )
             );
 
@@ -152,12 +158,14 @@ public class LobbyActor : ReceiveActor, IWithTimers
             new LobbyStateResponse(
                 ConnectionId: msg.ConnectionId,
                 SessionActorPath: msg.SessionActorPath,
-                CurrentState: new LobbyState(
+                CurrentState: new GameSnapShot(
                     isOwner: LobbyOwner == msg.SessionActorPath,
                     playerCount: NumberOfPlayers,
                     currentStatus: LobbyStatus,
                     ships: [],
-                    asteroids: []
+                    asteroids: [],
+                    boardWidth: GameState.boardWidth,
+                    boardHeight: GameState.boardHeight
                 )
             )
         );

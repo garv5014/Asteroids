@@ -37,7 +37,7 @@ public record GetLobbyStateMessage(string SessionActorPath, string ConnectionId,
 public record LobbyStateResponse(
     string ConnectionId,
     string SessionActorPath,
-    LobbyState CurrentState
+    GameSnapShot CurrentState
 ) : HubMessage(ConnectionId, SessionActorPath);
 
 public record UpdateLobbyMessage(
@@ -53,3 +53,6 @@ public record UpdateLobbyStateResponse(
     string SessionActorPath,
     LobbyStatus CurrentStatus
 ) : HubMessage(ConnectionId, SessionActorPath);
+
+public record RefreshConnectionIdMessage(string ConnectionId, string SessionActorPath)
+    : HubMessage(ConnectionId, SessionActorPath);

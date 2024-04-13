@@ -100,6 +100,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             response.ConnectionId,
             response.CurrentState.IsOwner
         );
+        Clients.All.HandleRefreshConnectionId();
         return Clients.Client(response.ConnectionId).HandleLobbyStateResponse(response);
     }
 
@@ -143,5 +144,13 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             new GetLobbyMessage(LobbyId: lobbyId)
         );
         return res.LobbyActorRef;
+    }
+
+    public async Task RefreshConnectionIdCommand(RefreshConnectionIdMessage message)
+    {
+        _logger.LogInformation("Refresh connection id command received");
+        var mes = new RefreshConnectionId(ConnectionId: Context.ConnectionId);
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        sessionActorRef.Tell(mes);
     }
 }

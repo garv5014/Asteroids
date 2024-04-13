@@ -14,7 +14,7 @@ public partial class WaitingRoom : ILobbyClient
     public int LobbyId { get; set; }
     private HubConnection connection;
     private ILobbyHub hubProxy;
-    private LobbyState lobbyState;
+    private GameSnapShot gameState;
     private Timer timer;
     private HashSet<string> pressedKeys = new HashSet<string>();
 
@@ -53,9 +53,6 @@ public partial class WaitingRoom : ILobbyClient
                 NewStatus: LobbyStatus.InGame
             )
         );
-
-        SetTimer();
-
         await InvokeAsync(StateHasChanged);
     }
 
@@ -94,8 +91,7 @@ public partial class WaitingRoom : ILobbyClient
         var thrust = pressedKeys.Contains("w");
         var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
-
-        Console.WriteLine($"Sending ship state: thrust: {thrust}, left: {left}, right: {right}");
+        Console.WriteLine($"Publishing client state: {thrust}, {left}, {right}");
         var path = await localStorage.GetItemAsync<string>("actorPath");
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
@@ -109,7 +105,6 @@ public partial class WaitingRoom : ILobbyClient
 
     private void HandleKeyPress(HashSet<string> pressedKeySet)
     {
-        Console.WriteLine($"Pressed keys: {string.Join(", ", pressedKeySet)}");
         pressedKeys = pressedKeySet;
     }
 
@@ -130,8 +125,26 @@ public partial class WaitingRoom : ILobbyClient
 
     public async Task HandleLobbyStateResponse(LobbyStateResponse message)
     {
-        lobbyState = message.CurrentState;
-        Console.WriteLine($"Received lobby state: {message.CurrentState.Ships.Count}");
+        if (message.CurrentState.CurrentStatus == LobbyStatus.InGame && timer == null)
+        {
+            SetTimer();
+        }
+        else if (message.CurrentState.CurrentStatus != LobbyStatus.InGame && timer != null)
+        {
+            timer.Stop();
+        }
+        gameState = message.CurrentState;
+        // Console.WriteLine($"Received lobby state: {message.ConnectionId}");
         await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task HandleRefreshConnectionId()
+    {
+        await hubProxy.RefreshConnectionIdCommand(
+            new RefreshConnectionIdMessage(
+                ConnectionId: string.Empty,
+                SessionActorPath: await localStorage.GetItemAsync<string>("actorPath")
+            )
+        );
     }
 }

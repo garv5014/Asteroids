@@ -6,5 +6,5 @@ public interface ILobbyClient
     Task HandleJoinLobbyResponse(JoinLobbyResponse message);
     Task HandleCreateLobbyResponse(CreateLobbyResponse message);
     Task HandleLobbyStateResponse(LobbyStateResponse message);
-    
+    Task HandleRefreshConnectionId();
 }
