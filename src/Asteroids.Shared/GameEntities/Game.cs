@@ -62,18 +62,18 @@ public class Game
             // Handle rotation
             if (ship.ShipMovement.IsRotatingRight)
             {
-                ship.Rotation -= 5;
+                ship.Rotation -= 10;
             }
             else if (ship.ShipMovement.IsRotatingLeft)
             {
-                ship.Rotation += 5;
+                ship.Rotation += 10;
             }
 
             if (ship.ShipMovement.IsThrusting)
             {
                 double radians = Math.PI * ship.Rotation / 180.0;
-                ship.VelocityX += Math.Cos(radians) * 0.1;
-                ship.VelocityY += Math.Sin(radians) * 0.1;
+                ship.VelocityX += Math.Cos(radians);
+                ship.VelocityY += Math.Sin(radians);
             }
 
             ship.XCoordinate += (int)ship.VelocityX;
