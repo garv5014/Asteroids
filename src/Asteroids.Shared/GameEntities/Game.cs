@@ -176,9 +176,33 @@ public class Game(int boardHeight, int boardWidth)
 
     Asteroids.Add(asteroid);
   }
+  
+  private void SplitAsteroid(Asteroid asteroid)
+  {
+    if (asteroid.Size <= 20) return;
+    var newAsteroid1 = new Asteroid(
+      xCoordinate: asteroid.XCoordinate,
+      yCoordinate: asteroid.YCoordinate,
+      rotation: asteroid.Rotation + 45,
+      size: asteroid.Size / 2,
+      velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2,
+      velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2
+    );
+    var newAsteroid2 = new Asteroid(
+      xCoordinate: asteroid.XCoordinate,
+      yCoordinate: asteroid.YCoordinate,
+      rotation: asteroid.Rotation - 45,
+      size: asteroid.Size / 2,
+      velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2,
+      velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2
+    );
+    Asteroids.Add(newAsteroid1);
+    Asteroids.Add(newAsteroid2);
+  }
 
   private void CheckCollisions()
   {
+    var asteroidsToSplit = new List<Asteroid>();
     var asteroidsToRemove = new List<Asteroid>();
     var projectilesToRemove = new List<Projectile>();
     foreach (var asteroid in Asteroids)
@@ -189,7 +213,8 @@ public class Game(int boardHeight, int boardWidth)
 
         if (ship.CheckCollision(asteroid))
         {
-          ship.Health -= 10;
+          ship.Health -= asteroid.Size;
+          asteroidsToSplit.Add(asteroid);
           asteroidsToRemove.Add(asteroid);
 
           if (ship.Health <= 0)
@@ -204,11 +229,16 @@ public class Game(int boardHeight, int boardWidth)
     {
       foreach (var asteroid in Asteroids.Where(asteroid => projectile.CheckCollision(asteroid)))
       {
+        asteroidsToSplit.Add(asteroid);
         asteroidsToRemove.Add(asteroid);
         projectilesToRemove.Add(projectile);
       }
     }
-
+    
+    foreach (var asteroid in asteroidsToSplit)
+    {
+      SplitAsteroid(asteroid);
+    }
     foreach (var asteroid in asteroidsToRemove)
     {
       Asteroids.Remove(asteroid);
