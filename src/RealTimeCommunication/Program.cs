@@ -1,12 +1,16 @@
+using Akka.Cluster;
+using Akka.Cluster.Hosting;
+using Akka.Cluster.Tools.Singleton;
+using Akka.DependencyInjection;
+using Akka.Event;
 using Akka.Hosting;
 using Akka.Remote.Hosting;
-using Asteroids.Shared.Services;
 using Observability;
-using Raft_Library.Gateway.shared;
-using Raft_Library.Shop.shared.Services;
 using RealTimeCommunication;
+using RealTimeCommunication.Actors;
 using RealTimeCommunication.Actors.Hub;
 using RealTimeCommunication.Actors.Session;
+using RealTimeCommunication.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +18,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 var raftConnection = new RaftConnectionOptions();
+var actorOptions = new ActorOptions();
+builder.Configuration.GetRequiredSection(nameof(ActorOptions)).Bind(actorOptions);
 
 // builder.Configuration.GetRequiredSection(nameof(RaftConnectionOptions)).Bind(raftConnection);
 // builder.Services.AddSingleton(raftConnection);
@@ -36,24 +42,73 @@ builder.Services.AddAkka(
     ActorHelper.ProjectName,
     configBuilder =>
     {
-        configBuilder.WithActors(
-            (system, registry) =>
-            {
-                registry.TryRegister<AccountHubRelay>(
-                    system.ActorOf(AccountHubRelay.Props(), ActorHelper.AccountRelayActorName)
-                );
-                registry.TryRegister<LobbyHubRelay>(
-                    system.ActorOf(LobbyHubRelay.Props(), ActorHelper.LobbyRelayActorName)
-                );
-                var ss = system.ActorOf(
-                    SessionSupervisor.Props(),
-                    ActorHelper.SessionSupervisorName
-                );
-                registry.TryRegister<SessionSupervisor>(ss);
-                var ls = system.ActorOf(LobbySupervisor.Props(), ActorHelper.LobbySupervisorName);
-                registry.TryRegister<LobbySupervisor>(ls);
-            }
-        );
+        configBuilder
+            .WithRemoting(actorOptions.ActorHostName, 0)
+            .WithClustering(
+                new ClusterOptions()
+                {
+                    Roles = actorOptions.ActorRoles.Split(
+                        ",",
+                        StringSplitOptions.RemoveEmptyEntries
+                    ),
+                    SeedNodes = actorOptions.ActorSeeds.Split(
+                        ",",
+                        StringSplitOptions.RemoveEmptyEntries
+                    ),
+                }
+            )
+            .ConfigureLoggers(
+                (setup) =>
+                {
+                    setup.AddLoggerFactory();
+                }
+            )
+            .WithActors(
+                (system, registry) =>
+                {
+                    var selfMember = Cluster.Get(system).SelfMember;
+
+                    if (selfMember.HasRole("SignalR"))
+                    {
+                        var lobbySupervisorProxy = system.ActorOf(
+                            ClusterSingletonProxy.Props(
+                                singletonManagerPath: $"/user/{ActorHelper.LobbySupervisorName}",
+                                settings: ClusterSingletonProxySettings
+                                    .Create(system)
+                                    .WithRole("Lobbies")
+                            ),
+                            name: "lobbySupervisorProxy"
+                        );
+
+                        registry.TryRegister<AccountHubRelay>(
+                            system.ActorOf(
+                                AccountHubRelay.Props(),
+                                ActorHelper.AccountRelayActorName
+                            )
+                        );
+                        registry.TryRegister<LobbyHubRelay>(
+                            system.ActorOf(LobbyHubRelay.Props(), ActorHelper.LobbyRelayActorName)
+                        );
+                        var ss = system.ActorOf(
+                            SessionSupervisor.Props(lobbySupervisorProxy),
+                            ActorHelper.SessionSupervisorName
+                        );
+                        registry.TryRegister<SessionSupervisor>(ss);
+                        registry.TryRegister<LobbySupervisor>(lobbySupervisorProxy);
+                    }
+
+                    if (selfMember.HasRole("Lobbies"))
+                    {
+                        // Setup Singletons for the Lobbies role
+                    }
+
+                    var deadLetterProps = DependencyResolver.For(system).Props<DeadLetterActor>();
+                    var deadLetterActor = system.ActorOf(deadLetterProps, "deadLetterActor");
+                    system.EventStream.Subscribe(deadLetterActor, typeof(DeadLetter));
+                    system.EventStream.Subscribe(deadLetterActor, typeof(UnhandledMessage));
+                    system.EventStream.Subscribe(deadLetterActor, typeof(AllDeadLetters));
+                }
+            );
     }
 );
 
@@ -70,4 +125,5 @@ app.UseHttpsRedirection();
 
 app.MapHub<AccountHub>("/accountHub");
 app.MapHub<LobbyHub>("/lobbyHub");
+
 app.Run();
