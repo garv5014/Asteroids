@@ -1,4 +1,5 @@
 using Akka.Hosting;
+using Akka.Remote.Hosting;
 using Asteroids.Shared.Services;
 using Observability;
 using Raft_Library.Gateway.shared;
@@ -32,9 +33,12 @@ builder.AddObservability();
 
 builder.Services.AddAkka(
     ActorHelper.ProjectName,
-    configurationBuilder =>
+    configBuilder =>
     {
-        configurationBuilder.WithActors(
+        configBuilder.WithRemoting(
+            
+        );
+        configBuilder.WithActors(
             (system, registry) =>
             {
                 registry.TryRegister<AccountHubRelay>(
