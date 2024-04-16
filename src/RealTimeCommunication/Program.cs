@@ -37,17 +37,23 @@ builder.Services.AddAkka(
         configurationBuilder.WithActors(
             (system, registry) =>
             {
+
                 registry.TryRegister<AccountHubRelay>(
                     system.ActorOf(AccountHubRelay.Props(), ActorHelper.AccountRelayActorName)
                 );
+
                 registry.TryRegister<LobbyHubRelay>(
                     system.ActorOf(LobbyHubRelay.Props(), ActorHelper.LobbyRelayActorName)
                 );
+
                 var ss = system.ActorOf(
                     SessionSupervisor.Props(),
                     ActorHelper.SessionSupervisorName
                 );
                 registry.TryRegister<SessionSupervisor>(ss);
+
+
+
                 var ls = system.ActorOf(LobbySupervisor.Props(), ActorHelper.LobbySupervisorName);
                 registry.TryRegister<LobbySupervisor>(ls);
             }

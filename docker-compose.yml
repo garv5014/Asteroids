@@ -1,6 +1,6 @@
 include:
   - ./ops/dev/observability/docker-compose.yml
-  # - ./ops/dev/raft/docker-compose.yml
+  - ./ops/dev/raft/docker-compose.yml
 
 x-dotnet_sync: &dotnet_sync
   develop:

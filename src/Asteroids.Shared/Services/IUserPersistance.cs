@@ -12,6 +12,13 @@ public interface IUserPersistence
 
 public class AccountInformation
 {
+    public AccountInformation(string userName, string password, Guid userId)
+    {
+        UserName = userName;
+        Password = password;
+        UserId = userId;
+    }
+
     public Guid UserId { get; set; }
     public string UserName { get; set; }
     public string Password { get; set; }
