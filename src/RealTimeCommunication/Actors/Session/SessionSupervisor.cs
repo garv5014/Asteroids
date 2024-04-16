@@ -14,17 +14,17 @@ public class SessionSupervisor : ReceiveActor
     // Make a list of session actors
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _accountRelayActor;
-    private readonly IActorRef? lobbySupervisor;
+    private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, IActorRef> _sessions = new();
 
-    public SessionSupervisor(IActorRef? lobbySupervisor, IActorRef? accountRelayHub)
+    public SessionSupervisor(IActorRef lobbySupervisor, IActorRef accountRelayHub)
     {
         _log.Info("SessionSupervisor created");
 
         _accountRelayActor = accountRelayHub;
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
-        this.lobbySupervisor = lobbySupervisor;
+        this._lobbySupervisor = lobbySupervisor;
     }
 
     private void CreateAccountMessage(LoginMessage lm)
@@ -36,7 +36,7 @@ public class SessionSupervisor : ReceiveActor
         IActorRef session;
 
         session = Context.ActorOf(
-            SessionActor.Props(lm.User, lobbySupervisor),
+            SessionActor.Props(lm.User, _lobbySupervisor),
             Guid.NewGuid().ToString()
         );
         _sessions.Add(session.Path.ToString(), session);
@@ -57,7 +57,7 @@ public class SessionSupervisor : ReceiveActor
         Sender.Tell(new GetUserSessionResponse(actor));
     }
 
-    public static Props Props(IActorRef LobbySupervisor, IActorRef? accountRelay)
+    public static Props Props(IActorRef LobbySupervisor, IActorRef accountRelay)
     {
         return Akka.Actor.Props.Create(() => new SessionSupervisor(LobbySupervisor, accountRelay));
     }

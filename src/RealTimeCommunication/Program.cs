@@ -105,7 +105,7 @@ internal class Program
                                 );
 
                                 registry.TryRegister<SessionSupervisor>(ss);
-                                registry.TryRegister<LobbySupervisor>(lobbySupervisorProxy);
+                                registry.TryRegister<LobbySupervisor>(lobbyHubRelay);
                             }
 
                             if (selfMember.HasRole("Lobbies"))
