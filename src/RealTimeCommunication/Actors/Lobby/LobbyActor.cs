@@ -164,8 +164,9 @@ public class LobbyActor : ReceiveActor, IWithTimers
                     currentStatus: LobbyStatus,
                     ships: [],
                     asteroids: [],
-                    boardWidth: GameState.boardWidth,
-                    boardHeight: GameState.boardHeight
+                    projectiles: [],
+                    boardWidth: GameState.BoardWidth,
+                    boardHeight: GameState.BoardHeight
                 )
             )
         );
@@ -181,8 +182,8 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void JoinLobby(JoinLobbyMessage msg)
     {
         _sessionsToUpdate.Add(Sender); // should be the session Actor.
-        var ranX = _random.Next(0, GameState.boardWidth);
-        var ranY = _random.Next(0, GameState.boardHeight);
+        var ranX = _random.Next(0, GameState.BoardWidth);
+        var ranY = _random.Next(0, GameState.BoardHeight);
         GameState.AddShip(
             msg.SessionActorPath,
             new Ship(xCoordinate: ranX, yCoordinate: ranY, rotation: 0)

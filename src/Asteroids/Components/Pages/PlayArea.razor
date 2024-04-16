@@ -10,8 +10,19 @@
 
     @foreach (var asteroid in State.Asteroids)
     {
-        <AsteroidComponent @key=asteroid.Id XCoordinate="@asteroid.XCoordinate" YCoordinate="@asteroid.YCoordinate"
-            Rotation="@asteroid.Rotation" Size="@asteroid.Size" />
+        <AsteroidComponent @key=asteroid.Id
+                           XCoordinate="@asteroid.XCoordinate"
+                           YCoordinate="@asteroid.YCoordinate"
+                           Rotation="@asteroid.Rotation"
+                           Size="@asteroid.Size"/>
+    }
+    
+    @foreach(var projectile in State.Projectiles)
+    {
+        <ProjectileComponent @key=projectile.Id
+                             XCoordinate="@projectile.XCoordinate"
+                             YCoordinate="@projectile.YCoordinate"
+                             Size="@projectile.Size" />
     }
 </div>
 
@@ -35,7 +46,7 @@
     [Parameter]
     public EventCallback<HashSet<string>> EventCallback { get; set; }
 
-    private string[] _movementKeys = ["w", "a", "d"];
+    private string[] _movementKeys = ["w", "a", "d", " "];
     private HashSet<string> _pressedKeys = [];
 
     protected override void OnInitialized()

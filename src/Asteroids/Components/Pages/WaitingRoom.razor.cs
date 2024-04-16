@@ -91,13 +91,13 @@ public partial class WaitingRoom : ILobbyClient
         var thrust = pressedKeys.Contains("w");
         var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
-        Console.WriteLine($"Publishing client state: {thrust}, {left}, {right}");
+        var shoot = pressedKeys.Contains(" ");
         var path = await localStorage.GetItemAsync<string>("actorPath");
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,
                 SessionActorPath: path,
-                ShipParams: new UpdateShipParams(thrust, left, right),
+                ShipParams: new UpdateShipParams(thrust, left, right, shoot),
                 LobbyId: LobbyId
             )
         );
