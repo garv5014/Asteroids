@@ -180,6 +180,7 @@ public class Game(int boardHeight, int boardWidth)
   private void CheckCollisions()
   {
     var asteroidsToRemove = new List<Asteroid>();
+    var projectilesToRemove = new List<Projectile>();
     foreach (var asteroid in Asteroids)
     {
       foreach (var shipEntry in Ships)
@@ -198,11 +199,23 @@ public class Game(int boardHeight, int boardWidth)
         }
       }
     }
+    
+    foreach (var projectile in Projectiles)
+    {
+      foreach (var asteroid in Asteroids.Where(asteroid => projectile.CheckCollision(asteroid)))
+      {
+        asteroidsToRemove.Add(asteroid);
+        projectilesToRemove.Add(projectile);
+      }
+    }
 
-    // Now remove the asteroids separately to avoid concurrent changes to the list.
     foreach (var asteroid in asteroidsToRemove)
     {
       Asteroids.Remove(asteroid);
+    }
+    foreach (var projectile in projectilesToRemove)
+    {
+      Projectiles.Remove(projectile);
     }
   }
 }
