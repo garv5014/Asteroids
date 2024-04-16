@@ -10,7 +10,7 @@
   
   private string GetTransformStyle()
   {
-    var transform = $"translate({XCoordinate}px, {YCoordinate - Size}px)";
+    var transform = $"translate({XCoordinate + 20}px, {YCoordinate - 40}px)";
     return transform;
   }
 
@@ -28,6 +28,6 @@
 <style>
   .asteroid {
     position: absolute;
-    transition: transform 0.1s linear;
+    transition: transform 0.05s linear;
   }
 </style>
