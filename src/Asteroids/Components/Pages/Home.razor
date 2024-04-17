@@ -11,12 +11,14 @@
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="card">
+        <img class="card-img-top" src="https://upload.wikimedia.org/wikipedia/commons/1/10/Asteroids_arcade_logo.svg" alt="logo"/>
         <div class="card-body">
           <h5 class="card-title">Login</h5>
           <input type="text" class="form-control mb-2" placeholder="Username" @bind="username">
           <input type="password" class="form-control mb-2" placeholder="Password" @bind="password">
-          <button class="btn btn-primary" @onclick="Login">Login</button>
-          <p>Message: @message</p>
+          <div class="d-flex justify-content-end">
+            <button class="btn btn-primary" @onclick="Login">Login</button>
+          </div>
         </div>
       </div>
     </div>

@@ -5,41 +5,44 @@
 @inject SignalREnv SignalREnv
 @inject ILocalStorageService LocalStorage
 
-<h3>Lobby</h3>
+<div class="container-lg">
+  <h3>Lobby</h3>
 
-<div class="mb-3">
-  <input type="text" class="form-control" placeholder="Lobby Name" @bind="newLobbyName">
-  <button class="btn btn-primary mt-2" @onclick="CreateLobby">Create Lobby</button>
-</div>
+  <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Lobby Name" @bind="newLobbyName">
+    <button class="btn btn-primary mt-2" @onclick="CreateLobby">Create Lobby</button>
+  </div>
 
-@if (lobbies == null)
-{
-  <p>Loading lobbies...</p>
-}
-else if (lobbies.Count == 0)
-{
-  <p>No lobbies available at the moment.</p>
-}
-else
-{
-  <table class="table">
-    <thead>
+  @if (lobbies == null)
+  {
+    <p>Loading lobbies...</p>
+  }
+  else if (lobbies.Count == 0)
+  {
+    <p>No lobbies available at the moment.</p>
+  }
+  else
+  {
+    <table class="table">
+      <thead>
       <tr>
         <th>Lobby Name</th>
         <th>Number of Players</th>
         <th></th> <!-- For join button -->
       </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
       @foreach (var lobby in lobbies)
       {
         <tr>
           <td>@lobby.Name</td>
           <td>@lobby.PlayerCount</td>
-          <td><button class="btn btn-success" @onclick="() => JoinLobby(lobby.Id)">Join</button></td>
+          <td>
+            <button class="btn btn-success" @onclick="() => JoinLobby(lobby.Id)">Join</button>
+          </td>
         </tr>
       }
-    </tbody>
-  </table>
-}
-
+      </tbody>
+    </table>
+  }
+</div>
