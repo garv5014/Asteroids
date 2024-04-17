@@ -65,7 +65,7 @@ services:
       target: development
     environment:
       ActorOptions__ActorRoles: "SignalR"
-      AcotorOptions__ActorHostName: "realtime"
+      ActorOptions__ActorHostName: "realtime"
       <<: *akka_actor_env
     <<: *akka_actor_base
 
@@ -76,7 +76,7 @@ services:
       target: development
     environment:
       ActorOptions__ActorRoles: "Lobbies"
-      AcotorOptions__ActorHostName: "node1"
+      ActorOptions__ActorHostName: "actor-node-1"
       <<: *akka_actor_env
     <<: *akka_actor_base
 

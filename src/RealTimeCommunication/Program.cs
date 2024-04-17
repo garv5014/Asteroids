@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Akka.Actor;
 using Akka.Cluster;
 using Akka.Cluster.Hosting;
@@ -25,6 +26,8 @@ internal class Program
         var raftConnection = new RaftConnectionOptions();
         var actorOptions = new ActorOptions();
         builder.Configuration.GetRequiredSection(nameof(ActorOptions)).Bind(actorOptions);
+
+        Console.WriteLine($"Actor Options: {JsonSerializer.Serialize(actorOptions)}");
 
         // builder.Configuration.GetRequiredSection(nameof(RaftConnectionOptions)).Bind(raftConnection);
         // builder.Services.AddSingleton(raftConnection);
