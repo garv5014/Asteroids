@@ -14,28 +14,17 @@ public class SessionSupervisor : ReceiveActor
     // Make a list of session actors
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _accountRelayActor;
-    private readonly IActorRef? testProbe;
-
+    private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, IActorRef> _sessions = new();
 
-    public SessionSupervisor(IActorRef? testProbe = null)
+    public SessionSupervisor(IActorRef lobbySupervisor, IActorRef accountRelayHub)
     {
         _log.Info("SessionSupervisor created");
 
-        if (testProbe != null)
-        {
-            _accountRelayActor = testProbe;
-            this.testProbe = testProbe;
-        }
-        else
-        {
-            _accountRelayActor = Context
-                .ActorSelection($"/user/{ActorHelper.AccountRelayActorName}")
-                .ResolveOne(TimeSpan.FromSeconds(3))
-                .Result;
-        }
+        _accountRelayActor = accountRelayHub;
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
+        this._lobbySupervisor = lobbySupervisor;
     }
 
     private void CreateAccountMessage(LoginMessage lm)
@@ -46,14 +35,11 @@ public class SessionSupervisor : ReceiveActor
 
         IActorRef session;
 
-        if (testProbe != null)
-        {
-            session = testProbe;
-        }
-        else
-        {
-            session = Context.ActorOf(SessionActor.Props(lm.User), Guid.NewGuid().ToString());
-        }
+        session = Context.ActorOf(
+            SessionActor.Props(lm.User, _lobbySupervisor),
+            Guid.NewGuid().ToString()
+        );
+
         _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(
             new LoginResponseMessage(
@@ -72,8 +58,8 @@ public class SessionSupervisor : ReceiveActor
         Sender.Tell(new GetUserSessionResponse(actor));
     }
 
-    public static Props Props(IActorRef? testProbe = null)
+    public static Props Props(IActorRef LobbySupervisor, IActorRef accountRelay)
     {
-        return Akka.Actor.Props.Create(() => new SessionSupervisor(testProbe));
+        return Akka.Actor.Props.Create(() => new SessionSupervisor(LobbySupervisor, accountRelay));
     }
 }

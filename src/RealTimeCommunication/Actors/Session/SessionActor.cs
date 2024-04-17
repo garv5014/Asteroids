@@ -20,13 +20,10 @@ public class SessionActor : ReceiveActor
 
     private readonly IActorRef lobbySupervisor;
 
-    public SessionActor(string username)
+    public SessionActor(string username, IActorRef lobbySupervisor)
     {
         this.username = username;
-        lobbySupervisor = Context
-            .ActorSelection($"/user/{ActorHelper.LobbySupervisorName}")
-            .ResolveOne(TimeSpan.FromSeconds(3))
-            .Result;
+        this.lobbySupervisor = lobbySupervisor;
         Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
         Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
         Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
@@ -83,9 +80,9 @@ public class SessionActor : ReceiveActor
         lobbySupervisor.Tell(msg);
     }
 
-    public static Props Props(string username)
+    public static Props Props(string username, IActorRef LobbySupervisor)
     {
-        return Akka.Actor.Props.Create<SessionActor>(username);
+        return Akka.Actor.Props.Create<SessionActor>(username, LobbySupervisor);
     }
 }
 

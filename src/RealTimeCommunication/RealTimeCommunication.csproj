@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akka" Version="1.5.18" />
+    <PackageReference Include="Akka" Version="1.5.19" />
+    <PackageReference Include="Akka.Cluster" Version="1.5.19" />
+    <PackageReference Include="Akka.Cluster.Hosting" Version="1.5.18" />
     <PackageReference Include="Akka.DependencyInjection" Version="1.5.18" />
     <PackageReference Include="Akka.Hosting" Version="1.5.18" />
     <PackageReference Include="Akka.Logger.Serilog" Version="1.5.12.1" />
