@@ -96,8 +96,13 @@ internal class Program
                                 registry.TryRegister<AccountHubRelay>(accountHubRelay);
 
                                 var lobbyHubRelay = system.ActorOf(
-                                    LobbyHubRelay.Props(),
-                                    ActorHelper.LobbyRelayActorName
+                                    ClusterSingletonProxy.Props(
+                                        singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
+                                        settings: ClusterSingletonProxySettings
+                                            .Create(system)
+                                            .WithRole("Lobbies")
+                                    ),
+                                    name: "lobbyHubRelayProxy"
                                 );
 
                                 registry.TryRegister<LobbyHubRelay>(lobbyHubRelay);
@@ -108,7 +113,7 @@ internal class Program
                                 );
 
                                 registry.TryRegister<SessionSupervisor>(ss);
-                                registry.TryRegister<LobbySupervisor>(lobbyHubRelay);
+                                registry.TryRegister<LobbySupervisor>(lobbySupervisorProxy);
                             }
 
                             if (selfMember.HasRole("Lobbies"))
@@ -178,6 +183,7 @@ internal class Program
             ),
             name: ActorHelper.LobbySupervisorName
         );
+
         // create lobby supervisor proxy
         var lobbySupervisorProxy = system.ActorOf(
             ClusterSingletonProxy.Props(

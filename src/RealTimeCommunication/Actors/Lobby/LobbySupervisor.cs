@@ -19,7 +19,6 @@ public class LobbySupervisor : ReceiveActor
     private Dictionary<string, IActorRef> nameToActorRef = new Dictionary<string, IActorRef>();
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private int lobbyId = 0;
-
     private IActorRef _lobbyRelayActor;
 
     public LobbySupervisor(IActorRef lobbyRelayActorRef)

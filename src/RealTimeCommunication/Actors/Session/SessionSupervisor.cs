@@ -39,6 +39,7 @@ public class SessionSupervisor : ReceiveActor
             SessionActor.Props(lm.User, _lobbySupervisor),
             Guid.NewGuid().ToString()
         );
+
         _sessions.Add(session.Path.ToString(), session);
         _accountRelayActor.Tell(
             new LoginResponseMessage(
