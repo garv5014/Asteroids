@@ -194,6 +194,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     protected override void PreStart()
     {
         _log.Info("LobbyActor created");
+        Context.Parent.Tell(new ErrorMessage("Made new error"));
     }
 
     protected override void PostStop()
