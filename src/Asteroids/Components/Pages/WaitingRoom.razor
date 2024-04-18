@@ -6,23 +6,26 @@
 @inject IToastService ToastService
 
 
-@if (gameState != null)
-{
-  @if (gameState.CurrentStatus == LobbyStatus.InGame)
+<div class="container-lg d-flex flex-column justify-content-center align-items-center" style="height: 90vh">
+  @if (gameState != null)
   {
-    <PlayArea State=@gameState EventCallback=@HandleKeyPress />
+    @if (gameState.CurrentStatus == LobbyStatus.WaitingForPlayers)
+    {
+      <h1>Waiting Room</h1>
+      <h4>Waiting for game to start</h4>
+
+      @if (gameState.IsOwner)
+      {
+        <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
+      }
+    }
+    else
+    {
+      <PlayArea State=@gameState EventCallback=@HandleKeyPress/>
+    }
   }
   else
   {
-    <h1>WaitingRoom please wait</h1>
-
-    @if (gameState.IsOwner)
-    {
-      <button @onclick="StartGame" class="btn btn-primary">Start Game</button>
-    }
+    <h1>Loading WaitingRoom Information </h1>
   }
-}
-else
-{
-  <h1>Loading WaitingRoom Information </h1>
-}
+</div>

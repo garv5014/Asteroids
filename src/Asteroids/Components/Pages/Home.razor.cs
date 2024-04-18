@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 namespace Asteroids.Components.Pages;
 
 public partial class Home : IAccountClient
-{
-    public string message;
+{ 
     public string username { get; set; } = "";
     public string password { get; set; } = "";
     private IAccountHub hubProxy = default!;
@@ -32,7 +31,6 @@ public partial class Home : IAccountClient
 
     public async Task HandleLoginResponse(LoginResponseMessage message)
     {
-        this.message = message?.Message ?? "Message is null";
         if (message?.Success ?? false)
         {
             ToastService.ShowSuccess("Login Success");

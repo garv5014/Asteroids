@@ -61,6 +61,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
             LobbyStatus = LobbyStatus.GameOver;
             Timers.Cancel("gameLoop");
             Timers.Cancel("spawnAsteroid");
+            UpdateClients();
         }
     }
 
