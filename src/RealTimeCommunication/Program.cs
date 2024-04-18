@@ -95,6 +95,12 @@ internal class Program
                                 );
                                 registry.TryRegister<AccountHubRelay>(accountHubRelay);
 
+                                var errorHubRelay = system.ActorOf(
+                                    ErrorHubRelay.Props(),
+                                    ActorHelper.ErrorHubRelayActorName
+                                );
+                                registry.TryRegister<ErrorHubRelay>(errorHubRelay);
+
                                 var lobbyHubRelay = system.ActorOf(
                                     ClusterSingletonProxy.Props(
                                         singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
@@ -147,8 +153,9 @@ internal class Program
 
         if (actorOptions.ActorRoles.Contains("SignalR"))
         {
-            app.MapHub<AccountHub>("/accountHub");
-            app.MapHub<LobbyHub>("/lobbyHub");
+            app.MapHub<AccountHub>(AccountHub.UrlPath);
+            app.MapHub<LobbyHub>(LobbyHub.UrlPath);
+            app.MapHub<ErrorHub>(ErrorHub.UrlPath);
         }
 
         app.Run();
@@ -174,10 +181,32 @@ internal class Program
             name: "lobbyHubRelayProxy"
         );
 
+        // create LobbyHubRelay singleton
+        system.ActorOf(
+            ClusterSingletonManager.Props(
+                singletonProps: ErrorHubRelay.Props(),
+                terminationMessage: PoisonPill.Instance,
+                settings: ClusterSingletonManagerSettings.Create(system).WithRole("Lobbies")
+            ),
+            name: ActorHelper.ErrorHubRelayActorName
+        );
+
+        // create lobbies emitter proxy
+        var errorHubRelay = system.ActorOf(
+            ClusterSingletonProxy.Props(
+                singletonManagerPath: $"/user/{ActorHelper.ErrorHubRelayActorName}",
+                settings: ClusterSingletonProxySettings.Create(system).WithRole("Lobbies")
+            ),
+            name: "errorHubRelayProxy"
+        );
+
         // create lobby supervisor singleton
         system.ActorOf(
             ClusterSingletonManager.Props(
-                singletonProps: LobbySupervisor.Props(lobbyHubRelay: lobbyHubRelay),
+                singletonProps: LobbySupervisor.Props(
+                    lobbyHubRelay: lobbyHubRelay,
+                    errorHubRelay: errorHubRelay
+                ),
                 terminationMessage: PoisonPill.Instance,
                 settings: ClusterSingletonManagerSettings.Create(system).WithRole("Lobbies")
             ),

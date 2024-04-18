@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.Event;
 using Asteroids.Shared;
+using Asteroids.Shared.Messages;
 
 namespace RealTimeCommunication;
 
@@ -21,7 +22,9 @@ public class LobbySupervisor : ReceiveActor
     private int lobbyId = 0;
     private IActorRef _lobbyRelayActor;
 
-    public LobbySupervisor(IActorRef lobbyRelayActorRef)
+    private IActorRef _errorHubActor;
+
+    public LobbySupervisor(IActorRef lobbyRelayActorRef, IActorRef errorHubActorRef)
     {
         Receive<CreateLobbyMessage>(CreateLobby);
         Receive<JoinLobbyMessage>(JoinLobby);
@@ -30,7 +33,9 @@ public class LobbySupervisor : ReceiveActor
         Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
         Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
         Receive<GetLobbyMessage>(msg => HandleGetLobbyMessage(msg));
+        Receive<ErrorMessage>(msg => _errorHubActor.Tell(msg));
         _lobbyRelayActor = lobbyRelayActorRef;
+        _errorHubActor = errorHubActorRef;
     }
 
     private void HandleGetLobbyMessage(GetLobbyMessage msg)
@@ -183,8 +188,8 @@ public class LobbySupervisor : ReceiveActor
         _log.Info("LobbySupervisor stopped");
     }
 
-    public static Props Props(IActorRef lobbyHubRelay)
+    public static Props Props(IActorRef lobbyHubRelay, IActorRef errorHubRelay)
     {
-        return Akka.Actor.Props.Create(() => new LobbySupervisor(lobbyHubRelay));
+        return Akka.Actor.Props.Create(() => new LobbySupervisor(lobbyHubRelay, errorHubRelay));
     }
 }

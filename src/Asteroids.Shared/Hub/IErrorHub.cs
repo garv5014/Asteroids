@@ -2,4 +2,7 @@ using Asteroids.Shared.Messages;
 
 namespace Asteroids.Shared;
 
-public interface IErrorHub { }
+public interface IErrorHub 
+{ 
+    Task ErrorPublish(ErrorMessage message);
+}
