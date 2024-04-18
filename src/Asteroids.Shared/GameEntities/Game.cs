@@ -6,12 +6,12 @@ public class Game(int boardHeight, int boardWidth)
     public int BoardWidth { get; set; } = boardWidth;
 
     private List<((int xEdge, int yEdge), (int headingMin, int headingMax))> Edges { get; set; } =
-    [
-      ((600, 0), (0, 180)), // top
-        ((0, 600), (180, 360)), // left
-        ((600, 600), (90, 270)), // bottom
-        ((600, 0), (270, 430))
-    ];
+        [
+            ((600, 0), (0, 180)), // top
+            ((0, 600), (180, 360)), // left
+            ((600, 600), (90, 270)), // bottom
+            ((600, 0), (270, 430))
+        ];
 
     private readonly Random _random = new();
     private Dictionary<string, Ship> Ships { get; set; } = new();
@@ -71,22 +71,26 @@ public class Game(int boardHeight, int boardWidth)
                 ship.Rotation += 10;
             }
 
+            var radians = Math.PI * ship.Rotation / 180.0;
             if (ship.ShipMovement.IsThrusting)
             {
-                var radians = Math.PI * ship.Rotation / 180.0;
                 ship.VelocityX += Math.Cos(radians);
                 ship.VelocityY += Math.Sin(radians);
+            }
+            else
+            {
+                approachZeroVelocity(ship);
             }
 
             if (ship.ShipMovement.IsShooting)
             {
                 var newProjectile = new Projectile(
-                  xCoordinate: ship.XCoordinate,
-                  yCoordinate: ship.YCoordinate,
-                  rotation: ship.Rotation,
-                  size: 20,
-                  velocityX: ship.VelocityX + Math.Cos(Math.PI * ship.Rotation / 180.0) * 10,
-                  velocityY: ship.VelocityY + Math.Sin(Math.PI * ship.Rotation / 180.0) * 10
+                    xCoordinate: ship.XCoordinate,
+                    yCoordinate: ship.YCoordinate,
+                    rotation: ship.Rotation,
+                    size: 20,
+                    velocityX: ship.VelocityX + Math.Cos(Math.PI * ship.Rotation / 180.0) * 10,
+                    velocityY: ship.VelocityY + Math.Sin(Math.PI * ship.Rotation / 180.0) * 10
                 );
                 Projectiles.Add(newProjectile);
             }
@@ -96,6 +100,28 @@ public class Game(int boardHeight, int boardWidth)
 
             ship.XCoordinate = (ship.XCoordinate + BoardWidth) % BoardWidth;
             ship.YCoordinate = (ship.YCoordinate + BoardHeight) % BoardHeight;
+        }
+    }
+
+    private void approachZeroVelocity(Ship ship)
+    {
+        double slowDownFactor = 0.25;
+        if (ship.VelocityX > 0)
+        {
+            ship.VelocityX -= slowDownFactor;
+        }
+        else if (ship.VelocityX < 0)
+        {
+            ship.VelocityX += slowDownFactor;
+        }
+
+        if (ship.VelocityY > 0)
+        {
+            ship.VelocityY -= slowDownFactor;
+        }
+        else if (ship.VelocityY < 0)
+        {
+            ship.VelocityY += slowDownFactor;
         }
     }
 
@@ -149,9 +175,9 @@ public class Game(int boardHeight, int boardWidth)
     private bool IsOutOfBounds(GameObject gameObject)
     {
         return gameObject.YCoordinate > BoardHeight
-               || gameObject.YCoordinate < 0
-               || gameObject.XCoordinate > BoardWidth
-               || gameObject.XCoordinate < 0;
+            || gameObject.YCoordinate < 0
+            || gameObject.XCoordinate > BoardWidth
+            || gameObject.XCoordinate < 0;
     }
 
     public void SpawnAsteroids()
@@ -166,12 +192,12 @@ public class Game(int boardHeight, int boardWidth)
         double speedFactor = 4; // Adjust this value to control asteroid speed
 
         var asteroid = new Asteroid(
-          xCoordinate: spawnX,
-          yCoordinate: spawnY,
-          rotation: heading,
-          size: size,
-          velocityX: Math.Cos(headingRadians) * speedFactor,
-          velocityY: Math.Sin(headingRadians) * speedFactor
+            xCoordinate: spawnX,
+            yCoordinate: spawnY,
+            rotation: heading,
+            size: size,
+            velocityX: Math.Cos(headingRadians) * speedFactor,
+            velocityY: Math.Sin(headingRadians) * speedFactor
         );
 
         Asteroids.Add(asteroid);
@@ -179,22 +205,25 @@ public class Game(int boardHeight, int boardWidth)
 
     private void SplitAsteroid(Asteroid asteroid)
     {
-        if (asteroid.Size <= 20) return;
+        if (asteroid.Size <= 20)
+            return;
         var newAsteroid1 = new Asteroid(
-          xCoordinate: asteroid.XCoordinate,
-          yCoordinate: asteroid.YCoordinate,
-          rotation: asteroid.Rotation + 45,
-          size: asteroid.Size / 2,
-          velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2,
-          velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2
+            xCoordinate: asteroid.XCoordinate,
+            yCoordinate: asteroid.YCoordinate,
+            rotation: asteroid.Rotation + 45,
+            size: asteroid.Size / 2,
+            velocityX: asteroid.VelocityX
+                + Math.Cos(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2,
+            velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2
         );
         var newAsteroid2 = new Asteroid(
-          xCoordinate: asteroid.XCoordinate,
-          yCoordinate: asteroid.YCoordinate,
-          rotation: asteroid.Rotation - 45,
-          size: asteroid.Size / 2,
-          velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2,
-          velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2
+            xCoordinate: asteroid.XCoordinate,
+            yCoordinate: asteroid.YCoordinate,
+            rotation: asteroid.Rotation - 45,
+            size: asteroid.Size / 2,
+            velocityX: asteroid.VelocityX
+                + Math.Cos(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2,
+            velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2
         );
         Asteroids.Add(newAsteroid1);
         Asteroids.Add(newAsteroid2);
@@ -227,7 +256,9 @@ public class Game(int boardHeight, int boardWidth)
 
         foreach (var projectile in Projectiles)
         {
-            foreach (var asteroid in Asteroids.Where(asteroid => projectile.CheckCollision(asteroid)))
+            foreach (
+                var asteroid in Asteroids.Where(asteroid => projectile.CheckCollision(asteroid))
+            )
             {
                 asteroidsToSplit.Add(asteroid);
                 asteroidsToRemove.Add(asteroid);
@@ -253,23 +284,23 @@ public class Game(int boardHeight, int boardWidth)
 public static class GameExtensions
 {
     public static GameSnapShot ToGameSnapShot(
-      this Game game,
-      LobbyStatus currentStatus,
-      bool isOwner = false
+        this Game game,
+        LobbyStatus currentStatus,
+        bool isOwner = false
     )
     {
         var ships = game.GetShips();
         var asteroids = game.GetAsteroids();
         var projectiles = game.GetProjectiles();
         var gameState = new GameSnapShot(
-          isOwner: isOwner,
-          playerCount: ships.Count,
-          currentStatus: currentStatus,
-          ships: ships,
-          asteroids: asteroids,
-          projectiles: projectiles,
-          boardWidth: game.BoardWidth,
-          boardHeight: game.BoardHeight
+            isOwner: isOwner,
+            playerCount: ships.Count,
+            currentStatus: currentStatus,
+            ships: ships,
+            asteroids: asteroids,
+            projectiles: projectiles,
+            boardWidth: game.BoardWidth,
+            boardHeight: game.BoardHeight
         );
         return gameState;
     }
