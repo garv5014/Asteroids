@@ -51,4 +51,5 @@ public static class ActorHelper
     public static string LobbyRelayActorName = "lobbyRelayActor";
 
     public static string AccountPersistanceActorName = "accountPersistanceActor";
+    public static string ErrorHubRelayActorName = "errorHubRelayActor";
 }
