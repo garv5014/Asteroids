@@ -24,7 +24,11 @@ public class SessionSupervisor : ReceiveActor
         _accountRelayActor = accountRelayHub;
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
-        this._lobbySupervisor = lobbySupervisor;
+        _accountPersistenceActor = Context.ActorOf(
+            AccountPersistanceActor.Props(),
+            ActorHelper.AccountPersistanceActorName
+        );
+        _lobbySupervisor = lobbySupervisor;
     }
 
     private void CreateAccountMessage(LoginMessage lm)

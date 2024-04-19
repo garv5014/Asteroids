@@ -7,7 +7,10 @@ using Akka.DependencyInjection;
 using Akka.Event;
 using Akka.Hosting;
 using Akka.Remote.Hosting;
+using Asteroids.Shared.Services;
 using Observability;
+using Raft_Library.Gateway.shared;
+using Raft_Library.Shop.shared.Services;
 using RealTimeCommunication;
 using RealTimeCommunication.Actors;
 using RealTimeCommunication.Actors.Hub;
@@ -21,28 +24,33 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddEndpointsApiExplorer();
+
         builder.Services.AddSwaggerGen();
+
         builder.Services.AddSignalR();
-        var raftConnection = new RaftConnectionOptions();
+
         var actorOptions = new ActorOptions();
         builder.Configuration.GetRequiredSection(nameof(ActorOptions)).Bind(actorOptions);
 
-        Console.WriteLine($"Actor Options: {JsonSerializer.Serialize(actorOptions)}");
+        var raftConnection = new RaftConnectionOptions();
+        builder
+            .Configuration.GetRequiredSection(nameof(RaftConnectionOptions))
+            .Bind(raftConnection);
+        builder.Services.AddSingleton(raftConnection);
+        builder.Services.AddHttpClient(
+            "Raft",
+            client =>
+                client.BaseAddress = new Uri(
+                    builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
+                        ?? throw new InvalidOperationException("GatewayUrl address not found.")
+                )
+        );
 
-        // builder.Configuration.GetRequiredSection(nameof(RaftConnectionOptions)).Bind(raftConnection);
-        // builder.Services.AddSingleton(raftConnection);
-        // builder.Services.AddHttpClient(
-        //     "Raft",
-        //     client =>
-        //         client.BaseAddress = new Uri(
-        //             builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
-        //                 ?? throw new InvalidOperationException("GatewayUrl address not found.")
-        //         )
-        // );
-
-        // builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft"));
-        // builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
-        // builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
+        builder.Services.AddScoped(sp =>
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft")
+        );
+        builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
+        builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
 
         builder.AddObservability();
 
@@ -93,6 +101,7 @@ internal class Program
                                     AccountHubRelay.Props(),
                                     ActorHelper.AccountRelayActorName
                                 );
+
                                 registry.TryRegister<AccountHubRelay>(accountHubRelay);
 
                                 var lobbyHubRelay = system.ActorOf(
@@ -106,6 +115,15 @@ internal class Program
                                 );
 
                                 registry.TryRegister<LobbyHubRelay>(lobbyHubRelay);
+
+                                var accountPersistenceActor = system.ActorOf(
+                                    AccountPersistanceActor.Props(),
+                                    ActorHelper.AccountPersistanceActorName
+                                );
+
+                                registry.TryRegister<AccountPersistanceActor>(
+                                    accountPersistenceActor
+                                );
 
                                 var ss = system.ActorOf(
                                     SessionSupervisor.Props(lobbySupervisorProxy, accountHubRelay),
@@ -135,6 +153,7 @@ internal class Program
                     );
             }
         );
+
         var app = builder.Build();
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -165,7 +184,7 @@ internal class Program
             ),
             name: ActorHelper.LobbyRelayActorName
         );
-        // create lobbies emitter proxy
+        // create lobbies relay proxy
         var lobbyHubRelay = system.ActorOf(
             ClusterSingletonProxy.Props(
                 singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
