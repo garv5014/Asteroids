@@ -1,6 +1,7 @@
 @using Asteroids.Components.Sprites
 @using Asteroids.Shared.GameEntities
 @inject IToastService ToastService
+@inject NavigationManager NavigationManager
 <h1>Game is @(State.CurrentStatus == LobbyStatus.InGame ? "Playing" : "Over")</h1>
 <div class="play-area" tabindex="0" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp">
     @foreach (var ship in State.Ships)
@@ -10,8 +11,27 @@
 
     @foreach (var asteroid in State.Asteroids)
     {
-        <AsteroidComponent @key=asteroid.Id XCoordinate="@asteroid.XCoordinate" YCoordinate="@asteroid.YCoordinate"
-            Rotation="@asteroid.Rotation" Size="@asteroid.Size" />
+        <AsteroidComponent @key=asteroid.Id
+                           XCoordinate="@asteroid.XCoordinate"
+                           YCoordinate="@asteroid.YCoordinate"
+                           Rotation="@asteroid.Rotation"
+                           Size="@asteroid.Size"/>
+    }
+    
+    @foreach(var projectile in State.Projectiles)
+    {
+        <ProjectileComponent @key=projectile.Id
+                             XCoordinate="@projectile.XCoordinate"
+                             YCoordinate="@projectile.YCoordinate"
+                             Size="@projectile.Size" />
+    }
+    
+    @if (State.CurrentStatus == LobbyStatus.GameOver)
+    {
+        <div class="game-over">
+            <h1 class="text-danger" >Game Over</h1>
+        <button class="btn btn-link text-danger" @onclick="@(() => NavigationManager.NavigateTo("/lobby"))">Return To Lobby</button>
+        </div>
     }
 </div>
 
@@ -26,6 +46,16 @@
     .play-area:focus {
         border-color: #fa0202;
     }
+    
+    .game-over {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
 </style>
 
 @code {
@@ -35,7 +65,7 @@
     [Parameter]
     public EventCallback<HashSet<string>> EventCallback { get; set; }
 
-    private string[] _movementKeys = ["w", "a", "d"];
+    private string[] _movementKeys = ["w", "a", "d", " "];
     private HashSet<string> _pressedKeys = [];
 
     protected override void OnInitialized()

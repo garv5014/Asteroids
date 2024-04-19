@@ -1,0 +1,33 @@
+@code {
+  [Parameter]
+  public double XCoordinate { get; set; }
+
+  [Parameter]
+  public double YCoordinate { get; set; }
+
+  [Parameter]
+  public int Size { get; set; }
+  
+  private string GetTransformStyle()
+  {
+    var transform = $"translate({XCoordinate + 22}px, {YCoordinate - 40}px)";
+    return transform;
+  }
+
+  private string GetSizeStyle()
+  {
+    return $"font-size: {Size}px;";
+    // return $"height: {Size}px; width: {Size}px;";
+  }
+}
+
+<div class="asteroid" style="@($"transform: {GetTransformStyle()}; {GetSizeStyle()}")">
+  &#8226;
+</div>
+
+<style>
+  .asteroid {
+    position: absolute;
+    transition: transform 0.05s linear;
+  }
+</style>

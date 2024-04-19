@@ -56,7 +56,7 @@ public class GameTest
         var game = new Game(800, 600);
         var ship = new Ship(100, 100, 90);
         game.AddShip("ship1", ship);
-        game.UpdateShip("ship1", new UpdateShipParams(true, false, false));
+        game.UpdateShip("ship1", new UpdateShipParams(true, false, false, false));
         game.Tick(); // This should move the ship
         game.Tick(); // This should move the ship again
         game.Tick(); // This should move the ship again

@@ -48,6 +48,7 @@ public class LobbyHubRelay : ActorPublisher
             ExecuteAndPipeToSelf(async () =>
             {
                 _log.Info("Sending response to client: {0}", response.ConnectionId);
+                _log.Info("Projectiles: {0}", response.CurrentState.Projectiles.Count);
                 Client = hubConnection.ServerProxy<ILobbyHub>();
                 await Client.LobbyStatePublish(response);
             });

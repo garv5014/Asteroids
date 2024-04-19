@@ -30,7 +30,7 @@
     </svg>
   </div>
   <div class="health-bar-container">
-    <div class="health-bar" style="width: @(Ship.Health)px"></div>
+    <div class="health-bar" style="width: @(Ship.Health / 10)px"></div>
   </div>
 </div>
 
@@ -47,7 +47,7 @@
 
   .ship {
     position: relative;
-    transition: transform 0.1s linear;
+    transition: transform 0.05s linear;
     transform-origin: center;
   }
 

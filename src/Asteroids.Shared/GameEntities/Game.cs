@@ -1,55 +1,55 @@
-using System.Runtime.CompilerServices;
-
 namespace Asteroids.Shared.GameEntities;
 
-public class Game
+public class Game(int boardHeight, int boardWidth)
 {
-    public int boardHeight { get; set; }
-    public int boardWidth { get; set; }
-    public List<((int xEdge, int yEdge), (int headingMin, int headingMax))> edges { get; set; } =
-        new List<((int xEdge, int yEdge), (int headingMin, int headingMax))>
-        {
-            ((600, 0), (0, 180)), // top
-            ((0, 600), (180, 360)), // left
-            ((600, 600), (90, 270)), // bottom
-            ((600, 0), (270, 430)) // right
-        };
-    private readonly Random _random = new();
-    private Dictionary<string, Ship> ships { get; set; } = new();
-    private List<Asteroid> asteroids { get; set; } = new();
+    public int BoardHeight { get; set; } = boardHeight;
+    public int BoardWidth { get; set; } = boardWidth;
 
-    public Game(int boardHeight, int boardWidth)
-    {
-        this.boardHeight = boardHeight;
-        this.boardWidth = boardWidth;
-    }
+    private List<((int xEdge, int yEdge), (int headingMin, int headingMax))> Edges { get; set; } =
+    [
+      ((600, 0), (0, 180)), // top
+        ((0, 600), (180, 360)), // left
+        ((600, 600), (90, 270)), // bottom
+        ((600, 0), (270, 430))
+    ];
+
+    private readonly Random _random = new();
+    private Dictionary<string, Ship> Ships { get; set; } = new();
+    private List<Asteroid> Asteroids { get; set; } = new();
+    private List<Projectile> Projectiles { get; set; } = new();
 
     public void AddShip(string key, Ship ship)
     {
-        ships.Add(key, ship);
+        Ships.Add(key, ship);
     }
 
     public void Tick()
     {
         MoveShips();
         MoveAsteroids();
+        MoveProjectiles();
         CheckCollisions();
     }
 
     public List<Ship> GetShips()
     {
-        return ships.Values.ToList();
+        return Ships.Values.ToList();
     }
 
     public List<Asteroid> GetAsteroids()
     {
-        return asteroids;
+        return Asteroids;
+    }
+
+    public List<Projectile> GetProjectiles()
+    {
+        return Projectiles;
     }
 
     public void UpdateShip(string key, UpdateShipParams value)
     {
         // Update ship movement in game state
-        if (ships.TryGetValue(key, out var ship))
+        if (Ships.TryGetValue(key, out var ship))
         {
             ship.ShipMovement = value;
         }
@@ -57,7 +57,7 @@ public class Game
 
     private void MoveShips()
     {
-        foreach (var shipEntry in ships)
+        foreach (var shipEntry in Ships)
         {
             var ship = shipEntry.Value;
 
@@ -73,25 +73,38 @@ public class Game
 
             if (ship.ShipMovement.IsThrusting)
             {
-                double radians = Math.PI * ship.Rotation / 180.0;
+                var radians = Math.PI * ship.Rotation / 180.0;
                 ship.VelocityX += Math.Cos(radians);
                 ship.VelocityY += Math.Sin(radians);
+            }
+
+            if (ship.ShipMovement.IsShooting)
+            {
+                var newProjectile = new Projectile(
+                  xCoordinate: ship.XCoordinate,
+                  yCoordinate: ship.YCoordinate,
+                  rotation: ship.Rotation,
+                  size: 20,
+                  velocityX: ship.VelocityX + Math.Cos(Math.PI * ship.Rotation / 180.0) * 10,
+                  velocityY: ship.VelocityY + Math.Sin(Math.PI * ship.Rotation / 180.0) * 10
+                );
+                Projectiles.Add(newProjectile);
             }
 
             ship.XCoordinate += (int)ship.VelocityX;
             ship.YCoordinate += (int)ship.VelocityY;
 
-            ship.XCoordinate = (ship.XCoordinate + boardWidth) % boardWidth;
-            ship.YCoordinate = (ship.YCoordinate + boardHeight) % boardHeight;
+            ship.XCoordinate = (ship.XCoordinate + BoardWidth) % BoardWidth;
+            ship.YCoordinate = (ship.YCoordinate + BoardHeight) % BoardHeight;
         }
     }
 
     private void MoveAsteroids()
     {
         var asteroidsToRemove = new List<Asteroid>();
-        foreach (var asteroid in asteroids)
+        foreach (var asteroid in Asteroids)
         {
-            if (isOutOfBounds(asteroid))
+            if (IsOutOfBounds(asteroid))
             {
                 asteroidsToRemove.Add(asteroid);
             }
@@ -106,22 +119,45 @@ public class Game
         // Now remove the asteroids that need to be removed.
         foreach (var asteroid in asteroidsToRemove)
         {
-            asteroids.Remove(asteroid);
+            Asteroids.Remove(asteroid);
         }
     }
 
-    private bool isOutOfBounds(Asteroid asteroid)
+    private void MoveProjectiles()
     {
-        return asteroid.YCoordinate > boardHeight
-            || asteroid.YCoordinate < 0
-            || asteroid.XCoordinate > boardWidth
-            || asteroid.XCoordinate < 0;
+        var projectilesToRemove = new List<Projectile>();
+        foreach (var projectile in Projectiles)
+        {
+            if (IsOutOfBounds(projectile))
+            {
+                projectilesToRemove.Add(projectile);
+            }
+            else
+            {
+                projectile.XCoordinate += (int)projectile.VelocityX;
+                projectile.YCoordinate += (int)projectile.VelocityY;
+            }
+        }
+
+        // Now remove the projectiles that need to be removed.
+        foreach (var projectile in projectilesToRemove)
+        {
+            Projectiles.Remove(projectile);
+        }
+    }
+
+    private bool IsOutOfBounds(GameObject gameObject)
+    {
+        return gameObject.YCoordinate > BoardHeight
+               || gameObject.YCoordinate < 0
+               || gameObject.XCoordinate > BoardWidth
+               || gameObject.XCoordinate < 0;
     }
 
     public void SpawnAsteroids()
     {
-        var randomEdge = _random.Next(0, edges.Count);
-        var edge = edges[randomEdge];
+        var randomEdge = _random.Next(0, Edges.Count);
+        var edge = Edges[randomEdge];
         var spawnX = _random.Next(edge.Item1.xEdge);
         var spawnY = randomEdge == 2 ? edge.Item1.yEdge : _random.Next(edge.Item1.yEdge);
         var size = _random.Next(20, 100);
@@ -130,43 +166,86 @@ public class Game
         double speedFactor = 4; // Adjust this value to control asteroid speed
 
         var asteroid = new Asteroid(
-            xCoordinate: spawnX,
-            yCoordinate: spawnY,
-            rotation: heading,
-            size: size,
-            velocityX: Math.Cos(headingRadians) * speedFactor,
-            velocityY: Math.Sin(headingRadians) * speedFactor
+          xCoordinate: spawnX,
+          yCoordinate: spawnY,
+          rotation: heading,
+          size: size,
+          velocityX: Math.Cos(headingRadians) * speedFactor,
+          velocityY: Math.Sin(headingRadians) * speedFactor
         );
 
-        asteroids.Add(asteroid);
+        Asteroids.Add(asteroid);
+    }
+
+    private void SplitAsteroid(Asteroid asteroid)
+    {
+        if (asteroid.Size <= 20) return;
+        var newAsteroid1 = new Asteroid(
+          xCoordinate: asteroid.XCoordinate,
+          yCoordinate: asteroid.YCoordinate,
+          rotation: asteroid.Rotation + 45,
+          size: asteroid.Size / 2,
+          velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2,
+          velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation + 45) / 180.0) * 2
+        );
+        var newAsteroid2 = new Asteroid(
+          xCoordinate: asteroid.XCoordinate,
+          yCoordinate: asteroid.YCoordinate,
+          rotation: asteroid.Rotation - 45,
+          size: asteroid.Size / 2,
+          velocityX: asteroid.VelocityX + Math.Cos(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2,
+          velocityY: asteroid.VelocityY + Math.Sin(Math.PI * (asteroid.Rotation - 45) / 180.0) * 2
+        );
+        Asteroids.Add(newAsteroid1);
+        Asteroids.Add(newAsteroid2);
     }
 
     private void CheckCollisions()
     {
+        var asteroidsToSplit = new List<Asteroid>();
         var asteroidsToRemove = new List<Asteroid>();
-        foreach (var asteroid in asteroids)
+        var projectilesToRemove = new List<Projectile>();
+        foreach (var asteroid in Asteroids)
         {
-            foreach (var shipEntry in ships)
+            foreach (var shipEntry in Ships)
             {
                 var ship = shipEntry.Value;
 
-                if (ship.CheckCollisionAsteroid(asteroid))
+                if (ship.CheckCollision(asteroid))
                 {
-                    ship.Health -= 10;
+                    ship.Health -= asteroid.Size;
+                    asteroidsToSplit.Add(asteroid);
                     asteroidsToRemove.Add(asteroid);
 
                     if (ship.Health <= 0)
                     {
-                        ships.Remove(shipEntry.Key);
+                        Ships.Remove(shipEntry.Key);
                     }
                 }
             }
         }
 
-        // Now remove the asteroids separately to avoid concurrent changes to the list.
+        foreach (var projectile in Projectiles)
+        {
+            foreach (var asteroid in Asteroids.Where(asteroid => projectile.CheckCollision(asteroid)))
+            {
+                asteroidsToSplit.Add(asteroid);
+                asteroidsToRemove.Add(asteroid);
+                projectilesToRemove.Add(projectile);
+            }
+        }
+
+        foreach (var asteroid in asteroidsToSplit)
+        {
+            SplitAsteroid(asteroid);
+        }
         foreach (var asteroid in asteroidsToRemove)
         {
-            asteroids.Remove(asteroid);
+            Asteroids.Remove(asteroid);
+        }
+        foreach (var projectile in projectilesToRemove)
+        {
+            Projectiles.Remove(projectile);
         }
     }
 }
@@ -174,21 +253,23 @@ public class Game
 public static class GameExtensions
 {
     public static GameSnapShot ToGameSnapShot(
-        this Game game,
-        LobbyStatus currentStatus,
-        bool isOwner = false
+      this Game game,
+      LobbyStatus currentStatus,
+      bool isOwner = false
     )
     {
         var ships = game.GetShips();
         var asteroids = game.GetAsteroids();
+        var projectiles = game.GetProjectiles();
         var gameState = new GameSnapShot(
-            isOwner: isOwner,
-            playerCount: ships.Count,
-            currentStatus: currentStatus,
-            ships: ships,
-            asteroids: asteroids,
-            boardWidth: game.boardWidth,
-            boardHeight: game.boardHeight
+          isOwner: isOwner,
+          playerCount: ships.Count,
+          currentStatus: currentStatus,
+          ships: ships,
+          asteroids: asteroids,
+          projectiles: projectiles,
+          boardWidth: game.BoardWidth,
+          boardHeight: game.BoardHeight
         );
         return gameState;
     }
