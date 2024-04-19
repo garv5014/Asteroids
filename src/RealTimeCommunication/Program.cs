@@ -24,15 +24,14 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddEndpointsApiExplorer();
-
         builder.Services.AddSwaggerGen();
-
         builder.Services.AddSignalR();
-
+        var raftConnection = new RaftConnectionOptions();
         var actorOptions = new ActorOptions();
         builder.Configuration.GetRequiredSection(nameof(ActorOptions)).Bind(actorOptions);
 
-        var raftConnection = new RaftConnectionOptions();
+        Console.WriteLine($"Actor Options: {JsonSerializer.Serialize(actorOptions)}");
+
         builder
             .Configuration.GetRequiredSection(nameof(RaftConnectionOptions))
             .Bind(raftConnection);
@@ -49,7 +48,9 @@ internal class Program
         builder.Services.AddScoped(sp =>
             sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft")
         );
+
         builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
+
         builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
 
         builder.AddObservability();
@@ -101,7 +102,6 @@ internal class Program
                                     AccountHubRelay.Props(),
                                     ActorHelper.AccountRelayActorName
                                 );
-
                                 registry.TryRegister<AccountHubRelay>(accountHubRelay);
 
                                 var lobbyHubRelay = system.ActorOf(
@@ -115,15 +115,6 @@ internal class Program
                                 );
 
                                 registry.TryRegister<LobbyHubRelay>(lobbyHubRelay);
-
-                                var accountPersistenceActor = system.ActorOf(
-                                    AccountPersistanceActor.Props(),
-                                    ActorHelper.AccountPersistanceActorName
-                                );
-
-                                registry.TryRegister<AccountPersistanceActor>(
-                                    accountPersistenceActor
-                                );
 
                                 var ss = system.ActorOf(
                                     SessionSupervisor.Props(lobbySupervisorProxy, accountHubRelay),
@@ -153,7 +144,6 @@ internal class Program
                     );
             }
         );
-
         var app = builder.Build();
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -184,7 +174,7 @@ internal class Program
             ),
             name: ActorHelper.LobbyRelayActorName
         );
-        // create lobbies relay proxy
+        // create lobbies emitter proxy
         var lobbyHubRelay = system.ActorOf(
             ClusterSingletonProxy.Props(
                 singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
