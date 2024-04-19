@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.Event;
 using Asteroids.Shared.Messages;
+using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
@@ -10,10 +11,9 @@ public record GetUserSessionResponse(IActorRef ActorRef);
 
 public class SessionSupervisor : ReceiveActor
 {
-    // This is the supervisor strategy for the child actors
-    // Make a list of session actors
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IActorRef _accountRelayActor;
+    private readonly IActorRef _accountPersistenceActor;
     private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, IActorRef> _sessions = new();
 
@@ -24,7 +24,11 @@ public class SessionSupervisor : ReceiveActor
         _accountRelayActor = accountRelayHub;
         Receive<LoginMessage>(cam => CreateAccountMessage(cam));
         Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
-        this._lobbySupervisor = lobbySupervisor;
+        _accountPersistenceActor = Context.ActorOf(
+            AccountPersistanceActor.Props(),
+            ActorHelper.AccountPersistanceActorName
+        );
+        _lobbySupervisor = lobbySupervisor;
     }
 
     private void CreateAccountMessage(LoginMessage lm)
@@ -34,6 +38,7 @@ public class SessionSupervisor : ReceiveActor
         _log.Info("Creating user {0}", lm.User);
 
         IActorRef session;
+        var accountId = Guid.NewGuid();
 
         session = Context.ActorOf(
             SessionActor.Props(lm.User, _lobbySupervisor),
@@ -41,6 +46,11 @@ public class SessionSupervisor : ReceiveActor
         );
 
         _sessions.Add(session.Path.ToString(), session);
+        _accountPersistenceActor.Tell(
+            new StoreAccountInformationMessage(
+                new AccountInformation(password: lm.Password, userName: lm.User, userId: accountId)
+            )
+        );
         _accountRelayActor.Tell(
             new LoginResponseMessage(
                 lm.ConnectionId,

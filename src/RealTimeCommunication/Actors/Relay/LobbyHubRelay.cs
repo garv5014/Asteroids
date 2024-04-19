@@ -13,7 +13,7 @@ public class LobbyHubRelay : ActorPublisher
     public LobbyHubRelay()
         : base(LobbyHub.FullUrl)
     {
-        Receive<AllLobbiesResponse>(async response =>
+        Receive<AllLobbiesResponse>(response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {
@@ -23,7 +23,7 @@ public class LobbyHubRelay : ActorPublisher
             });
         });
 
-        Receive<JoinLobbyResponse>(async response =>
+        Receive<JoinLobbyResponse>(response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {
@@ -33,7 +33,7 @@ public class LobbyHubRelay : ActorPublisher
             });
         });
 
-        Receive<CreateLobbyResponse>(async response =>
+        Receive<CreateLobbyResponse>(response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {
@@ -43,7 +43,7 @@ public class LobbyHubRelay : ActorPublisher
             });
         });
 
-        Receive<LobbyStateResponse>(async response =>
+        Receive<LobbyStateResponse>(response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {

@@ -7,7 +7,10 @@ using Akka.DependencyInjection;
 using Akka.Event;
 using Akka.Hosting;
 using Akka.Remote.Hosting;
+using Asteroids.Shared.Services;
 using Observability;
+using Raft_Library.Gateway.shared;
+using Raft_Library.Shop.shared.Services;
 using RealTimeCommunication;
 using RealTimeCommunication.Actors;
 using RealTimeCommunication.Actors.Hub;
@@ -29,20 +32,26 @@ internal class Program
 
         Console.WriteLine($"Actor Options: {JsonSerializer.Serialize(actorOptions)}");
 
-        // builder.Configuration.GetRequiredSection(nameof(RaftConnectionOptions)).Bind(raftConnection);
-        // builder.Services.AddSingleton(raftConnection);
-        // builder.Services.AddHttpClient(
-        //     "Raft",
-        //     client =>
-        //         client.BaseAddress = new Uri(
-        //             builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
-        //                 ?? throw new InvalidOperationException("GatewayUrl address not found.")
-        //         )
-        // );
+        builder
+            .Configuration.GetRequiredSection(nameof(RaftConnectionOptions))
+            .Bind(raftConnection);
+        builder.Services.AddSingleton(raftConnection);
+        builder.Services.AddHttpClient(
+            "Raft",
+            client =>
+                client.BaseAddress = new Uri(
+                    builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
+                        ?? throw new InvalidOperationException("GatewayUrl address not found.")
+                )
+        );
 
-        // builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft"));
-        // builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
-        // builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
+        builder.Services.AddScoped(sp =>
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient("Raft")
+        );
+
+        builder.Services.AddHttpClient<IGatewayClient, GatewayService>();
+
+        builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
 
         builder.AddObservability();
 

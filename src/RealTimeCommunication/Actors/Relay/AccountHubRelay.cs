@@ -13,7 +13,7 @@ public class AccountHubRelay : ActorPublisher
     public AccountHubRelay()
         : base(AccountHub.FullUrl)
     {
-        Receive<LoginResponseMessage>(async response =>
+        Receive<LoginResponseMessage>(response =>
         {
             ExecuteAndPipeToSelf(async () =>
             {

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace RealTimeCommunication;
 
@@ -50,5 +50,9 @@ public static class ActorHelper
     public static string AccountRelayActorName = "accountRelayActor";
     public static string LobbyRelayActorName = "lobbyRelayActor";
 
+
+    public static string AccountPersistanceActorName = "accountPersistanceActor";
+
     public static string ErrorHubRelayActorName = "errorHubRelayActor";
+
 }
