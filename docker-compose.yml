@@ -41,7 +41,7 @@ x-asteroid_client_base: &asteroid_client_base
     context: ./src/
     dockerfile: ./RealTimeCommunication/Dockerfile
     target: development
-    <<: *dotnet_sync
+  <<: *dotnet_sync
 
 services:
 
@@ -61,7 +61,8 @@ services:
 
   nginx:
     depends_on:
-      - asteroid-client
+      - asteroid-client-1
+      - asteroid-client-2
       - grafana
     build:
       context: ./ops/dev/
