@@ -22,7 +22,7 @@ x-akka_actor_env: &akka_actor_env
 x-akka_actor_base: &akka_actor_base
   build:
     context: ./src/
-    dockerfile: ./Raft_Gateway/Dockerfile
+    dockerfile: ./RealTimeCommunication/Dockerfile
     target: development
   <<: *dotnet_sync
 
@@ -76,7 +76,6 @@ services:
           target: /etc/nginx/conf.d/default.conf
 
   realtime:
-
     environment:
       ActorOptions__ActorRoles: "SignalR"
       ActorOptions__ActorHostName: "realtime"

@@ -160,9 +160,12 @@ internal class Program
 
         app.UseHttpsRedirection();
 
-        app.MapHub<AccountHub>("/accountHub");
-        app.MapHub<LobbyHub>("/lobbyHub");
-        app.MapHub<ErrorHub>("/errorHub");
+        if (actorOptions.ActorRoles.Contains("SignalR"))
+        {
+            app.MapHub<AccountHub>(AccountHub.UrlPath);
+            app.MapHub<LobbyHub>(LobbyHub.UrlPath);
+            app.MapHub<ErrorHub>(ErrorHub.UrlPath);
+        }
 
         app.Run();
     }
