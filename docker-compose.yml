@@ -26,6 +26,23 @@ x-akka_actor_base: &akka_actor_base
     target: development
   <<: *dotnet_sync
 
+x-asteroid_client_env: &asteroid_client_env
+  ASPNETCORE_ENVIRONMENT: Development
+  ASPNETCORE_URLS: http://+:8080
+  SignalREnv__AccountHubUrl: http://realtime:8080/accountHub
+  SignalREnv__LobbyHubUrl: http://realtime:8080/lobbyHub
+  SignalREnv__ErrorHubUrl: http://realtime:8080/errorHub
+  ObservabilityOptions__CollectorUrl: http://collector:4317
+  DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
+  TZ: America/Denver
+
+x-asteroid_client_base: &asteroid_client_base
+  build:
+    context: ./src/
+    dockerfile: ./RealTimeCommunication/Dockerfile
+    target: development
+    <<: *dotnet_sync
+
 services:
 
   lighthouse:
@@ -58,10 +75,7 @@ services:
           target: /etc/nginx/conf.d/default.conf
 
   realtime:
-    build:
-      context: ./src/
-      dockerfile: ./RealTimeCommunication/Dockerfile
-      target: development
+
     environment:
       ActorOptions__ActorRoles: "SignalR"
       ActorOptions__ActorHostName: "realtime"
@@ -79,19 +93,14 @@ services:
       <<: *akka_actor_env
     <<: *akka_actor_base
 
-  asteroid-client:
-    build:
-      context: ./src/
-      dockerfile: ./Asteroids/Dockerfile
-      target: development
+  asteroid-client-1:
+    <<: *asteroid_client_base
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      SignalREnv__AccountHubUrl: http://realtime:8080/accountHub
-      SignalREnv__LobbyHubUrl: http://realtime:8080/lobbyHub
-      SignalREnv__ErrorHubUrl: http://realtime:8080/errorHub
-      ObservabilityOptions__CollectorUrl: http://collector:4317
-      ObservabilityOptions__ServiceName: "AsteroidClient"
-      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
-      TZ: America/Denver
-    <<: *dotnet_sync
+      <<: *asteroid_client_env
+      ObservabilityOptions__ServiceName: "AsteroidClient1"
+
+  asteroid-client-2:
+    <<: *asteroid_client_base
+    environment:
+      <<: *asteroid_client_env
+      ObservabilityOptions__ServiceName: "AsteroidClient2"
