@@ -39,7 +39,7 @@ x-asteroid_client_env: &asteroid_client_env
 x-asteroid_client_base: &asteroid_client_base
   build:
     context: ./src/
-    dockerfile: ./RealTimeCommunication/Dockerfile
+    dockerfile: ./Asteroids/Dockerfile
     target: development
   <<: *dotnet_sync
 

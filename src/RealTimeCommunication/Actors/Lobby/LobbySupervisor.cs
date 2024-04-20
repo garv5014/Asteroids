@@ -34,6 +34,7 @@ public class LobbySupervisor : ReceiveActor
         Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
         Receive<GetLobbyMessage>(msg => HandleGetLobbyMessage(msg));
         Receive<ErrorMessage>(msg => _errorHubActor.Tell(msg));
+
         _lobbyRelayActor = lobbyRelayActorRef;
         _errorHubActor = errorHubActorRef;
     }
