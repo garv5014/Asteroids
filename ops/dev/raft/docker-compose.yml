@@ -43,3 +43,17 @@ services:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 3
       ObservabilityOptions__ServiceName: Node3
+  gateway:
+    build:
+      context: ./../../../src/
+      dockerfile: ./Raft_Gateway/Dockerfile
+      target: development
+    environment:
+      ApiOptions__NodeCount: 3
+      ApiOptions__NodeServiceName: gateway
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ObservabilityOptions__ServiceName: "gateway"
+      ObservabilityOptions__CollectorUrl: http://collector:4317
+      TZ: America/Denver
+    <<: *dotnet_sync

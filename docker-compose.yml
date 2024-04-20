@@ -95,18 +95,3 @@ services:
       DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
       TZ: America/Denver
     <<: *dotnet_sync
-
-  gateway:
-    build:
-      context: ./src/
-      dockerfile: ./Raft_Gateway/Dockerfile
-      target: development
-    environment:
-      ApiOptions__NodeCount: 3
-      ApiOptions__NodeServiceName: gateway
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ObservabilityOptions__ServiceName: "gateway"
-      ObservabilityOptions__CollectorUrl: http://collector:4317
-      TZ: America/Denver
-    <<: *dotnet_sync
