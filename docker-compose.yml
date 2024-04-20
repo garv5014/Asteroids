@@ -83,13 +83,16 @@ services:
     <<: *akka_actor_base
 
   actor-node-1:
-    build:
-      context: ./src/
-      dockerfile: ./RealTimeCommunication/Dockerfile
-      target: development
     environment:
       ActorOptions__ActorRoles: "Lobbies"
       ActorOptions__ActorHostName: "actor-node-1"
+      <<: *akka_actor_env
+    <<: *akka_actor_base
+
+  actor-node-2:
+    environment:
+      ActorOptions__ActorRoles: "Lobbies"
+      ActorOptions__ActorHostName: "actor-node-2"
       <<: *akka_actor_env
     <<: *akka_actor_base
 
