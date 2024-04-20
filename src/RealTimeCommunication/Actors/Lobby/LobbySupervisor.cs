@@ -56,6 +56,7 @@ public class LobbySupervisor : ReceiveActor
         {
             // Eventually needs to send action failed message
             _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            Self.Tell(new ErrorMessage("Lobby does not exist"));
             return;
         }
 
@@ -146,6 +147,7 @@ public class LobbySupervisor : ReceiveActor
         {
             // Eventually needs to send action failed message
             _log.Info("Lobby with name {0} already exists", msg.LobbyName);
+            Self.Tell(new ErrorMessage("Lobby already exists"));
             return;
         }
 

@@ -149,28 +149,36 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void GetLobbyState(GetLobbyStateMessage msg)
     {
-        _log.Info(
-            "Getting lobby state in Lobby Actor: {0} for user actor {1} here is the owner {2}",
-            Self.Path.Name,
-            msg.SessionActorPath,
-            LobbyOwner
-        );
-        Context.Parent.Tell(
-            new LobbyStateResponse(
-                ConnectionId: msg.ConnectionId,
-                SessionActorPath: msg.SessionActorPath,
-                CurrentState: new GameSnapShot(
-                    isOwner: LobbyOwner == msg.SessionActorPath,
-                    playerCount: NumberOfPlayers,
-                    currentStatus: LobbyStatus,
-                    ships: [],
-                    asteroids: [],
-                    projectiles: [],
-                    boardWidth: GameState.BoardWidth,
-                    boardHeight: GameState.BoardHeight
+        try
+        {
+            _log.Info(
+                "Getting lobby state in Lobby Actor: {0} for user actor {1} here is the owner {2}",
+                Self.Path.Name,
+                msg.SessionActorPath,
+                LobbyOwner
+            );
+            Context.Parent.Tell(
+                new LobbyStateResponse(
+                    ConnectionId: msg.ConnectionId,
+                    SessionActorPath: msg.SessionActorPath,
+                    CurrentState: new GameSnapShot(
+                        isOwner: LobbyOwner == msg.SessionActorPath,
+                        playerCount: NumberOfPlayers,
+                        currentStatus: LobbyStatus,
+                        ships: [],
+                        asteroids: [],
+                        projectiles: [],
+                        boardWidth: GameState.BoardWidth,
+                        boardHeight: GameState.BoardHeight
+                    )
                 )
-            )
-        );
+            );
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Error getting lobby state in Lobby Actor: {0}", Self.Path.Name);
+            Context.Parent.Tell(new ErrorMessage("Couldn't get lobby state"));
+        }
     }
 
     private void GetLobbies(GetLobbiesMessage msg)
@@ -182,20 +190,27 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void JoinLobby(JoinLobbyMessage msg)
     {
-        _sessionsToUpdate.Add(Sender); // should be the session Actor.
-        var ranX = _random.Next(0, GameState.BoardWidth);
-        var ranY = _random.Next(0, GameState.BoardHeight);
-        GameState.AddShip(
-            msg.SessionActorPath,
-            new Ship(xCoordinate: ranX, yCoordinate: ranY, rotation: 0)
-        );
-        _log.Info("Lobby Joined by {0}", Sender.Path.Name);
+        try
+        {
+            _sessionsToUpdate.Add(Sender); // should be the session Actor.
+            var ranX = _random.Next(0, GameState.BoardWidth);
+            var ranY = _random.Next(0, GameState.BoardHeight);
+            GameState.AddShip(
+                msg.SessionActorPath,
+                new Ship(xCoordinate: ranX, yCoordinate: ranY, rotation: 0)
+            );
+            _log.Info("Lobby Joined by {0}", Sender.Path.Name);
+        }
+        catch (Exception e)
+        {
+            _log.Error(e, "Error joining lobby for {0}", Sender.Path.Name);
+            Context.Parent.Tell(new ErrorMessage("Couldn't join lobby"));
+        }
     }
 
     protected override void PreStart()
     {
         _log.Info("LobbyActor created");
-        Context.Parent.Tell(new ErrorMessage("Made new error"));
     }
 
     protected override void PostStop()
