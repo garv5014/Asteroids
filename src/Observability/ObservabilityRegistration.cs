@@ -118,7 +118,8 @@ public static class ObservabilityRegistration
                     DiagnosticsNames.MicrosoftAspNetCoreHeaderParsing,
                     DiagnosticsNames.MicrosoftExtensionsDiagnosticsHealthChecks,
                     DiagnosticsNames.MicrosoftExtensionsDiagnosticsResourceMonitoring,
-                    DiagnosticsNames.SystemNetHttp
+                    DiagnosticsNames.SystemNetHttp,
+                    DiagnosticsConfig.LobbyMeter.Name
                 )
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(meter.Name))
                 .AddAspNetCoreInstrumentation()

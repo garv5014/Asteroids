@@ -214,7 +214,8 @@ internal class Program
             ClusterSingletonManager.Props(
                 singletonProps: LobbySupervisor.Props(
                     lobbyHubRelay: lobbyHubRelay,
-                    errorHubRelay: errorHubRelay
+                    errorHubRelay: errorHubRelay,
+                    actorSystem: system
                 ),
                 terminationMessage: PoisonPill.Instance,
                 settings: ClusterSingletonManagerSettings.Create(system).WithRole("Lobbies")

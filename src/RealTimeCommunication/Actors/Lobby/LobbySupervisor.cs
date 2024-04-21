@@ -1,7 +1,9 @@
 ﻿using Akka.Actor;
+using Akka.DependencyInjection;
 using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
+using Observability;
 
 namespace RealTimeCommunication;
 
@@ -52,6 +54,7 @@ public class LobbySupervisor : ReceiveActor
             idToActorRef[lobbyId] = actor;
             nameToActorRef[lobbyName] = actor;
             _log.Info("Lobby {0} with id {1} terminated", lobbyName, lobbyId);
+            DiagnosticsConfig.TotalLobbies.Add(-1);
         });
 
         var scope = serviceProvider.CreateScope();
@@ -183,7 +186,7 @@ public class LobbySupervisor : ReceiveActor
         nameToActorRef.Add(msg.LobbyName, lobbyActor);
         Context.Watch(lobbyActor);
 
-        _log.Info("Lobby created with id {0}", lobbyId);
+        _logger.LogInformation("Lobby created with id {0}", lobbyId);
 
         Self.Forward(
             new JoinLobbyMessage(
@@ -201,6 +204,7 @@ public class LobbySupervisor : ReceiveActor
                 LobbyId: lobbyId
             )
         );
+        DiagnosticsConfig.TotalLobbies.Add(1);
     }
 
     protected override void PreStart()
@@ -229,6 +233,16 @@ public class LobbySupervisor : ReceiveActor
                 }
             })
         );
+    }
+
+    public static Props Props(
+        IActorRef lobbyHubRelay,
+        IActorRef errorHubRelay,
+        ActorSystem actorSystem
+    )
+    {
+        var dR = DependencyResolver.For(actorSystem);
+        return dR.Props<LobbySupervisor>(lobbyHubRelay, errorHubRelay);
     }
 
     public static Props Props(
