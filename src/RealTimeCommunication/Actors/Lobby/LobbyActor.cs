@@ -40,6 +40,15 @@ public class LobbyActor : ReceiveActor, IWithTimers
         Receive<UpdateShipMessage>(UpdateShip);
         Receive<GameLoopMessage>(GameLoop);
         Receive<SpawnAsteroidMessage>(SpawnAsteroids);
+        Receive<ErrorMessage>(msg => Context.Parent.Tell(msg));
+        Receive<KillLobbyMessage>(StopActor);
+    }
+
+    private void StopActor(KillLobbyMessage message)
+    {
+        _log.Info("Killing lobby actor");
+        Context.Parent.Tell(new ErrorMessage("Lobby has been killed", message.ConnectionId));    
+        Context.Stop(Self);
     }
 
     private void GameLoop(GameLoopMessage message)

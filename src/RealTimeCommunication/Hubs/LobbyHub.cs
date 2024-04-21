@@ -1,4 +1,5 @@
 using Akka.Actor;
+using Akka.DistributedData;
 using Akka.Hosting;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
@@ -137,6 +138,27 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         lobbyActorRef.Tell(mes);
     }
 
+    public async Task RefreshConnectionIdCommand(RefreshConnectionIdMessage message)
+    {
+        _logger.LogInformation("Refresh connection id command received");
+        var mes = new RefreshConnectionId(ConnectionId: Context.ConnectionId);
+        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        sessionActorRef.Tell(mes);
+    }
+
+    public async Task KillLobbyCommand(KillLobbyMessage message)
+    {
+        _logger.LogInformation("Kill lobby command received");
+        var lobby = await GetLobbyById(message.LobbyId);
+        var newMsg = new KillLobbyMessage(
+            SessionActorPath: message.SessionActorPath,
+            ConnectionId: Context.ConnectionId,
+            LobbyId: message.LobbyId
+        );
+        
+        lobby.Tell(newMsg);
+    }
+
     private async Task<IActorRef> GetLobbyById(int lobbyId)
     {
         _logger.LogInformation("Getting lobby id {lobbyId}", lobbyId);
@@ -144,13 +166,5 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             new GetLobbyMessage(LobbyId: lobbyId)
         );
         return res.LobbyActorRef;
-    }
-
-    public async Task RefreshConnectionIdCommand(RefreshConnectionIdMessage message)
-    {
-        _logger.LogInformation("Refresh connection id command received");
-        var mes = new RefreshConnectionId(ConnectionId: Context.ConnectionId);
-        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
-        sessionActorRef.Tell(mes);
     }
 }

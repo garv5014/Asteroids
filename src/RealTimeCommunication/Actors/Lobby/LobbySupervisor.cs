@@ -22,19 +22,40 @@ public class LobbySupervisor : ReceiveActor
     private int lobbyId = 0;
     private IActorRef _lobbyRelayActor;
 
+    private ILogger<LobbySupervisor> _logger;
+
     private IActorRef _errorHubActor;
 
-    public LobbySupervisor(IActorRef lobbyRelayActorRef, IActorRef errorHubActorRef)
+    public LobbySupervisor(
+        IActorRef lobbyRelayActorRef,
+        IActorRef errorHubActorRef,
+        IServiceProvider serviceProvider
+    )
     {
         Receive<CreateLobbyMessage>(CreateLobby);
         Receive<JoinLobbyMessage>(JoinLobby);
         Receive<UpdateLobbyMessage>(UpdateLobby);
-        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
-        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
-        Receive<LobbyStateResponse>(msg => HandleStateResponse(msg));
-        Receive<GetLobbyMessage>(msg => HandleGetLobbyMessage(msg));
+        Receive<GetLobbiesMessage>(GetLobbies);
+        Receive<GetLobbyStateMessage>(GetLobbyState);
+        Receive<LobbyStateResponse>(HandleStateResponse);
+        Receive<GetLobbyMessage>(HandleGetLobbyMessage);
         Receive<ErrorMessage>(msg => _errorHubActor.Tell(msg));
+        Receive<Terminated>(msg =>
+        {
+            var lobbyActor = msg.ActorRef;
+            var lobbyName = lobbyActor.Path.Name;
+            var lobbyId = idToActorRef.FirstOrDefault(x => x.Value == lobbyActor).Key;
+            var actor = Context.ActorOf(
+                LobbyActor.Props(lobbyName, ""),
+                ActorHelper.SanitizeActorName(lobbyName)
+            );
+            idToActorRef[lobbyId] = actor;
+            nameToActorRef[lobbyName] = actor;
+            _log.Info("Lobby {0} with id {1} terminated", lobbyName, lobbyId);
+        });
 
+        var scope = serviceProvider.CreateScope();
+        _logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
         _lobbyRelayActor = lobbyRelayActorRef;
         _errorHubActor = errorHubActorRef;
     }
@@ -56,7 +77,7 @@ public class LobbySupervisor : ReceiveActor
         {
             // Eventually needs to send action failed message
             _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
-            Self.Tell(new ErrorMessage("Lobby does not exist"));
+            Self.Tell(new ErrorMessage("Lobby does not exist", msg.ConnectionId));
             return;
         }
 
@@ -147,7 +168,7 @@ public class LobbySupervisor : ReceiveActor
         {
             // Eventually needs to send action failed message
             _log.Info("Lobby with name {0} already exists", msg.LobbyName);
-            Self.Tell(new ErrorMessage("Lobby already exists"));
+            Self.Tell(new ErrorMessage("Lobby already exists", msg.ConnectionId));
             return;
         }
 
@@ -160,6 +181,7 @@ public class LobbySupervisor : ReceiveActor
 
         idToActorRef.Add(lobbyId, lobbyActor);
         nameToActorRef.Add(msg.LobbyName, lobbyActor);
+        Context.Watch(lobbyActor);
 
         _log.Info("Lobby created with id {0}", lobbyId);
 
@@ -191,8 +213,32 @@ public class LobbySupervisor : ReceiveActor
         _log.Info("LobbySupervisor stopped");
     }
 
-    public static Props Props(IActorRef lobbyHubRelay, IActorRef errorHubRelay)
+    protected override SupervisorStrategy SupervisorStrategy()
     {
-        return Akka.Actor.Props.Create(() => new LobbySupervisor(lobbyHubRelay, errorHubRelay));
+        return new OneForOneStrategy(
+            maxNrOfRetries: 10,
+            withinTimeRange: TimeSpan.FromMinutes(1),
+            decider: Decider.From(x =>
+            {
+                switch (x)
+                {
+                    case Exception _:
+                        return Directive.Restart;
+                    default:
+                        return Directive.Escalate;
+                }
+            })
+        );
+    }
+
+    public static Props Props(
+        IActorRef lobbyHubRelay,
+        IActorRef errorHubRelay,
+        IServiceProvider serviceProvider
+    )
+    {
+        return Akka.Actor.Props.Create(
+            () => new LobbySupervisor(lobbyHubRelay, errorHubRelay, serviceProvider)
+        );
     }
 }

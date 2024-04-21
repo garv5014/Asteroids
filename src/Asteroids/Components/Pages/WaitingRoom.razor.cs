@@ -137,7 +137,7 @@ public partial class WaitingRoom : ILobbyClient
         // Console.WriteLine($"Received lobby state: {message.ConnectionId}");
         await InvokeAsync(StateHasChanged);
     }
-
+    
     public async Task HandleRefreshConnectionId()
     {
         await hubProxy.RefreshConnectionIdCommand(
@@ -146,5 +146,14 @@ public partial class WaitingRoom : ILobbyClient
                 SessionActorPath: await localStorage.GetItemAsync<string>("actorPath")
             )
         );
+    }
+
+    private async Task KillLobby()
+    {
+        await hubProxy.KillLobbyCommand(
+            new KillLobbyMessage(
+                SessionActorPath: await localStorage.GetItemAsync<string>("actorPath"),
+                ConnectionId: string.Empty,
+                LobbyId: LobbyId));
     }
 }

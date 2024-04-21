@@ -21,7 +21,9 @@
     }
     else
     {
-      <PlayArea State=@gameState EventCallback=@HandleKeyPress/>
+      <PlayArea State=@gameState EventCallback=@HandleKeyPress />
+      <div class="btn btn-danger" @onclick="KillLobby"> Kill Lobby</div>
+
     }
   }
   else

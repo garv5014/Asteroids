@@ -19,10 +19,6 @@ public class ErrorHub : Hub<IErrorClient>, IErrorHub
     public Task ErrorPublish(ErrorMessage message)
     {
         _logger.LogInformation("Sending error message to client: {0}", message.Message);
-        if (!string.IsNullOrEmpty(message.ConnectionId))
-        {
-            return Clients.Client(message.ConnectionId).HandleError(message);
-        }
         return Clients.All.HandleError(message);
     }
 }

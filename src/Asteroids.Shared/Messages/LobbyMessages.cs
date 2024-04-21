@@ -17,6 +17,9 @@ public record JoinLobbyMessage(string SessionActorPath, string ConnectionId, int
 public record JoinLobbyResponse(string ConnectionId, string SessionActorPath, int LobbyId)
     : HubMessage(ConnectionId, SessionActorPath);
 
+public record KillLobbyMessage(string SessionActorPath, string ConnectionId, int LobbyId)
+    : HubMessage(ConnectionId, SessionActorPath);
+
 public record CreateLobbyResponse(
     string ConnectionId,
     string SessionActorPath,

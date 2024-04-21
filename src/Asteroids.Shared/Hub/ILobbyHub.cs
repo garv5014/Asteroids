@@ -15,4 +15,6 @@ public interface ILobbyHub
     Task UpdateLobbyStateCommand(UpdateLobbyMessage message);
     Task UpdateShipCommand(UpdateShipMessage message);
     Task RefreshConnectionIdCommand(RefreshConnectionIdMessage message);
+
+    Task KillLobbyCommand(KillLobbyMessage message);
 }
