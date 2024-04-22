@@ -3,6 +3,7 @@ using Akka.DependencyInjection;
 using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
+using Asteroids.Shared.Services;
 using Observability;
 
 namespace RealTimeCommunication;
@@ -13,11 +14,6 @@ public record GetLobbyResponse(IActorRef LobbyActorRef);
 
 public class LobbySupervisor : ReceiveActor
 {
-    // return all the lobbies lobbies stored as a Dictionary of lobbies
-    // Create a lobby actor
-    // Forward messages to the lobby actor
-    // Join Lobby passed to lobby actor
-
     private Dictionary<int, (IActorRef, LobbySnapShot?)> idToActorRef =
         new Dictionary<int, (IActorRef, LobbySnapShot?)>();
     private Dictionary<string, (IActorRef, LobbySnapShot?)> nameToActorRef =
@@ -29,6 +25,7 @@ public class LobbySupervisor : ReceiveActor
     private ILogger<LobbySupervisor> _logger;
 
     private IActorRef _errorHubActor;
+    private IActorRef _gamePersistanceActor;
 
     public LobbySupervisor(
         IActorRef lobbyRelayActorRef,
@@ -63,6 +60,7 @@ public class LobbySupervisor : ReceiveActor
         _logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
         _lobbyRelayActor = lobbyRelayActorRef;
         _errorHubActor = errorHubActorRef;
+        _gamePersistanceActor = Context.ActorOf(LobbyPersistanceActor.Props(serviceProvider));
     }
 
     private void HandleGetLobbyMessage(GetLobbyMessage msg)
