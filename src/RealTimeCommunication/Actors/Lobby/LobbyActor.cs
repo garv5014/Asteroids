@@ -3,6 +3,8 @@ using Akka.Event;
 using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Messages;
+using Asteroids.Shared.Services;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace RealTimeCommunication;
 
@@ -47,6 +49,23 @@ public class LobbyActor : ReceiveActor, IWithTimers
         Receive<SpawnAsteroidMessage>(SpawnAsteroids);
         Receive<ErrorMessage>(msg => Context.Parent.Tell(msg));
         Receive<KillLobbyMessage>(StopActor);
+        Receive<SaveLobbyStateMessage>(SaveLobbyState);
+    }
+
+    private void SaveLobbyState(SaveLobbyStateMessage message)
+    {
+        Context.Parent.Tell(
+            new StoreLobbyInformationMessage(
+                new LobbySnapShot(
+                    LobbyName,
+                    NumberOfPlayers,
+                    LobbyStatus,
+                    GameState,
+                    LobbyOwner,
+                    _sessionsToUpdate
+                )
+            )
+        );
     }
 
     private void StopActor(KillLobbyMessage message)
@@ -156,6 +175,12 @@ public class LobbyActor : ReceiveActor, IWithTimers
                 TimeSpan.FromMilliseconds(100)
             );
 
+            Timers.StartPeriodicTimer(
+                "snapShotLobby",
+                new SaveLobbyStateMessage(),
+                TimeSpan.FromMilliseconds(50),
+                TimeSpan.FromMilliseconds(1000)
+            );
             // Start spawning asteroids
             ScheduleNextAsteroidSpawn();
         }
@@ -239,5 +264,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
 }
 
 internal record GameLoopMessage { }
+
+internal record SaveLobbyStateMessage { }
 
 internal record SpawnAsteroidMessage { }

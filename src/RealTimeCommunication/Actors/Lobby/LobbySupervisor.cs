@@ -16,15 +16,21 @@ public class LobbySupervisor : ReceiveActor
 {
     private Dictionary<int, (IActorRef, LobbySnapShot?)> idToActorRef =
         new Dictionary<int, (IActorRef, LobbySnapShot?)>();
+
     private Dictionary<string, (IActorRef, LobbySnapShot?)> nameToActorRef =
         new Dictionary<string, (IActorRef, LobbySnapShot?)>();
+
+
     private readonly ILoggingAdapter _log = Context.GetLogger();
+
     private int lobbyId = 0;
+
     private IActorRef _lobbyRelayActor;
 
     private ILogger<LobbySupervisor> _logger;
 
     private IActorRef _errorHubActor;
+    
     private IActorRef _gamePersistanceActor;
 
     public LobbySupervisor(
