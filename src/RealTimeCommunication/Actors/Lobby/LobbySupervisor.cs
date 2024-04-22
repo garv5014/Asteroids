@@ -18,8 +18,10 @@ public class LobbySupervisor : ReceiveActor
     // Forward messages to the lobby actor
     // Join Lobby passed to lobby actor
 
-    private Dictionary<int, IActorRef> idToActorRef = new Dictionary<int, IActorRef>();
-    private Dictionary<string, IActorRef> nameToActorRef = new Dictionary<string, IActorRef>();
+    private Dictionary<int, (IActorRef, LobbySnapShot?)> idToActorRef =
+        new Dictionary<int, (IActorRef, LobbySnapShot?)>();
+    private Dictionary<string, (IActorRef, LobbySnapShot?)> nameToActorRef =
+        new Dictionary<string, (IActorRef, LobbySnapShot?)>();
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private int lobbyId = 0;
     private IActorRef _lobbyRelayActor;
@@ -46,13 +48,13 @@ public class LobbySupervisor : ReceiveActor
         {
             var lobbyActor = msg.ActorRef;
             var lobbyName = lobbyActor.Path.Name;
-            var lobbyId = idToActorRef.FirstOrDefault(x => x.Value == lobbyActor).Key;
+            var lobbyId = idToActorRef.FirstOrDefault(x => x.Value.Item1 == lobbyActor).Key;
             var actor = Context.ActorOf(
                 LobbyActor.Props(lobbyName, ""),
                 ActorHelper.SanitizeActorName(lobbyName)
             );
-            idToActorRef[lobbyId] = actor;
-            nameToActorRef[lobbyName] = actor;
+            // idToActorRef[lobbyId] = actor;
+            // nameToActorRef[lobbyName] = actor;
             _log.Info("Lobby {0} with id {1} terminated", lobbyName, lobbyId);
             DiagnosticsConfig.TotalLobbies.Add(-1);
         });
@@ -71,7 +73,7 @@ public class LobbySupervisor : ReceiveActor
             return;
         }
 
-        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor));
+        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor.Item1));
     }
 
     private void UpdateLobby(UpdateLobbyMessage msg)
@@ -84,7 +86,7 @@ public class LobbySupervisor : ReceiveActor
             return;
         }
 
-        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor));
+        Sender.Tell(new GetLobbyResponse(LobbyActorRef: lobbyActor.Item1));
     }
 
     private void HandleStateResponse(LobbyStateResponse msg)
@@ -102,7 +104,7 @@ public class LobbySupervisor : ReceiveActor
         }
 
         _log.Info("Getting lobby state from child");
-        lobbyActor.Tell(msg);
+        lobbyActor.Item1.Tell(msg);
     }
 
     private void GetLobbies(GetLobbiesMessage msg)
@@ -118,7 +120,7 @@ public class LobbySupervisor : ReceiveActor
         foreach (var lobby in idToActorRef)
         {
             var gl = lobby
-                .Value.Ask<GameLobby>(
+                .Value.Item1.Ask<GameLobby>(
                     new GetLobbiesMessage(
                         SessionActorPath: msg.SessionActorPath,
                         ConnectionId: msg.ConnectionId
@@ -148,7 +150,7 @@ public class LobbySupervisor : ReceiveActor
             return;
         }
 
-        lobbyActor.Forward(
+        lobbyActor.Item1.Forward(
             new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
@@ -182,8 +184,8 @@ public class LobbySupervisor : ReceiveActor
             ActorHelper.SanitizeActorName(msg.LobbyName)
         );
 
-        idToActorRef.Add(lobbyId, lobbyActor);
-        nameToActorRef.Add(msg.LobbyName, lobbyActor);
+        idToActorRef.Add(lobbyId, (lobbyActor, null));
+        nameToActorRef.Add(msg.LobbyName, (lobbyActor, null));
         Context.Watch(lobbyActor);
 
         _logger.LogInformation("Lobby created with id {0}", lobbyId);

@@ -1,22 +1,22 @@
-﻿using Akka.Actor;
+using Akka.Actor;
 using Akka.DependencyInjection;
 using Akka.Event;
+using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication;
 
-public class AccountPersistanceActor : ReceiveActor
+public class GamePersistanceActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly IUserPersistence _persistenceService;
 
-    public AccountPersistanceActor(IServiceProvider serviceProvider)
+    public GamePersistanceActor(IServiceProvider serviceProvider)
     {
         // Make a http client to send requests to gateway
         // Send a request to the gateway
         var s = serviceProvider.CreateScope();
         _persistenceService = s.ServiceProvider.GetRequiredService<IUserPersistence>();
-        Receive<StoreAccountInformationMessage>(msg => StoreAccountInformation(msg));
     }
 
     private async Task StoreAccountInformation(StoreAccountInformationMessage msg)
@@ -49,4 +49,41 @@ public class AccountPersistanceActor : ReceiveActor
     }
 }
 
-public record StoreAccountInformationMessage(AccountInformation AccountInformation);
+public class LobbyInformation
+{
+    public LobbySnapShot GameState { get; set; }
+
+    public LobbyInformation(LobbySnapShot gameSnapShot)
+    {
+        GameState = gameSnapShot;
+    }
+}
+
+public class LobbySnapShot
+{
+    public string LobbyName { get; set; }
+    public int NumberOfPlayers { get; set; }
+    public LobbyStatus LobbyStatus { get; set; }
+    public Game GameState { get; set; }
+    public string LobbyOwner { get; set; }
+    public List<IActorRef> SessionsToUpdate { get; set; }
+
+    public LobbySnapShot(
+        string lobbyName,
+        int numberOfPlayers,
+        LobbyStatus lobbyStatus,
+        Game gameState,
+        string lobbyOwner,
+        List<IActorRef> sessionsToUpdate
+    )
+    {
+        LobbyName = lobbyName;
+        NumberOfPlayers = numberOfPlayers;
+        LobbyStatus = lobbyStatus;
+        GameState = gameState;
+        LobbyOwner = lobbyOwner;
+        SessionsToUpdate = sessionsToUpdate;
+    }
+}
+
+public record StoreGameInformationMessage(LobbySnapShot LobbySnapShot);

@@ -33,6 +33,11 @@ public class LobbyActor : ReceiveActor, IWithTimers
         GameState = new Game(600, 600);
         _log.Info("Lobby created with name: {0} and owner {1}", LobbyName, LobbyOwner);
         LobbyStatus = LobbyStatus.WaitingForPlayers;
+        Receives();
+    }
+
+    private void Receives()
+    {
         Receive<JoinLobbyMessage>(JoinLobby);
         Receive<GetLobbiesMessage>(GetLobbies);
         Receive<GetLobbyStateMessage>(GetLobbyState);
@@ -47,7 +52,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void StopActor(KillLobbyMessage message)
     {
         _log.Info("Killing lobby actor");
-        Context.Parent.Tell(new ErrorMessage("Lobby has been killed", message.ConnectionId));    
+        Context.Parent.Tell(new ErrorMessage("Lobby has been killed", message.ConnectionId));
         Context.Stop(Self);
     }
 
