@@ -1,9 +1,8 @@
-﻿using Akka.Actor;
-using Akka.TestKit.Xunit2;
+﻿using Akka.TestKit.Xunit2;
 using Asteroids.Shared.Messages;
 using FluentAssertions;
+using Moq;
 using RealTimeCommunication;
-using RealTimeCommunication.Actors.Hub;
 using RealTimeCommunication.Actors.Session;
 
 namespace Actor.UnitTests;
@@ -19,7 +18,7 @@ public class SessionActorTest : TestKit
         var testProbe = CreateTestProbe();
 
         // Act
-        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(testProbe.Ref));
+        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(testProbe.Ref, testProbe.Ref));
 
         // Assert
         sessionSupervisor.Should().NotBeNull();
@@ -31,7 +30,7 @@ public class SessionActorTest : TestKit
     {
         // Arrange
         var probe = CreateTestProbe();
-        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(probe.Ref));
+        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(probe.Ref, probe.Ref));
 
         // Act
         sessionSupervisor.Tell(new LoginMessage("user1", "connection1", "", ""), probe.Ref);
@@ -47,10 +46,15 @@ public class SessionActorTest : TestKit
         // Arrange
         var probe = CreateTestProbe();
         var sessionSupervisor = Sys.ActorOf(
-            SessionSupervisor.Props(probe.Ref),
+            SessionSupervisor.Props(probe.Ref, probe.Ref),
             ActorHelper.SessionSupervisorName
         );
-        Sys.ActorOf(LobbySupervisor.Props(probe.Ref), ActorHelper.LobbySupervisorName);
+        var serviceProvider = new Mock<IServiceProvider>();
+
+        Sys.ActorOf(
+            LobbySupervisor.Props(probe.Ref, probe.Ref, serviceProvider.Object),
+            ActorHelper.LobbySupervisorName
+        );
         var loginMessage = new LoginMessage("user1", "connection1", "", "");
         sessionSupervisor.Tell(loginMessage, probe.Ref);
 
@@ -72,7 +76,7 @@ public class SessionActorTest : TestKit
     {
         // Arrange
         var probe = CreateTestProbe();
-        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(probe.Ref));
+        var sessionSupervisor = Sys.ActorOf(SessionSupervisor.Props(probe.Ref, probe.Ref));
         var loginMessage = new LoginMessage("user1", "connection1", "", "");
 
         // Act
