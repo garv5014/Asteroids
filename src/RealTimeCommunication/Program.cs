@@ -53,6 +53,8 @@ internal class Program
 
         builder.Services.AddScoped<IUserPersistence, UserPersistanceService>();
 
+        builder.Services.AddScoped<ILobbyPersistence, LobbyPersistanceService>();
+
         builder.AddObservability();
 
         builder.Services.AddAkka(
