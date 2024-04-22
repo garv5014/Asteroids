@@ -8,30 +8,23 @@ using Observability;
 
 namespace RealTimeCommunication;
 
-public record GetLobbyMessage(int LobbyId);
+public record GetLobbyMessage(string LobbyName);
 
 public record GetLobbyResponse(IActorRef LobbyActorRef);
 
 public class LobbySupervisor : ReceiveActor
 {
-    private Dictionary<int, (IActorRef, LobbySnapShot?)> idToActorRef =
-        new Dictionary<int, (IActorRef, LobbySnapShot?)>();
-
     private Dictionary<string, (IActorRef, LobbySnapShot?)> nameToActorRef =
         new Dictionary<string, (IActorRef, LobbySnapShot?)>();
 
-
     private readonly ILoggingAdapter _log = Context.GetLogger();
-
-    private int lobbyId = 0;
-
     private IActorRef _lobbyRelayActor;
 
     private ILogger<LobbySupervisor> _logger;
 
     private IActorRef _errorHubActor;
-    
-    private IActorRef _gamePersistanceActor;
+
+    private IActorRef _lobbyPersistanceActor;
 
     public LobbySupervisor(
         IActorRef lobbyRelayActorRef,
@@ -51,29 +44,37 @@ public class LobbySupervisor : ReceiveActor
         {
             var lobbyActor = msg.ActorRef;
             var lobbyName = lobbyActor.Path.Name;
-            var lobbyId = idToActorRef.FirstOrDefault(x => x.Value.Item1 == lobbyActor).Key;
             var actor = Context.ActorOf(
                 LobbyActor.Props(lobbyName, ""),
                 ActorHelper.SanitizeActorName(lobbyName)
             );
-            // idToActorRef[lobbyId] = actor;
             // nameToActorRef[lobbyName] = actor;
-            _log.Info("Lobby {0} with id {1} terminated", lobbyName, lobbyId);
+            _log.Info("Lobby {0}", lobbyName);
             DiagnosticsConfig.TotalLobbies.Add(-1);
         });
+        Receive<StoreLobbyInformationMessage>(SaveAndSendState);
 
         var scope = serviceProvider.CreateScope();
         _logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
         _lobbyRelayActor = lobbyRelayActorRef;
         _errorHubActor = errorHubActorRef;
-        _gamePersistanceActor = Context.ActorOf(LobbyPersistanceActor.Props(serviceProvider));
+        _lobbyPersistanceActor = Context.ActorOf(LobbyPersistanceActor.Props(serviceProvider));
+    }
+
+    private void SaveAndSendState(StoreLobbyInformationMessage msg)
+    {
+        _lobbyPersistanceActor.Tell(msg);
+        nameToActorRef[msg.LobbySnapShot.LobbyName] = (
+            nameToActorRef[msg.LobbySnapShot.LobbyName].Item1,
+            msg.LobbySnapShot
+        );
     }
 
     private void HandleGetLobbyMessage(GetLobbyMessage msg)
     {
-        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        if (!nameToActorRef.TryGetValue(msg.LobbyName, out var lobbyActor))
         {
-            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyName);
             return;
         }
 
@@ -82,10 +83,10 @@ public class LobbySupervisor : ReceiveActor
 
     private void UpdateLobby(UpdateLobbyMessage msg)
     {
-        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        if (!nameToActorRef.TryGetValue(msg.LobbyName, out var lobbyActor))
         {
             // Eventually needs to send action failed message
-            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyName);
             Self.Tell(new ErrorMessage("Lobby does not exist", msg.ConnectionId));
             return;
         }
@@ -100,10 +101,10 @@ public class LobbySupervisor : ReceiveActor
 
     private void GetLobbyState(GetLobbyStateMessage msg)
     {
-        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        if (!nameToActorRef.TryGetValue(msg.LobbyName, out var lobbyActor))
         {
             // Eventually needs to send action failed message
-            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyName);
             return;
         }
 
@@ -121,7 +122,7 @@ public class LobbySupervisor : ReceiveActor
     {
         var lobbiesState = new List<GameLobby>();
 
-        foreach (var lobby in idToActorRef)
+        foreach (var lobby in nameToActorRef)
         {
             var gl = lobby
                 .Value.Item1.Ask<GameLobby>(
@@ -131,7 +132,7 @@ public class LobbySupervisor : ReceiveActor
                     )
                 )
                 .Result;
-            var glId = new GameLobby(gl.Name, lobby.Key, gl.PlayerCount);
+            var glId = new GameLobby(gl.Name, gl.PlayerCount);
             _log.Info("Lobby: {0}", glId);
             lobbiesState.Add(glId);
         }
@@ -147,10 +148,10 @@ public class LobbySupervisor : ReceiveActor
 
     private void JoinLobby(JoinLobbyMessage msg)
     {
-        if (!idToActorRef.TryGetValue(msg.LobbyId, out var lobbyActor))
+        if (!nameToActorRef.TryGetValue(msg.LobbyName, out var lobbyActor))
         {
             // Eventually needs to send action failed message
-            _log.Info("Lobby with id {0} does not exist", msg.LobbyId);
+            _log.Info("Lobby with id {0} does not exist", msg.LobbyName);
             return;
         }
 
@@ -158,7 +159,7 @@ public class LobbySupervisor : ReceiveActor
             new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                LobbyId: lobbyId
+                LobbyName: msg.LobbyName
             )
         );
 
@@ -166,7 +167,7 @@ public class LobbySupervisor : ReceiveActor
             new JoinLobbyResponse(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                LobbyId: lobbyId
+                LobbyName: msg.LobbyName
             )
         );
     }
@@ -181,24 +182,21 @@ public class LobbySupervisor : ReceiveActor
             return;
         }
 
-        lobbyId++;
-
         var lobbyActor = Context.ActorOf(
             LobbyActor.Props(msg.LobbyName, msg.SessionActorPath),
             ActorHelper.SanitizeActorName(msg.LobbyName)
         );
 
-        idToActorRef.Add(lobbyId, (lobbyActor, null));
         nameToActorRef.Add(msg.LobbyName, (lobbyActor, null));
         Context.Watch(lobbyActor);
 
-        _logger.LogInformation("Lobby created with id {0}", lobbyId);
+        _logger.LogInformation("Lobby created with name {0}", msg.LobbyName);
 
         Self.Forward(
             new JoinLobbyMessage(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                LobbyId: lobbyId
+                LobbyName: msg.LobbyName
             )
         );
 
@@ -206,8 +204,7 @@ public class LobbySupervisor : ReceiveActor
             new CreateLobbyResponse(
                 SessionActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                LobbyName: msg.LobbyName,
-                LobbyId: lobbyId
+                LobbyName: msg.LobbyName
             )
         );
         DiagnosticsConfig.TotalLobbies.Add(1);

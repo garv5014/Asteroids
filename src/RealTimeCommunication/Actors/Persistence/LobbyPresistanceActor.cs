@@ -21,7 +21,8 @@ public class LobbyPersistanceActor : ReceiveActor
 
     private void StoreLobbyInformation(StoreLobbyInformationMessage msg)
     {
-        throw new NotImplementedException();
+        _log.Info("Storing lobby information for {0}", msg.LobbySnapShot.LobbyName);
+        _persistenceService.StoreGameInformationAsync(msg.LobbySnapShot);
     }
 
     protected override void PreStart()

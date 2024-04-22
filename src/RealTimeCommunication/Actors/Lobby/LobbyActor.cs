@@ -54,6 +54,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void SaveLobbyState(SaveLobbyStateMessage message)
     {
+        _log.Info("Saving lobby state");
         Context.Parent.Tell(
             new StoreLobbyInformationMessage(
                 new LobbySnapShot(
@@ -94,6 +95,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
             LobbyStatus = LobbyStatus.GameOver;
             Timers.Cancel("gameLoop");
             Timers.Cancel("spawnAsteroid");
+            Timers.Cancel("snapShotLobby");
             UpdateClients();
         }
     }
@@ -223,7 +225,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     private void GetLobbies(GetLobbiesMessage msg)
     {
         _log.Info("Getting lobbies in Lobby Actor: {0}", Self.Path.Name);
-        var gl = new GameLobby(LobbyName, 0, NumberOfPlayers);
+        var gl = new GameLobby(LobbyName, NumberOfPlayers);
         Sender.Tell(gl);
     }
 

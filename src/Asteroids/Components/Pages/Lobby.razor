@@ -25,23 +25,23 @@
   {
     <table class="table">
       <thead>
-      <tr>
-        <th>Lobby Name</th>
-        <th>Number of Players</th>
-        <th></th> <!-- For join button -->
-      </tr>
+        <tr>
+          <th>Lobby Name</th>
+          <th>Number of Players</th>
+          <th></th> <!-- For join button -->
+        </tr>
       </thead>
       <tbody>
-      @foreach (var lobby in lobbies)
-      {
-        <tr>
-          <td>@lobby.Name</td>
-          <td>@lobby.PlayerCount</td>
-          <td>
-            <button class="btn btn-success" @onclick="() => JoinLobby(lobby.Id)">Join</button>
-          </td>
-        </tr>
-      }
+        @foreach (var lobby in lobbies)
+        {
+          <tr>
+            <td>@lobby.Name</td>
+            <td>@lobby.PlayerCount</td>
+            <td>
+              <button class="btn btn-success" @onclick="() => JoinLobby(lobby.Name)">Join</button>
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   }

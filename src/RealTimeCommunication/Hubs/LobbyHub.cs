@@ -1,5 +1,4 @@
 using Akka.Actor;
-using Akka.DistributedData;
 using Akka.Hosting;
 using Asteroids.Shared;
 using Asteroids.Shared.Messages;
@@ -49,15 +48,15 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         sessionActorRef.Tell(clc);
     }
 
-    public async Task JoinLobbyCommand(JoinLobbyMessage message)
+    public async Task JoinLobbyCommand(JoinLobbyMessage msg)
     {
         _logger.LogInformation("Join lobby command received");
         var jlc = new JoinLobbyMessage(
-            SessionActorPath: message.SessionActorPath,
+            SessionActorPath: msg.SessionActorPath,
             ConnectionId: Context.ConnectionId,
-            LobbyId: message.LobbyId
+            LobbyName: msg.LobbyName
         );
-        var sessionActorRef = await GetSessionActor(message.SessionActorPath);
+        var sessionActorRef = await GetSessionActor(msg.SessionActorPath);
         sessionActorRef.Tell(jlc);
     }
 
@@ -88,7 +87,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         var lsm = new GetLobbyStateMessage(
             SessionActorPath: message.SessionActorPath,
             ConnectionId: Context.ConnectionId,
-            LobbyId: message.LobbyId
+            LobbyName: message.LobbyName
         );
         sessionActorRef.Tell(lsm);
     }
@@ -112,11 +111,11 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         var mes = new UpdateLobbyMessage(
             SessionActorPath: message.SessionActorPath,
             ConnectionId: Context.ConnectionId,
-            LobbyId: message.LobbyId,
+            LobbyName: message.LobbyName,
             NewStatus: message.NewStatus
         );
 
-        var lobbyActorRef = await GetLobbyById(message.LobbyId);
+        var lobbyActorRef = await GetLobbyByName(message.LobbyName);
         lobbyActorRef.Tell(mes);
     }
 
@@ -124,7 +123,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     {
         _logger.LogInformation("Update ship command received");
 
-        var lobbyActorRef = await GetLobbyById(message.LobbyId);
+        var lobbyActorRef = await GetLobbyByName(message.LobbyName);
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
 
         sessionActorRef.Tell(new RefreshConnectionId(ConnectionId: Context.ConnectionId));
@@ -132,7 +131,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
             ConnectionId: Context.ConnectionId,
             SessionActorPath: message.SessionActorPath,
             ShipParams: message.ShipParams,
-            LobbyId: message.LobbyId
+            LobbyName: message.LobbyName
         );
 
         lobbyActorRef.Tell(mes);
@@ -149,21 +148,21 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     public async Task KillLobbyCommand(KillLobbyMessage message)
     {
         _logger.LogInformation("Kill lobby command received");
-        var lobby = await GetLobbyById(message.LobbyId);
+        var lobby = await GetLobbyByName(message.LobbyName);
         var newMsg = new KillLobbyMessage(
             SessionActorPath: message.SessionActorPath,
             ConnectionId: Context.ConnectionId,
-            LobbyId: message.LobbyId
+            LobbyName: message.LobbyName
         );
-        
+
         lobby.Tell(newMsg);
     }
 
-    private async Task<IActorRef> GetLobbyById(int lobbyId)
+    private async Task<IActorRef> GetLobbyByName(string lobbyName)
     {
-        _logger.LogInformation("Getting lobby id {lobbyId}", lobbyId);
+        _logger.LogInformation("Getting lobby name {0}", lobbyName);
         var res = await lobbySupervisor.Ask<GetLobbyResponse>(
-            new GetLobbyMessage(LobbyId: lobbyId)
+            new GetLobbyMessage(LobbyName: lobbyName)
         );
         return res.LobbyActorRef;
     }

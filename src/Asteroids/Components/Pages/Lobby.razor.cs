@@ -55,7 +55,7 @@ public partial class Lobby : ILobbyClient
         await InvokeAsync(StateHasChanged); // Refresh UI with the received lobbies
     }
 
-    private async Task JoinLobby(int lobbyId)
+    private async Task JoinLobby(string lobbyName)
     {
         try
         {
@@ -64,7 +64,7 @@ public partial class Lobby : ILobbyClient
                 new JoinLobbyMessage(
                     SessionActorPath: actorPath,
                     ConnectionId: null,
-                    LobbyId: lobbyId
+                    LobbyName: lobbyName
                 )
             );
         }
@@ -98,7 +98,7 @@ public partial class Lobby : ILobbyClient
     public async Task HandleJoinLobbyResponse(JoinLobbyResponse message)
     {
         ToastService.ShowSuccess("Joined lobby");
-        NavManager.NavigateTo($"/waitingroom/{message.LobbyId}");
+        NavManager.NavigateTo($"/waitingroom/{message.LobbyName}");
         // on sucess navigate to waiting room passing in lobby Id
         await InvokeAsync(StateHasChanged);
     }

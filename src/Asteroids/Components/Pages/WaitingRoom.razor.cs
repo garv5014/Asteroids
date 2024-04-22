@@ -11,7 +11,7 @@ namespace Asteroids.Components.Pages;
 public partial class WaitingRoom : ILobbyClient
 {
     [Parameter]
-    public int LobbyId { get; set; }
+    public string LobbyName { get; set; }
     private HubConnection connection;
     private ILobbyHub hubProxy;
     private GameSnapShot gameState;
@@ -49,7 +49,7 @@ public partial class WaitingRoom : ILobbyClient
             new UpdateLobbyMessage(
                 SessionActorPath: await localStorage.GetItemAsync<string>("actorPath"),
                 ConnectionId: string.Empty,
-                LobbyId: LobbyId,
+                LobbyName: LobbyName,
                 NewStatus: LobbyStatus.InGame
             )
         );
@@ -66,7 +66,7 @@ public partial class WaitingRoom : ILobbyClient
                 new GetLobbyStateMessage(
                     SessionActorPath: actorPath,
                     ConnectionId: string.Empty,
-                    LobbyId: LobbyId
+                    LobbyName: LobbyName
                 )
             );
         }
@@ -98,7 +98,7 @@ public partial class WaitingRoom : ILobbyClient
                 ConnectionId: string.Empty,
                 SessionActorPath: path,
                 ShipParams: new UpdateShipParams(thrust, left, right, shoot),
-                LobbyId: LobbyId
+                LobbyName: LobbyName
             )
         );
     }
@@ -137,7 +137,7 @@ public partial class WaitingRoom : ILobbyClient
         // Console.WriteLine($"Received lobby state: {message.ConnectionId}");
         await InvokeAsync(StateHasChanged);
     }
-    
+
     public async Task HandleRefreshConnectionId()
     {
         await hubProxy.RefreshConnectionIdCommand(
@@ -154,6 +154,8 @@ public partial class WaitingRoom : ILobbyClient
             new KillLobbyMessage(
                 SessionActorPath: await localStorage.GetItemAsync<string>("actorPath"),
                 ConnectionId: string.Empty,
-                LobbyId: LobbyId));
+                LobbyName: LobbyName
+            )
+        );
     }
 }

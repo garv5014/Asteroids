@@ -35,10 +35,10 @@ public class LobbySupervisorTest : TestKit
         ExpectNoMsg(); // Verify that no messages are received by the test probe
 
         // Verify that only one lobby actor is created and added to the dictionaries
-        var lobbyActorRef = lobbySupervisor.Ask<IActorRef>(new GetLobbyMessage(1)).Result;
+        var lobbyActorRef = lobbySupervisor.Ask<IActorRef>(new GetLobbyMessage("lobby1")).Result;
         Assert.NotNull(lobbyActorRef);
 
-        var lobbyActorRef2 = lobbySupervisor.Ask<IActorRef>(new GetLobbyMessage(2)).Result;
+        var lobbyActorRef2 = lobbySupervisor.Ask<IActorRef>(new GetLobbyMessage("lobby2")).Result;
         Assert.Null(lobbyActorRef2);
     }
 }

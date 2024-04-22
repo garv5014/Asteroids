@@ -3,7 +3,7 @@ using Asteroids.Shared.Messages;
 
 namespace Asteroids.Shared;
 
-public record GameLobby(string Name, int Id, int PlayerCount);
+public record GameLobby(string Name, int PlayerCount);
 
 public record GetLobbiesMessage(string SessionActorPath, string ConnectionId)
     : HubMessage(ConnectionId, SessionActorPath);
@@ -11,21 +11,17 @@ public record GetLobbiesMessage(string SessionActorPath, string ConnectionId)
 public record CreateLobbyMessage(string SessionActorPath, string LobbyName, string ConnectionId)
     : HubMessage(ConnectionId, SessionActorPath);
 
-public record JoinLobbyMessage(string SessionActorPath, string ConnectionId, int LobbyId)
+public record JoinLobbyMessage(string SessionActorPath, string ConnectionId, string LobbyName)
     : HubMessage(ConnectionId, SessionActorPath);
 
-public record JoinLobbyResponse(string ConnectionId, string SessionActorPath, int LobbyId)
+public record JoinLobbyResponse(string ConnectionId, string SessionActorPath, string LobbyName)
     : HubMessage(ConnectionId, SessionActorPath);
 
-public record KillLobbyMessage(string SessionActorPath, string ConnectionId, int LobbyId)
+public record KillLobbyMessage(string SessionActorPath, string ConnectionId, string LobbyName)
     : HubMessage(ConnectionId, SessionActorPath);
 
-public record CreateLobbyResponse(
-    string ConnectionId,
-    string SessionActorPath,
-    string LobbyName,
-    int LobbyId
-) : HubMessage(ConnectionId, SessionActorPath);
+public record CreateLobbyResponse(string ConnectionId, string SessionActorPath, string LobbyName)
+    : HubMessage(ConnectionId, SessionActorPath);
 
 public record AllLobbiesResponse(
     string ConnectionId,
@@ -33,7 +29,7 @@ public record AllLobbiesResponse(
     List<GameLobby> Lobbies
 ) : HubMessage(ConnectionId, SessionActorPath);
 
-public record GetLobbyStateMessage(string SessionActorPath, string ConnectionId, int LobbyId)
+public record GetLobbyStateMessage(string SessionActorPath, string ConnectionId, string LobbyName)
     : HubMessage(ConnectionId, SessionActorPath);
 
 // lobby state response Params: isOwner(bool) number of players(int) current state(lobby state enum).
@@ -46,7 +42,7 @@ public record LobbyStateResponse(
 public record UpdateLobbyMessage(
     string ConnectionId,
     string SessionActorPath,
-    int LobbyId,
+    string LobbyName,
     LobbyStatus NewStatus
 ) : HubMessage(ConnectionId, SessionActorPath);
 

@@ -15,7 +15,7 @@ public class SessionActor : ReceiveActor
     private readonly string username;
     private string connectionId;
 
-    private int? lobbyId = null;
+    private string? lobbyName = string.Empty;
     private SessionState state = SessionState.JoinLobby;
 
     private readonly IActorRef lobbySupervisor;
@@ -58,7 +58,7 @@ public class SessionActor : ReceiveActor
 
     private void JoinLobby(JoinLobbyMessage msg)
     {
-        lobbyId = msg.LobbyId;
+        lobbyName = msg.LobbyName;
         state = SessionState.InLobby;
         connectionId = msg.ConnectionId;
         lobbySupervisor.Tell(msg);
