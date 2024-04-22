@@ -14,7 +14,6 @@ public class SessionActor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly string username;
     private string connectionId;
-
     private string? lobbyName = string.Empty;
     private SessionState state = SessionState.JoinLobby;
 

@@ -18,7 +18,7 @@ public class LobbySnapShot
     public LobbyStatus LobbyStatus { get; set; }
     public Game GameState { get; set; }
     public string LobbyOwner { get; set; }
-    public List<IActorRef> SessionsToUpdate { get; set; }
+    public List<string> SessionsToUpdate { get; set; }
 
     public LobbySnapShot(
         string lobbyName,
@@ -26,7 +26,7 @@ public class LobbySnapShot
         LobbyStatus lobbyStatus,
         Game gameState,
         string lobbyOwner,
-        List<IActorRef> sessionsToUpdate
+        List<string> sessionsToUpdate
     )
     {
         LobbyName = lobbyName;

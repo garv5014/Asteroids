@@ -44,11 +44,14 @@ public class LobbySupervisor : ReceiveActor
         {
             var lobbyActor = msg.ActorRef;
             var lobbyName = lobbyActor.Path.Name;
+            var lobby = nameToActorRef[lobbyName];
             var actor = Context.ActorOf(
-                LobbyActor.Props(lobbyName, ""),
+                LobbyActor.Props(lobbyName, lobby.Item2.LobbyOwner),
                 ActorHelper.SanitizeActorName(lobbyName)
             );
-            // nameToActorRef[lobbyName] = actor;
+            Context.Watch(actor);
+            nameToActorRef[lobbyName] = (actor, lobby.Item2);
+            actor.Tell(new RehydrateLobbyMessage(lobby.Item2));
             _log.Info("Lobby {0}", lobbyName);
             DiagnosticsConfig.TotalLobbies.Add(-1);
         });
@@ -63,6 +66,7 @@ public class LobbySupervisor : ReceiveActor
 
     private void SaveAndSendState(StoreLobbyInformationMessage msg)
     {
+        _log.Info("Saving lobby state");
         _lobbyPersistanceActor.Tell(msg);
         nameToActorRef[msg.LobbySnapShot.LobbyName] = (
             nameToActorRef[msg.LobbySnapShot.LobbyName].Item1,
@@ -220,23 +224,23 @@ public class LobbySupervisor : ReceiveActor
         _log.Info("LobbySupervisor stopped");
     }
 
-    protected override SupervisorStrategy SupervisorStrategy()
-    {
-        return new OneForOneStrategy(
-            maxNrOfRetries: 10,
-            withinTimeRange: TimeSpan.FromMinutes(1),
-            decider: Decider.From(x =>
-            {
-                switch (x)
-                {
-                    case Exception _:
-                        return Directive.Restart;
-                    default:
-                        return Directive.Escalate;
-                }
-            })
-        );
-    }
+    // protected override SupervisorStrategy SupervisorStrategy()
+    // {
+    //     return new OneForOneStrategy(
+    //         maxNrOfRetries: 10,
+    //         withinTimeRange: TimeSpan.FromMinutes(1),
+    //         decider: Decider.From(x =>
+    //         {
+    //             switch (x)
+    //             {
+    //                 case Exception _:
+    //                     return Directive.Restart;
+    //                 default:
+    //                     return Directive.Escalate;
+    //             }
+    //         })
+    //     );
+    // }
 
     public static Props Props(
         IActorRef lobbyHubRelay,
@@ -259,3 +263,5 @@ public class LobbySupervisor : ReceiveActor
         );
     }
 }
+
+public record RehydrateLobbyMessage(LobbySnapShot LobbySnapShot);

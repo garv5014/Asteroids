@@ -4,13 +4,12 @@ using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Messages;
 using Asteroids.Shared.Services;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace RealTimeCommunication;
 
 public class LobbyActor : ReceiveActor, IWithTimers
 {
-    private string LobbyName { get; init; }
+    private string LobbyName { get; set; }
     private int NumberOfPlayers
     {
         get => _sessionsToUpdate.Count;
@@ -20,12 +19,12 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private Game GameState { get; set; }
 
-    private string LobbyOwner { get; init; }
+    private string LobbyOwner { get; set; }
     public ITimerScheduler Timers { get; set; }
 
     private readonly ILoggingAdapter _log = Context.GetLogger();
 
-    private List<IActorRef> _sessionsToUpdate = [];
+    private List<string> _sessionsToUpdate = [];
     private readonly Random _random = new();
 
     public LobbyActor(string name, string owner)
@@ -50,6 +49,18 @@ public class LobbyActor : ReceiveActor, IWithTimers
         Receive<ErrorMessage>(msg => Context.Parent.Tell(msg));
         Receive<KillLobbyMessage>(StopActor);
         Receive<SaveLobbyStateMessage>(SaveLobbyState);
+        Receive<RehydrateLobbyMessage>(RehydrateLobby);
+    }
+
+    private void RehydrateLobby(RehydrateLobbyMessage message)
+    {
+        _log.Info("Rehydrating lobby state");
+        LobbyName = message.LobbySnapShot.LobbyName;
+        LobbyOwner = message.LobbySnapShot.LobbyOwner;
+        LobbyStatus = message.LobbySnapShot.LobbyStatus;
+        GameState = message.LobbySnapShot.GameState;
+        _sessionsToUpdate = message.LobbySnapShot.SessionsToUpdate;
+        Self.Tell(new UpdateLobbyMessage("", LobbyOwner, "", LobbyStatus));
     }
 
     private void SaveLobbyState(SaveLobbyStateMessage message)
@@ -106,17 +117,16 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
         foreach (var session in _sessionsToUpdate)
         {
-            _log.Info("Sending lobby state to {0}", session.Path);
-            session.Tell(
-                new LobbyStateResponse(
-                    ConnectionId: "",
-                    SessionActorPath: session.Path.ToString(),
-                    CurrentState: GameState.ToGameSnapShot(
-                        LobbyStatus,
-                        session.Path.ToString() == LobbyOwner
+            // _log.Info("Sending lobby state to {0}", session.Path);
+            Context
+                .ActorSelection(session)
+                .Tell(
+                    new LobbyStateResponse(
+                        ConnectionId: "",
+                        SessionActorPath: session,
+                        CurrentState: GameState.ToGameSnapShot(LobbyStatus, session == LobbyOwner)
                     )
-                )
-            );
+                );
         }
     }
 
@@ -233,7 +243,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     {
         try
         {
-            _sessionsToUpdate.Add(Sender); // should be the session Actor.
+            _sessionsToUpdate.Add(Sender.Path.ToString()); // should be the session Actor.
             var ranX = _random.Next(0, GameState.BoardWidth);
             var ranY = _random.Next(0, GameState.BoardHeight);
             GameState.AddShip(
