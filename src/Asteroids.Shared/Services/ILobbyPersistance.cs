@@ -1,5 +1,6 @@
 using Akka.Actor;
 using Asteroids.Shared.GameEntities;
+using Microsoft.Extensions.Logging;
 using Raft_Library.Gateway.shared;
 using Raft_Library.Models;
 
@@ -8,7 +9,7 @@ namespace Asteroids.Shared.Services;
 public interface ILobbyPersistence
 {
     Task StoreGameInformationAsync(LobbySnapShot lobbyInformation);
-    Task<LobbySnapShot> GetGameInformationAsync(string lobbyName);
+    Task<Dictionary<string, LobbySnapShot>> GetGameInformationAsync();
 }
 
 public class LobbySnapShot
@@ -40,31 +41,35 @@ public class LobbySnapShot
 
 public record StoreLobbyInformationMessage(LobbySnapShot LobbySnapShot);
 
+public record GetLobbyInformationMessage();
+
 public class LobbyPersistanceService : ILobbyPersistence
 {
     private readonly string lobbyKey = "lobbies";
-    private readonly IGatewayClient gatewayService;
+    private readonly IGatewayClient _gatewayService;
+    private readonly ILogger<LobbyPersistanceService> _logger;
 
-    public LobbyPersistanceService(IGatewayClient gatewayService)
+    public LobbyPersistanceService(
+        IGatewayClient gatewayService,
+        ILogger<LobbyPersistanceService> logger
+    )
     {
-        this.gatewayService = gatewayService;
+        _gatewayService = gatewayService;
+        _logger = logger;
     }
 
-    public Task<LobbySnapShot> GetGameInformationAsync(string lobbyName)
-    {
-        throw new NotImplementedException();
-    }
-
+    // lobbies are stored in a dictionary with the key being the lobby name
     public async Task StoreGameInformationAsync(LobbySnapShot lobbyInformation)
     {
-        VersionedValue<string> stored = await gatewayService.StrongGet(lobbyKey);
+        _logger.LogInformation("Storing lobby information for {0}", lobbyInformation.LobbyName);
+        VersionedValue<string> stored = await _gatewayService.StrongGet(lobbyKey);
         var oldValue = JsonHelper.Deserialize<Dictionary<string, LobbySnapShot>>(stored.Value);
         var NewValue = new Dictionary<string, LobbySnapShot>(oldValue);
         NewValue[lobbyInformation.LobbyName] = lobbyInformation;
-        var NewSerializedValue = JsonHelper.Serialize(oldValue);
+        var NewSerializedValue = JsonHelper.Serialize(NewValue);
         if (oldValue == null)
         {
-            var response = await gatewayService.CompareAndSwap(
+            var response = await _gatewayService.CompareAndSwap(
                 new CompareAndSwapRequest
                 {
                     Key = lobbyKey,
@@ -75,7 +80,7 @@ public class LobbyPersistanceService : ILobbyPersistence
         }
         else
         {
-            var response = await gatewayService.CompareAndSwap(
+            var response = await _gatewayService.CompareAndSwap(
                 new CompareAndSwapRequest
                 {
                     Key = lobbyKey,
@@ -84,5 +89,11 @@ public class LobbyPersistanceService : ILobbyPersistence
                 }
             );
         }
+    }
+
+    public async Task<Dictionary<string, LobbySnapShot>> GetGameInformationAsync()
+    {
+        var lobbies = await _gatewayService.StrongGet(lobbyKey);
+        return JsonHelper.Deserialize<Dictionary<string, LobbySnapShot>>(lobbies.Value);
     }
 }

@@ -5,18 +5,31 @@ using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication;
 
-public class LobbyPersistanceActor : ReceiveActor
+public class LobbyPersistenceActor : ReceiveActor
 {
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly ILobbyPersistence _persistenceService;
 
-    public LobbyPersistanceActor(IServiceProvider serviceProvider)
+    public LobbyPersistenceActor(IServiceProvider serviceProvider)
     {
         // Make a http client to send requests to gateway
         // Send a request to the gateway
         var s = serviceProvider.CreateScope();
         _persistenceService = s.ServiceProvider.GetRequiredService<ILobbyPersistence>();
-        Receive<StoreLobbyInformationMessage>(msg => StoreLobbyInformation(msg));
+        Receive<StoreLobbyInformationMessage>(StoreLobbyInformation);
+        Receive<GetLobbyInformationMessage>(GetLobbyInformation);
+    }
+
+    private async void GetLobbyInformation(GetLobbyInformationMessage msg)
+    {
+        _log.Info("Getting lobby information for lobbies");
+        await GetLobbySupervisorInformationFromRaft().PipeTo(Sender);
+    }
+
+    private async Task<RehydrateLobbySupervisorMessage> GetLobbySupervisorInformationFromRaft()
+    {
+        var t = await _persistenceService.GetGameInformationAsync();
+        return new RehydrateLobbySupervisorMessage(t);
     }
 
     private void StoreLobbyInformation(StoreLobbyInformationMessage msg)
@@ -40,7 +53,13 @@ public class LobbyPersistanceActor : ReceiveActor
     public static Props Props()
     {
         var spExtension = DependencyResolver.For(Context.System);
-        return spExtension.Props<AccountPersistanceActor>();
+        return spExtension.Props<LobbyPersistenceActor>();
+    }
+
+    public static Props Props(ActorSystem system)
+    {
+        var spExtension = DependencyResolver.For(system);
+        return spExtension.Props<LobbyPersistenceActor>();
     }
 
     public static Props Props(IServiceProvider serviceProvider)

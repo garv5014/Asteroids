@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Logging;
 using Raft_Library.Gateway.shared;
 using Raft_Library.Models;
 
@@ -8,14 +9,17 @@ namespace Raft_Library.Shop.shared.Services;
 public class GatewayService : IGatewayClient
 {
     private HttpClient _client;
+    private readonly ILogger<GatewayService> _logger;
 
-    public GatewayService(HttpClient client)
+    public GatewayService(HttpClient client, ILogger<GatewayService> logger)
     {
         _client = client;
+        _logger = logger;
     }
 
     public async Task<HttpResponseMessage> CompareAndSwap(CompareAndSwapRequest req)
     {
+        _logger.LogInformation("Sending CompareAndSwap request to Gateway");
         var response = await _client.PostAsJsonAsync("api/Gateway/CompareAndSwap", req);
         return response;
     }

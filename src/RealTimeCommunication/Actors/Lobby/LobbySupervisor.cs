@@ -29,8 +29,20 @@ public class LobbySupervisor : ReceiveActor
     public LobbySupervisor(
         IActorRef lobbyRelayActorRef,
         IActorRef errorHubActorRef,
+        IActorRef lobbyPersistanceActorRef,
         IServiceProvider serviceProvider
     )
+    {
+        Receives();
+
+        var scope = serviceProvider.CreateScope();
+        _logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
+        _lobbyRelayActor = lobbyRelayActorRef;
+        _errorHubActor = errorHubActorRef;
+        _lobbyPersistanceActor = lobbyPersistanceActorRef;
+    }
+
+    private void Receives()
     {
         Receive<CreateLobbyMessage>(CreateLobby);
         Receive<JoinLobbyMessage>(JoinLobby);
@@ -40,28 +52,48 @@ public class LobbySupervisor : ReceiveActor
         Receive<LobbyStateResponse>(HandleStateResponse);
         Receive<GetLobbyMessage>(HandleGetLobbyMessage);
         Receive<ErrorMessage>(msg => _errorHubActor.Tell(msg));
-        Receive<Terminated>(msg =>
+        Receive<StoreLobbyInformationMessage>(SaveAndSendState);
+        Receive<RehydrateLobbySupervisorMessage>(RehydrateSupervisor);
+        Receive(
+            (Action<Terminated>)(
+                msg =>
+                {
+                    HandleTermination(msg);
+                }
+            )
+        );
+    }
+
+    private void HandleTermination(Terminated msg)
+    {
+        var lobbyActor = msg.ActorRef;
+        var lobbyName = lobbyActor.Path.Name;
+        var lobby = nameToActorRef[lobbyName];
+        var actor = Context.ActorOf(
+            LobbyActor.Props(lobbyName, lobby.Item2.LobbyOwner),
+            ActorHelper.SanitizeActorName(lobbyName)
+        );
+        Context.Watch(actor);
+        nameToActorRef[lobbyName] = (actor, lobby.Item2);
+        actor.Tell(new RehydrateLobbyMessage(lobby.Item2));
+        _log.Info("Lobby {0}", lobbyName);
+        DiagnosticsConfig.TotalLobbies.Add(-1);
+    }
+
+    private void RehydrateSupervisor(RehydrateLobbySupervisorMessage message)
+    {
+        foreach (var lobby in message.Lobbies)
         {
-            var lobbyActor = msg.ActorRef;
-            var lobbyName = lobbyActor.Path.Name;
-            var lobby = nameToActorRef[lobbyName];
             var actor = Context.ActorOf(
-                LobbyActor.Props(lobbyName, lobby.Item2.LobbyOwner),
-                ActorHelper.SanitizeActorName(lobbyName)
+                LobbyActor.Props(lobby.Value.LobbyName, lobby.Value.LobbyOwner),
+                ActorHelper.SanitizeActorName(lobby.Value.LobbyName)
             );
             Context.Watch(actor);
-            nameToActorRef[lobbyName] = (actor, lobby.Item2);
-            actor.Tell(new RehydrateLobbyMessage(lobby.Item2));
-            _log.Info("Lobby {0}", lobbyName);
-            DiagnosticsConfig.TotalLobbies.Add(-1);
-        });
-        Receive<StoreLobbyInformationMessage>(SaveAndSendState);
-
-        var scope = serviceProvider.CreateScope();
-        _logger = scope.ServiceProvider.GetRequiredService<ILogger<LobbySupervisor>>();
-        _lobbyRelayActor = lobbyRelayActorRef;
-        _errorHubActor = errorHubActorRef;
-        _lobbyPersistanceActor = Context.ActorOf(LobbyPersistanceActor.Props(serviceProvider));
+            nameToActorRef[lobby.Value.LobbyName] = (actor, lobby.Value);
+            actor.Tell(new RehydrateLobbyMessage(lobby.Value));
+            _log.Info("Lobby {0}", lobby.Value.LobbyName);
+            DiagnosticsConfig.TotalLobbies.Add(1);
+        }
     }
 
     private void SaveAndSendState(StoreLobbyInformationMessage msg)
@@ -216,6 +248,7 @@ public class LobbySupervisor : ReceiveActor
 
     protected override void PreStart()
     {
+        _lobbyPersistanceActor.Tell(new GetLobbyInformationMessage());
         _log.Info("LobbySupervisor created");
     }
 
@@ -245,23 +278,33 @@ public class LobbySupervisor : ReceiveActor
     public static Props Props(
         IActorRef lobbyHubRelay,
         IActorRef errorHubRelay,
+        IActorRef lobbyPersistanceActor,
         ActorSystem actorSystem
     )
     {
         var dR = DependencyResolver.For(actorSystem);
-        return dR.Props<LobbySupervisor>(lobbyHubRelay, errorHubRelay);
+        return dR.Props<LobbySupervisor>(lobbyHubRelay, errorHubRelay, lobbyPersistanceActor);
     }
 
     public static Props Props(
         IActorRef lobbyHubRelay,
         IActorRef errorHubRelay,
+        IActorRef lobbyPersistanceActor,
         IServiceProvider serviceProvider
     )
     {
         return Akka.Actor.Props.Create(
-            () => new LobbySupervisor(lobbyHubRelay, errorHubRelay, serviceProvider)
+            () =>
+                new LobbySupervisor(
+                    lobbyHubRelay,
+                    errorHubRelay,
+                    lobbyPersistanceActor,
+                    serviceProvider
+                )
         );
     }
 }
 
 public record RehydrateLobbyMessage(LobbySnapShot LobbySnapShot);
+
+public record RehydrateLobbySupervisorMessage(Dictionary<string, LobbySnapShot> Lobbies);

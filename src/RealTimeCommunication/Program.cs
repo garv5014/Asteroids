@@ -112,6 +112,17 @@ internal class Program
                                 );
                                 registry.TryRegister<ErrorHubRelay>(errorHubRelay);
 
+                                var lobbyPersistanceActor = system.ActorOf(
+                                    ClusterSingletonProxy.Props(
+                                        singletonManagerPath: $"/user/{ActorHelper.LobbyPersistenceActorName}",
+                                        settings: ClusterSingletonProxySettings
+                                            .Create(system)
+                                            .WithRole("Lobbies")
+                                    ),
+                                    name: "lobbyPersistenceProxy"
+                                );
+                                registry.TryRegister<LobbyPersistenceActor>(lobbyPersistanceActor);
+
                                 var lobbyHubRelay = system.ActorOf(
                                     ClusterSingletonProxy.Props(
                                         singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
@@ -183,7 +194,7 @@ internal class Program
             ),
             name: ActorHelper.LobbyRelayActorName
         );
-        // create lobbies emitter proxy
+        // create lobbies relay proxy
         var lobbyHubRelay = system.ActorOf(
             ClusterSingletonProxy.Props(
                 singletonManagerPath: $"/user/{ActorHelper.LobbyRelayActorName}",
@@ -202,6 +213,22 @@ internal class Program
             name: ActorHelper.ErrorHubRelayActorName
         );
 
+        var lobbyPersistanceActor = system.ActorOf(
+            ClusterSingletonProxy.Props(
+                singletonManagerPath: $"/user/{ActorHelper.LobbyPersistenceActorName}",
+                settings: ClusterSingletonProxySettings.Create(system).WithRole("Lobbies")
+            ),
+            name: "lobbyPersistenceProxy"
+        );
+
+        system.ActorOf(
+            ClusterSingletonManager.Props(
+                singletonProps: LobbyPersistenceActor.Props(system),
+                terminationMessage: PoisonPill.Instance,
+                settings: ClusterSingletonManagerSettings.Create(system).WithRole("Lobbies")
+            ),
+            name: ActorHelper.LobbyPersistenceActorName
+        );
         // create lobbies emitter proxy
         var errorHubRelay = system.ActorOf(
             ClusterSingletonProxy.Props(
@@ -217,6 +244,7 @@ internal class Program
                 singletonProps: LobbySupervisor.Props(
                     lobbyHubRelay: lobbyHubRelay,
                     errorHubRelay: errorHubRelay,
+                    lobbyPersistanceActor: lobbyPersistanceActor,
                     actorSystem: system
                 ),
                 terminationMessage: PoisonPill.Instance,
