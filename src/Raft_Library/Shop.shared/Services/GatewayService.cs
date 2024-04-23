@@ -14,6 +14,7 @@ public class GatewayService : IGatewayClient
     public GatewayService(HttpClient client, ILogger<GatewayService> logger)
     {
         _client = client;
+        _client.BaseAddress = new Uri("http://gateway:8080");
         _logger = logger;
     }
 
@@ -36,7 +37,7 @@ public class GatewayService : IGatewayClient
         return await response.Content.ReadFromJsonAsync<VersionedValue<string>>();
     }
 
-    public async Task<VersionedValue<string>> StrongGet(string key)
+    public async Task<VersionedValue<string>?> StrongGet(string key)
     {
         Console.WriteLine($"StrongGet {_client.BaseAddress}");
         var response = await _client.GetAsync($"api/Gateway/StrongGet?key={key}");

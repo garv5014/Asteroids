@@ -4,7 +4,7 @@ namespace Raft_Library.Gateway.shared;
 
 public interface IGatewayClient
 {
-    Task<VersionedValue<string>> StrongGet(string key);
+    Task<VersionedValue<string>?> StrongGet(string key);
     Task<VersionedValue<string>> EventualGet(string key);
     Task<HttpResponseMessage> CompareAndSwap(CompareAndSwapRequest req);
 }

@@ -62,14 +62,14 @@ public class LobbyPersistanceService : ILobbyPersistence
     public async Task StoreGameInformationAsync(LobbySnapShot lobbyInformation)
     {
         _logger.LogInformation("Storing lobby information for {0}", lobbyInformation.LobbyName);
-        VersionedValue<string> stored = await _gatewayService.StrongGet(lobbyKey);
-        var oldValue = JsonHelper.Deserialize<Dictionary<string, LobbySnapShot>>(stored.Value);
-        var NewValue = new Dictionary<string, LobbySnapShot>(oldValue);
+        VersionedValue<string>? stored = await _gatewayService.StrongGet(lobbyKey);
+        var NewValue = new Dictionary<string, LobbySnapShot>();
         NewValue[lobbyInformation.LobbyName] = lobbyInformation;
         var NewSerializedValue = JsonHelper.Serialize(NewValue);
-        if (oldValue == null)
+        if (stored == null)
         {
-            var response = await _gatewayService.CompareAndSwap(
+            _logger.LogInformation("No lobbies stored, creating new lobby");
+            await _gatewayService.CompareAndSwap(
                 new CompareAndSwapRequest
                 {
                     Key = lobbyKey,
@@ -77,23 +77,34 @@ public class LobbyPersistanceService : ILobbyPersistence
                     OldValue = null
                 }
             );
+            return;
         }
-        else
-        {
-            var response = await _gatewayService.CompareAndSwap(
-                new CompareAndSwapRequest
-                {
-                    Key = lobbyKey,
-                    NewValue = NewSerializedValue,
-                    OldValue = stored.Value
-                }
-            );
-        }
+
+        var oldValue = JsonHelper.Deserialize<Dictionary<string, LobbySnapShot>?>(stored.Value);
+        _logger.LogInformation(
+            "Storing old information for {0} id {1}",
+            lobbyInformation.LobbyName,
+            oldValue
+        );
+
+        await _gatewayService.CompareAndSwap(
+            new CompareAndSwapRequest
+            {
+                Key = lobbyKey,
+                NewValue = NewSerializedValue,
+                OldValue = stored.Value
+            }
+        );
+        return;
     }
 
     public async Task<Dictionary<string, LobbySnapShot>> GetGameInformationAsync()
     {
         var lobbies = await _gatewayService.StrongGet(lobbyKey);
+        if (lobbies == null)
+        {
+            return new Dictionary<string, LobbySnapShot>();
+        }
         return JsonHelper.Deserialize<Dictionary<string, LobbySnapShot>>(lobbies.Value);
     }
 }

@@ -31,16 +31,16 @@ internal class Program
         builder.Configuration.GetRequiredSection(nameof(ActorOptions)).Bind(actorOptions);
 
         Console.WriteLine($"Actor Options: {JsonSerializer.Serialize(actorOptions)}");
-
         builder
             .Configuration.GetRequiredSection(nameof(RaftConnectionOptions))
             .Bind(raftConnection);
+        Console.WriteLine($"Raft Connection: {JsonSerializer.Serialize(raftConnection)}");
         builder.Services.AddSingleton(raftConnection);
         builder.Services.AddHttpClient(
             "Raft",
             client =>
                 client.BaseAddress = new Uri(
-                    builder.Configuration.GetSection(nameof(RaftConnectionOptions))["GatewayUrl"]
+                    raftConnection.GatewayUrl
                         ?? throw new InvalidOperationException("GatewayUrl address not found.")
                 )
         );
