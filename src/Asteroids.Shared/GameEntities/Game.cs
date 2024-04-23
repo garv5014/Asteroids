@@ -1,9 +1,26 @@
 namespace Asteroids.Shared.GameEntities;
 
-public class Game(int boardHeight, int boardWidth)
+public class Game
 {
-    public int BoardHeight { get; set; } = boardHeight;
-    public int BoardWidth { get; set; } = boardWidth;
+    public Game() { }
+
+    public Game(int boardHeight, int boardWidth)
+    {
+        BoardHeight = boardHeight;
+        BoardWidth = boardWidth;
+    }
+
+    public Game(Game game)
+    {
+        this.BoardHeight = game.BoardHeight;
+        this.BoardWidth = game.BoardWidth;
+        Ships = game.Ships;
+        Asteroids = game.Asteroids;
+        Projectiles = game.Projectiles;
+    }
+
+    public int BoardHeight { get; set; }
+    public int BoardWidth { get; set; }
 
     private List<((int xEdge, int yEdge), (int headingMin, int headingMax))> Edges { get; set; } =
         [
@@ -14,9 +31,9 @@ public class Game(int boardHeight, int boardWidth)
         ];
 
     private readonly Random _random = new();
-    private Dictionary<string, Ship> Ships { get; set; } = new();
-    private List<Asteroid> Asteroids { get; set; } = new();
-    private List<Projectile> Projectiles { get; set; } = new();
+    public Dictionary<string, Ship> Ships { get; init; } = new();
+    public List<Asteroid> Asteroids { get; init; } = new();
+    public List<Projectile> Projectiles { get; init; } = new();
 
     public void AddShip(string key, Ship ship)
     {

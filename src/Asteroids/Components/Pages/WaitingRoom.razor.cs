@@ -13,6 +13,7 @@ public partial class WaitingRoom : ILobbyClient
     [Parameter]
     public string LobbyName { get; set; }
     private HubConnection connection;
+
     private ILobbyHub hubProxy;
     private GameSnapShot gameState;
     private Timer timer;
@@ -35,8 +36,16 @@ public partial class WaitingRoom : ILobbyClient
         }
         connection.ClientRegistration<ILobbyClient>(this);
         await connection.StartAsync();
+        await InvokeAsync(StateHasChanged);
+    }
 
-        await GetLobbyState();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetLobbyState();
+        }
+        await HandleRefreshConnectionId();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -93,6 +102,7 @@ public partial class WaitingRoom : ILobbyClient
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
         var shoot = pressedKeys.Contains(" ");
         var path = await localStorage.GetItemAsync<string>("actorPath");
+
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,

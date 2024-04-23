@@ -4,6 +4,7 @@ using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Messages;
 using Asteroids.Shared.Services;
+using Raft_Library.Models;
 
 namespace RealTimeCommunication;
 
@@ -54,13 +55,23 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void RehydrateLobby(RehydrateLobbyMessage message)
     {
+        var snapShotLobby = message.LobbySnapShot;
         _log.Info("Rehydrating lobby state");
-        LobbyName = message.LobbySnapShot.LobbyName;
-        LobbyOwner = message.LobbySnapShot.LobbyOwner;
-        LobbyStatus = message.LobbySnapShot.LobbyStatus;
-        GameState = message.LobbySnapShot.GameState;
-        _sessionsToUpdate = message.LobbySnapShot.SessionsToUpdate;
-        Self.Tell(new UpdateLobbyMessage("", LobbyOwner, "", LobbyStatus));
+        LobbyName = snapShotLobby.LobbyName;
+        LobbyOwner = snapShotLobby.LobbyOwner;
+        LobbyStatus = snapShotLobby.LobbyStatus;
+        GameState = new Game(snapShotLobby.GameState);
+        _sessionsToUpdate = snapShotLobby.SessionsToUpdate;
+        _log.Info("Rehydrated lobby state: {0} sessionActorPath {1}", LobbyStatus, LobbyOwner);
+        _log.Info("Rehydrated lobby state: {0} ", JsonHelper.Serialize(GameState));
+        Self.Tell(
+            new UpdateLobbyMessage(
+                ConnectionId: "",
+                SessionActorPath: LobbyOwner,
+                LobbyName: LobbyName,
+                NewStatus: LobbyStatus
+            )
+        );
     }
 
     private void SaveLobbyState(SaveLobbyStateMessage message)
