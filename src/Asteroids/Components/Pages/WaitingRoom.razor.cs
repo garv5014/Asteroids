@@ -13,7 +13,7 @@ public partial class WaitingRoom : ILobbyClient
     [Parameter]
     public string LobbyName { get; set; }
     private HubConnection connection;
-
+    private string SessionActorPath { get; set; }
     private ILobbyHub hubProxy;
     private GameSnapShot gameState;
     private Timer timer;
@@ -45,7 +45,8 @@ public partial class WaitingRoom : ILobbyClient
         {
             await GetLobbyState();
         }
-        await HandleRefreshConnectionId();
+
+        SessionActorPath = await localStorage.GetItemAsync<string>("actorPath");
         await InvokeAsync(StateHasChanged);
     }
 
@@ -101,12 +102,11 @@ public partial class WaitingRoom : ILobbyClient
         var left = pressedKeys.Contains("a") && !pressedKeys.Contains("d");
         var right = pressedKeys.Contains("d") && !pressedKeys.Contains("a");
         var shoot = pressedKeys.Contains(" ");
-        var path = await localStorage.GetItemAsync<string>("actorPath");
 
         await hubProxy.UpdateShipCommand(
             new UpdateShipMessage(
                 ConnectionId: string.Empty,
-                SessionActorPath: path,
+                SessionActorPath: SessionActorPath,
                 ShipParams: new UpdateShipParams(thrust, left, right, shoot),
                 LobbyName: LobbyName
             )
@@ -153,7 +153,7 @@ public partial class WaitingRoom : ILobbyClient
         await hubProxy.RefreshConnectionIdCommand(
             new RefreshConnectionIdMessage(
                 ConnectionId: string.Empty,
-                SessionActorPath: await localStorage.GetItemAsync<string>("actorPath")
+                SessionActorPath: SessionActorPath
             )
         );
     }
@@ -162,9 +162,21 @@ public partial class WaitingRoom : ILobbyClient
     {
         await hubProxy.KillLobbyCommand(
             new KillLobbyMessage(
-                SessionActorPath: await localStorage.GetItemAsync<string>("actorPath"),
+                SessionActorPath: SessionActorPath,
                 ConnectionId: string.Empty,
                 LobbyName: LobbyName
+            )
+        );
+    }
+
+    private async Task Reload()
+    {
+        await OnInitializedAsync();
+        Console.WriteLine("Reloaded {0}", SessionActorPath);
+        await hubProxy.RefreshConnectionIdCommand(
+            new RefreshConnectionIdMessage(
+                ConnectionId: string.Empty,
+                SessionActorPath: SessionActorPath
             )
         );
     }
