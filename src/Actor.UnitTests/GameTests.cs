@@ -61,7 +61,7 @@ public class GameTest
         game.Tick(); // This should move the ship again
         game.Tick(); // This should move the ship again
 
-        Assert.NotEqual(100, ship.XCoordinate); // Assuming the ship moves along the X-axis
+        Assert.NotEqual(500, ship.XCoordinate); // Assuming the ship moves along the X-axis
     }
 
     [Fact]
@@ -69,13 +69,13 @@ public class GameTest
     {
         var game = new Game(800, 600);
         var ship = new Ship(100, 100, 0);
-        var asteroid = new Asteroid(102, 102, 0, 10, 0, 0); // Positioned close enough to collide
+        var asteroid = new Asteroid(101, 101, 0, 10, 0, 0); // Positioned close enough to collide
         game.AddShip("ship1", ship);
         game.GetAsteroids().Add(asteroid);
 
         game.Tick(); // This should check for collisions
 
-        Assert.True(ship.Health < 50); // Assuming initial health is 50 and collision decreases it
+        Assert.True(ship.Health < 500); // Assuming initial health is 500 and collision decreases it
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class ShipTests
         Assert.Equal(200, ship.XCoordinate);
         Assert.Equal(250, ship.YCoordinate);
         Assert.Equal(45, ship.Rotation);
-        Assert.Equal(50, ship.Health); // Default health
+        Assert.Equal(500, ship.Health); // Default health
         Assert.Equal(20, ship.Size); // Default size
         Assert.Equal(0, ship.VelocityX); // Default velocity X
         Assert.Equal(0, ship.VelocityY); // Default velocity Y

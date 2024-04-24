@@ -133,10 +133,23 @@ internal class Program
                                     name: "lobbyHubRelayProxy"
                                 );
 
+                                var accountPersistenceActor = system.ActorOf(
+                                    ErrorHubRelay.Props(),
+                                    ActorHelper.AccountPersistanceActorName
+                                );
+
+                                registry.TryRegister<AccountPersistanceActor>(
+                                    accountPersistenceActor
+                                );
+
                                 registry.TryRegister<LobbyHubRelay>(lobbyHubRelay);
 
                                 var ss = system.ActorOf(
-                                    SessionSupervisor.Props(lobbySupervisorProxy, accountHubRelay),
+                                    SessionSupervisor.Props(
+                                        lobbySupervisorProxy,
+                                        accountHubRelay,
+                                        accountPersistenceActor
+                                    ),
                                     ActorHelper.SessionSupervisorName
                                 );
 

@@ -17,17 +17,18 @@ public class SessionSupervisor : ReceiveActor
     private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, IActorRef> _sessions = new();
 
-    public SessionSupervisor(IActorRef lobbySupervisor, IActorRef accountRelayHub)
+    public SessionSupervisor(
+        IActorRef lobbySupervisor,
+        IActorRef accountRelayHub,
+        IActorRef accountPersistenceActor
+    )
     {
         _log.Info("SessionSupervisor created");
 
         _accountRelayActor = accountRelayHub;
-        Receive<LoginMessage>(cam => CreateAccountMessage(cam));
-        Receive<GetUserSessionMessage>(gusm => GetUserSessionMessage(gusm));
-        _accountPersistenceActor = Context.ActorOf(
-            AccountPersistanceActor.Props(),
-            ActorHelper.AccountPersistanceActorName
-        );
+        Receive<LoginMessage>(CreateAccountMessage);
+        Receive<GetUserSessionMessage>(GetUserSessionMessage);
+        _accountPersistenceActor = accountPersistenceActor;
         _lobbySupervisor = lobbySupervisor;
     }
 
@@ -64,12 +65,26 @@ public class SessionSupervisor : ReceiveActor
     public void GetUserSessionMessage(GetUserSessionMessage gusm)
     {
         _log.Info("Getting user session for {0}", gusm.ActorPath);
-        var actor = _sessions[gusm.ActorPath];
-        Sender.Tell(new GetUserSessionResponse(actor));
+        if (_sessions.ContainsKey(gusm.ActorPath))
+        {
+            var actor = _sessions[gusm.ActorPath];
+            Sender.Tell(new GetUserSessionResponse(actor));
+            return;
+        }
+        else
+        {
+            _lobbySupervisor.Tell(new ErrorMessage("Session not found", ""));
+        }
     }
 
-    public static Props Props(IActorRef LobbySupervisor, IActorRef accountRelay)
+    public static Props Props(
+        IActorRef LobbySupervisor,
+        IActorRef accountRelay,
+        IActorRef accountPersistenceActor
+    )
     {
-        return Akka.Actor.Props.Create(() => new SessionSupervisor(LobbySupervisor, accountRelay));
+        return Akka.Actor.Props.Create(
+            () => new SessionSupervisor(LobbySupervisor, accountRelay, accountPersistenceActor)
+        );
     }
 }
