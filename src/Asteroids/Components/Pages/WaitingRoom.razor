@@ -13,6 +13,9 @@
     {
       <h1>Waiting Room</h1>
       <h4>Waiting for game to start</h4>
+      
+      <ColorPickerComponent Title="Ship Color" SelectedColor="@shipColor" SelectedColorChanged="OnShipColorChanged" />
+      <ColorPickerComponent Title="Bullet Color" SelectedColor="@projectileColor" SelectedColorChanged="OnBulletColorChanged" />
 
       @if (gameState.IsOwner)
       {
