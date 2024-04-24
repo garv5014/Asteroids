@@ -28,8 +28,12 @@ public partial class Lobby : ILobbyClient
         connection.ClientRegistration<ILobbyClient>(this);
         await connection.StartAsync();
 
-        await RequestLobbies();
         await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await RequestLobbies();
     }
 
     private async Task RequestLobbies()
