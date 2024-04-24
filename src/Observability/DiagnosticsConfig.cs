@@ -8,6 +8,11 @@ public static class DiagnosticsConfig
     public static string LobbyService = "Asteroids.Actors";
     public static Meter LobbyMeter = new(LobbyService);
     public static Counter<int> TotalLobbies = LobbyMeter.CreateCounter<int>("total.lobbies");
-    public static Counter<int> PlayingLobbies = LobbyMeter.CreateCounter<int>("total.playing.lobbies");
+    public static Counter<int> PlayingLobbies = LobbyMeter.CreateCounter<int>(
+        "total.playing.lobbies"
+    );
+    public static Counter<int> PlayersAcrossLobbies = LobbyMeter.CreateCounter<int>(
+        "total.players.across.lobbies"
+    );
     public static ActivitySource Source = new(LobbyService);
 }

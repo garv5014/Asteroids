@@ -4,6 +4,7 @@ using Asteroids.Shared;
 using Asteroids.Shared.GameEntities;
 using Asteroids.Shared.Messages;
 using Asteroids.Shared.Services;
+using Observability;
 using Raft_Library.Models;
 
 namespace RealTimeCommunication;
@@ -105,21 +106,27 @@ public class LobbyActor : ReceiveActor, IWithTimers
             _log.Info("Game loop tick");
             GameState.Tick();
             UpdateClients();
-            CheckGameOver();
+            if (isGameOver())
+            {
+                CleanUp();
+            }
         }
     }
 
-    private void CheckGameOver()
+    private void CleanUp()
     {
-        if (GameState.GetShips().Count == 0)
-        {
-            _log.Info("Game over");
-            LobbyStatus = LobbyStatus.GameOver;
-            Timers.Cancel("gameLoop");
-            Timers.Cancel("spawnAsteroid");
-            Timers.Cancel("snapShotLobby");
-            UpdateClients();
-        }
+        _log.Info("Game over");
+        LobbyStatus = LobbyStatus.GameOver;
+        Timers.Cancel("gameLoop");
+        Timers.Cancel("spawnAsteroid");
+        Timers.Cancel("snapShotLobby");
+        UpdateClients();
+        DiagnosticsConfig.PlayersAcrossLobbies.Add(-_sessionsToUpdate.Count);
+    }
+
+    private bool isGameOver()
+    {
+        return GameState.GetShips().Count == 0;
     }
 
     private void UpdateClients()
@@ -262,6 +269,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
                 new Ship(xCoordinate: ranX, yCoordinate: ranY, rotation: 0)
             );
             _log.Info("Lobby Joined by {0}", Sender.Path.Name);
+            DiagnosticsConfig.PlayersAcrossLobbies.Add(1);
         }
         catch (Exception e)
         {
