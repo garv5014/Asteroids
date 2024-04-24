@@ -8,6 +8,9 @@
   [Parameter]
   public int Size { get; set; }
   
+  [Parameter]
+    public string Color { get; set; }
+  
   private string GetTransformStyle()
   {
     var transform = $"translate({XCoordinate + 22}px, {YCoordinate - 40}px)";
@@ -17,11 +20,15 @@
   private string GetSizeStyle()
   {
     return $"font-size: {Size}px;";
-    // return $"height: {Size}px; width: {Size}px;";
+  }
+  
+  private string GetColorStyle()
+  {
+    return $"color: {Color};";
   }
 }
 
-<div class="asteroid" style="@($"transform: {GetTransformStyle()}; {GetSizeStyle()}")">
+<div class="asteroid" style="@($"transform: {GetTransformStyle()}; {GetSizeStyle()}; {GetColorStyle()};")">
   &#8226;
 </div>
 

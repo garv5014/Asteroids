@@ -2,37 +2,40 @@
 @using Asteroids.Shared.GameEntities
 @inject IToastService ToastService
 @inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
 <h1>Game is @(State.CurrentStatus == LobbyStatus.InGame ? "Playing" : "Over")</h1>
 <div class="play-area" tabindex="0" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp">
-    @foreach (var ship in State.Ships)
-    {
-        <ShipComponent Ship="@ship" />
-    }
+  @foreach (var ship in State.Ships)
+  {
+    <ShipComponent Ship="@ship" Color="@_shipColor"/>
+  }
 
-    @foreach (var asteroid in State.Asteroids)
-    {
-        <AsteroidComponent @key=asteroid.Id
-                           XCoordinate="@asteroid.XCoordinate"
-                           YCoordinate="@asteroid.YCoordinate"
-                           Rotation="@asteroid.Rotation"
-                           Size="@asteroid.Size"/>
-    }
-    
-    @foreach(var projectile in State.Projectiles)
-    {
-        <ProjectileComponent @key=projectile.Id
-                             XCoordinate="@projectile.XCoordinate"
-                             YCoordinate="@projectile.YCoordinate"
-                             Size="@projectile.Size" />
-    }
-    
-    @if (State.CurrentStatus == LobbyStatus.GameOver)
-    {
-        <div class="game-over">
-            <h1 class="text-danger" >Game Over</h1>
-        <button class="btn btn-link text-danger" @onclick="@(() => NavigationManager.NavigateTo("/lobby"))">Return To Lobby</button>
-        </div>
-    }
+  @foreach (var asteroid in State.Asteroids)
+  {
+    <AsteroidComponent @key=asteroid.Id
+                       XCoordinate="@asteroid.XCoordinate"
+                       YCoordinate="@asteroid.YCoordinate"
+                       Rotation="@asteroid.Rotation"
+                       Size="@asteroid.Size"/>
+  }
+
+  @foreach (var projectile in State.Projectiles)
+  {
+    <ProjectileComponent @key=projectile.Id
+                         XCoordinate="@projectile.XCoordinate"
+                         YCoordinate="@projectile.YCoordinate"
+                         Size="@projectile.Size"
+                         Color="@_projectileColor"/>
+  }
+
+  @if (State.CurrentStatus == LobbyStatus.GameOver)
+  {
+    <div class="game-over">
+      <h1 class="text-danger">Game Over</h1>
+      <button class="btn btn-link text-danger" @onclick="@(() => NavigationManager.NavigateTo("/lobby"))">Return To Lobby</button>
+    </div>
+  }
 </div>
 
 <style>
@@ -59,36 +62,46 @@
 </style>
 
 @code {
-    [Parameter]
-    public GameSnapShot State { get; set; }
+  [Parameter] public GameSnapShot State { get; set; }
 
-    [Parameter]
-    public EventCallback<HashSet<string>> EventCallback { get; set; }
+  [Parameter] public EventCallback<HashSet<string>> EventCallback { get; set; }
 
-    private string[] _movementKeys = ["w", "a", "d", " "];
-    private HashSet<string> _pressedKeys = [];
+  private string[] _movementKeys = ["w", "a", "d", " "];
+  private HashSet<string> _pressedKeys = [];
 
-    protected override void OnInitialized()
+  private string _shipColor = "white";
+  private string _projectileColor = "white";
+
+  protected override async Task OnInitializedAsync()
+  {
+    Console.WriteLine("Initialized");
+    Console.WriteLine($"The number of ships is {State.Ships.Count}");
+    Console.WriteLine($"Getting ship color from local storage");
+    _shipColor = await LocalStorage.GetItemAsync<string>("shipColor");
+    Console.WriteLine($"Ship color is {_shipColor}");
+    Console.WriteLine($"Getting projectile color from local storage");
+    _projectileColor = await LocalStorage.GetItemAsync<string>("projectileColor");
+    Console.WriteLine($"Projectile color is {_projectileColor}");
+  }
+
+  private void HandleKeyDown(KeyboardEventArgs e)
+  {
+    if (_movementKeys.Contains(e.Key))
     {
-        Console.WriteLine("Initialized");
-        Console.WriteLine($"The number of ships is {State.Ships.Count}");
+      _pressedKeys.Add(e.Key);
     }
 
-    private void HandleKeyDown(KeyboardEventArgs e)
+    EventCallback.InvokeAsync(_pressedKeys);
+  }
+
+  private void HandleKeyUp(KeyboardEventArgs e)
+  {
+    if (_movementKeys.Contains(e.Key))
     {
-        if (_movementKeys.Contains(e.Key))
-        {
-            _pressedKeys.Add(e.Key);
-        }
-        EventCallback.InvokeAsync(_pressedKeys);
+      _pressedKeys.Remove(e.Key);
     }
 
-    private void HandleKeyUp(KeyboardEventArgs e)
-    {
-        if (_movementKeys.Contains(e.Key))
-        {
-            _pressedKeys.Remove(e.Key);
-        }
-        EventCallback.InvokeAsync(_pressedKeys);
-    }
+    EventCallback.InvokeAsync(_pressedKeys);
+  }
+
 }

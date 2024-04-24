@@ -18,6 +18,8 @@ public partial class WaitingRoom : ILobbyClient
     private GameSnapShot gameState;
     private Timer timer;
     private HashSet<string> pressedKeys = new HashSet<string>();
+    private string shipColor = "white";
+    private string projectileColor = "white";
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,5 +181,17 @@ public partial class WaitingRoom : ILobbyClient
                 SessionActorPath: SessionActorPath
             )
         );
+    }
+    
+    private async void OnShipColorChanged(string color)
+    {
+        shipColor = color;
+        await localStorage.SetItemAsync("shipColor", color);
+    }
+
+    private async void OnBulletColorChanged(string color)
+    {
+        projectileColor = color;
+        await localStorage.SetItemAsync("projectileColor", color);
     }
 }

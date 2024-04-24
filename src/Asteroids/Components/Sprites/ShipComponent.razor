@@ -2,6 +2,8 @@
 
 @code {
   [Parameter] public Ship Ship { get; set; }
+  
+  [Parameter] public string Color { get; set; }
 
   private string GetTranslateStyle()
   {
@@ -22,10 +24,10 @@
       <g id="SVGRepo_iconCarrier" data-name="SVGRepo iconCarrier">
         <path
           d="M787.12,665.64L438.01,24.6C429.75,9.44,413.87,0,396.61,0h0c-17.26,0-33.15,9.42-41.41,24.58L5.76,665.42c-9.59,17.58-7.02,39.31,6.4,54.17,3.65,4.04,7.88,7.33,12.48,9.83,12.33,6.7,27.31,7.69,40.76,2.05l331.06-138.9h0l330.99,139.09c18.47,7.76,39.82,3,53.25-11.85,13.43-14.85,16.01-36.58,6.43-54.17Z"
-          style="fill: #fff; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
+          style="fill: @Color; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
         <path
           d="M355.21,24.58L5.76,665.42c-9.59,17.58-7.02,39.31,6.4,54.17,3.65,4.04,7.88,7.33,12.48,9.83,12.33,6.7,27.31,7.69,40.76,2.05l331.06-138.9L396.61,0c-17.26,0-33.15,9.42-41.41,24.58Z"
-          style="fill: #dddddf; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
+          style="fill: @Color; stroke: #fff; stroke-miterlimit: 6.25; stroke-width: 0px;" />
       </g>
     </svg>
   </div>
