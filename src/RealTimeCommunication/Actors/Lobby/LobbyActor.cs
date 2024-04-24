@@ -261,6 +261,12 @@ public class LobbyActor : ReceiveActor, IWithTimers
     {
         try
         {
+            if (_sessionsToUpdate.Contains(Sender.Path.ToString()))
+            {
+                _log.Info("User already in lobby");
+                Context.Parent.Tell(new ErrorMessage("Session already in lobby"));
+                return;
+            }
             _sessionsToUpdate.Add(Sender.Path.ToString()); // should be the session Actor.
             var ranX = _random.Next(0, GameState.BoardWidth);
             var ranY = _random.Next(0, GameState.BoardHeight);
@@ -294,7 +300,7 @@ public class LobbyActor : ReceiveActor, IWithTimers
     }
 }
 
-internal record GameLoopMessage { }
+public record GameLoopMessage { }
 
 internal record SaveLobbyStateMessage { }
 

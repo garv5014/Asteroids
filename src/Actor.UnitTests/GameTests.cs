@@ -61,7 +61,7 @@ public class GameTest
         game.Tick(); // This should move the ship again
         game.Tick(); // This should move the ship again
 
-        Assert.NotEqual(500, ship.XCoordinate); // Assuming the ship moves along the X-axis
+        Assert.NotEqual(100, ship.YCoordinate); // Assuming the ship moves along the X-axis
     }
 
     [Fact]
