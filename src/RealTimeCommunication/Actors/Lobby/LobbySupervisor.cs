@@ -257,24 +257,6 @@ public class LobbySupervisor : ReceiveActor
         _log.Info("LobbySupervisor stopped");
     }
 
-    // protected override SupervisorStrategy SupervisorStrategy()
-    // {
-    //     return new OneForOneStrategy(
-    //         maxNrOfRetries: 10,
-    //         withinTimeRange: TimeSpan.FromMinutes(1),
-    //         decider: Decider.From(x =>
-    //         {
-    //             switch (x)
-    //             {
-    //                 case Exception _:
-    //                     return Directive.Restart;
-    //                 default:
-    //                     return Directive.Escalate;
-    //             }
-    //         })
-    //     );
-    // }
-
     public static Props Props(
         IActorRef lobbyHubRelay,
         IActorRef errorHubRelay,

@@ -55,6 +55,7 @@ public class SessionSupervisorTests : TestKit
         sessionSupervisor.Tell(new GetUserSessionMessage(invalidActorPath));
 
         ExpectNoMsg();
+        lobbySupervisorMock.ExpectMsg<ErrorMessage>();
     }
 
     [Fact]
