@@ -63,7 +63,7 @@ public class SessionActorTests : TestKit
     }
 
     [Fact]
-    public void test_get_lobby()
+    public void test_get_lobbies()
     {
         var lobbySupervisorMock = CreateTestProbe();
         var sessionActor = Sys.ActorOf(SessionActor.Props("user1", lobbySupervisorMock.Ref));
@@ -72,6 +72,22 @@ public class SessionActorTests : TestKit
         sessionActor.Tell(joinLobbyMessage);
 
         lobbySupervisorMock.ExpectMsg<GetLobbiesMessage>();
+    }
+
+    [Fact]
+    public void test_getState_lobby()
+    {
+        var lobbySupervisorMock = CreateTestProbe();
+        var sessionActor = Sys.ActorOf(SessionActor.Props("user1", lobbySupervisorMock.Ref));
+        var joinLobbyMessage = new GetLobbyStateMessage(
+            SessionActorPath: "",
+            ConnectionId: "",
+            LobbyName: "lobby1"
+        );
+
+        sessionActor.Tell(joinLobbyMessage);
+
+        lobbySupervisorMock.ExpectMsg<GetLobbyStateMessage>();
     }
 
     [Fact]

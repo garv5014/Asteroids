@@ -202,6 +202,32 @@ public class ShipTests
         ship.VelocityY.Should().BeLessThan(movingYVelocity);
     }
 
+    [Fact]
+    public void ShipWrapsOnMap()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(601, 801, 90);
+        game.AddShip("ship1", ship);
+        game.UpdateShip("ship1", new UpdateShipParams(true, false, false, false));
+        game.Tick();
+
+        ship.XCoordinate.Should().Be(1);
+        ship.YCoordinate.Should().Be(2);
+    }
+
+    [Fact]
+    public void ShipWrapsNegative()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(-2, -2, 90);
+        game.AddShip("ship1", ship);
+        game.UpdateShip("ship1", new UpdateShipParams(true, false, false, false));
+        game.Tick();
+
+        ship.XCoordinate.Should().BeGreaterThan(0);
+        ship.YCoordinate.Should().BeGreaterThan(0);
+    }
+
     private bool CheckCollision(Asteroid a1, Asteroid a2)
     {
         double distance = Math.Sqrt(
