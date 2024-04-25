@@ -118,6 +118,21 @@ public class LobbyActorTests : TestKit
     }
 
     [Fact]
+    public void Test_UpdateLobby_SendToParent()
+    {
+        var lobbyName = "existingLobby";
+        var owner = "owner";
+
+        var Parent = CreateTestProbe();
+        var lobbyActor = Parent.ChildActorOf(Props.Create(() => new LobbyActor(lobbyName, owner)));
+
+        var updateLobbyMessage = new UpdateLobbyMessage("", "", "", LobbyStatus.InGame);
+        lobbyActor.Tell(updateLobbyMessage);
+        ExpectNoMsg();
+        Parent.ExpectMsg<LobbyStateResponse>();
+    }
+
+    [Fact]
     public void Test_UpdateLobby_To_Parent()
     {
         var lobbyName = "existingLobby";

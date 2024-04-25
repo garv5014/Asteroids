@@ -1,4 +1,5 @@
 using Asteroids.Shared.GameEntities;
+using FluentAssertions;
 
 namespace Actor.UnitTests.GameTests;
 
@@ -18,12 +19,48 @@ public class AsteroidsTests
     }
 
     [Fact]
+    public void AsteroidsBreak_WhenHitsShips()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(100, 100, 0);
+        var asteroid = new Asteroid(100, 100, 0, 100, 0, 0);
+        game.AddShip("ship1", ship);
+        game.Asteroids.Add(asteroid);
+        game.Tick();
+        game.Asteroids.Count.Should().Be(2);
+    }
+
+    [Fact]
     public void Asteroids_HaveUniqueIDs()
     {
         var asteroid1 = new Asteroid(0, 0, 0, 10, 1.0, 1.0);
         var asteroid2 = new Asteroid(0, 0, 0, 10, 1.0, 1.0);
 
         Assert.NotEqual(asteroid1.Id, asteroid2.Id);
+    }
+
+    [Fact]
+    public void AsteroidSplitsCorrectly()
+    {
+        var game = new Game(800, 600);
+        var asteroid = new Asteroid(100, 100, 0, 100, 0, 0);
+        game.Asteroids.Add(asteroid);
+        game.Projectiles.Add(new Projectile(100, 100, 0, 5, 5, 5)); // Positioned at the asteroid
+        game.Tick();
+
+        var asteroid1 = game.Asteroids[0];
+        var asteroid2 = game.Asteroids[1];
+        game.Asteroids.Count.Should().Be(2);
+        game.Projectiles.Count.Should().Be(0);
+        asteroid1.Size.Should().Be(50);
+        asteroid1.XCoordinate.Should().Be(100);
+        asteroid1.YCoordinate.Should().Be(100);
+        asteroid1.Rotation.Should().Be(asteroid.Rotation + 45);
+
+        asteroid2.YCoordinate.Should().Be(100);
+        asteroid2.XCoordinate.Should().Be(100);
+        asteroid2.Size.Should().Be(50);
+        asteroid2.Rotation.Should().Be(asteroid.Rotation - 45);
     }
 
     [Fact]
@@ -71,7 +108,7 @@ public class GameTest
         var ship = new Ship(100, 100, 0);
         var asteroid = new Asteroid(101, 101, 0, 10, 0, 0); // Positioned close enough to collide
         game.AddShip("ship1", ship);
-        game.GetAsteroids().Add(asteroid);
+        game.Asteroids.Add(asteroid);
 
         game.Tick(); // This should check for collisions
 
@@ -144,6 +181,27 @@ public class ShipTests
         Assert.False(collision);
     }
 
+    [Fact]
+    public void ShipSlowsDown()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(100, 100, 90);
+        game.AddShip("ship1", ship);
+        game.UpdateShip("ship1", new UpdateShipParams(true, false, false, false));
+        game.Tick(); // This should move the ship
+        game.Tick(); // This should move the ship again
+        ship.VelocityX.Should().BeGreaterThan(0);
+        ship.VelocityY.Should().BeGreaterThan(0);
+        var movingXVelocity = ship.VelocityX;
+        var movingYVelocity = ship.VelocityY;
+
+        game.UpdateShip("ship1", new UpdateShipParams(false, false, false, false));
+        game.Tick(); // This should slow down the ship
+
+        ship.VelocityX.Should().BeLessThan(movingXVelocity);
+        ship.VelocityY.Should().BeLessThan(movingYVelocity);
+    }
+
     private bool CheckCollision(Asteroid a1, Asteroid a2)
     {
         double distance = Math.Sqrt(
@@ -151,5 +209,66 @@ public class ShipTests
                 + Math.Pow(a2.YCoordinate - a1.YCoordinate, 2)
         );
         return distance < (a1.Size / 2 + a2.Size / 2);
+    }
+}
+
+public class ProjectileTests
+{
+    [Fact]
+    public void BulletsShot_1()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(100, 100, 90);
+        game.AddShip("ship1", ship);
+        game.UpdateShip("ship1", new UpdateShipParams(false, false, false, true));
+        game.Tick(); // This should move the ship
+
+        game.Projectiles.Count.Should().Be(1); // Assuming the ship moves along the X-axis
+    }
+
+    [Fact]
+    public void BulletsShot_2()
+    {
+        var game = new Game(800, 600);
+        var ship = new Ship(100, 100, 90);
+        game.AddShip("ship1", ship);
+        game.UpdateShip("ship1", new UpdateShipParams(false, false, false, true));
+        game.Tick(); // This should move the ship
+        game.Tick(); // This should move the ship again
+
+        game.Projectiles.Count.Should().Be(2); // Assuming the ship moves along the X-axis
+    }
+
+    [Fact]
+    public void Bullets_BreakAsteroid()
+    {
+        var game = new Game(800, 600);
+        game.Asteroids.Add(new Asteroid(100, 100, 0, 100, 0, 0));
+        game.Projectiles.Add(new Projectile(100, 100, 0, 5, 5, 5)); // Positioned at the asteroid
+        game.Tick(); // This should move the ship
+
+        game.Asteroids.Count.Should().Be(2); // Assuming the ship moves along the X-axis
+        game.Projectiles.Count.Should().Be(0); // Assuming the ship moves along the X-axis
+    }
+
+    [Fact]
+    public void BulletsDespawn_OutOfBounds()
+    {
+        var game = new Game(800, 600);
+        game.Projectiles.Add(new Projectile(801, 601, 0, 5, 5, 5));
+        game.Tick();
+
+        game.Projectiles.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void BulletsDespawn_FlyOutOfBounds()
+    {
+        var game = new Game(800, 600);
+        game.Projectiles.Add(new Projectile(799, 599, 0, 5, 5, 5));
+        game.Tick();
+        game.Tick();
+
+        game.Projectiles.Count.Should().Be(0);
     }
 }
