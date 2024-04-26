@@ -63,7 +63,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
     private async Task<IActorRef> GetSessionActor(string sessionActorPath)
     {
         var gusr = await sessionSupervisor.Ask<GetUserSessionResponse>(
-            new GetUserSessionMessage(ActorPath: sessionActorPath)
+            new GetUserSessionMessage(ActorPath: sessionActorPath, Context.ConnectionId)
         );
         return gusr.ActorRef;
     }
