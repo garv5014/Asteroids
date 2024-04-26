@@ -134,7 +134,7 @@ internal class Program
                                 );
 
                                 var accountPersistenceActor = system.ActorOf(
-                                    ErrorHubRelay.Props(),
+                                    AccountPersistanceActor.Props(system),
                                     ActorHelper.AccountPersistanceActorName
                                 );
 

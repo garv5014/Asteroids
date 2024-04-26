@@ -41,7 +41,7 @@ public class SessionSupervisor : ReceiveActor
         _log.Info("SessionSupervisor created");
 
         _accountRelayActor = accountRelayHub;
-        Receive<LoginMessage>(LoginMessage);
+        Receive<LoginMessage>(Login);
         Receive<GetUserSessionMessage>(GetUserSessionMessage);
         Receive<LoginConfirmedMessage>(ConfirmLogin);
         _accountPersistenceActor = accountPersistenceActor;
@@ -125,7 +125,7 @@ public class SessionSupervisor : ReceiveActor
         }
     }
 
-    private void LoginMessage(LoginMessage lm)
+    private void Login(LoginMessage lm)
     {
         if (lm.User == null || lm.Password == null)
         {
@@ -141,7 +141,14 @@ public class SessionSupervisor : ReceiveActor
         }
 
         _accountPersistenceActor.Tell(
-            new LoginMessage(lm.User, lm.Password, lm.ConnectionId, lm.SessionActorPath)
+            new LoginMessage(
+                lm.User,
+                lm.Password,
+                lm.ConnectionId,
+                (lm.SessionActorPath == string.Empty || lm.SessionActorPath == null)
+                    ? "re"
+                    : lm.SessionActorPath
+            )
         );
     }
 

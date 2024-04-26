@@ -7,7 +7,7 @@ namespace Asteroids.Shared.Services;
 public interface IUserPersistence
 {
     Task<bool> StoreUserInformationAsync(AccountInformation userInformation);
-    Task<AccountInformation> GetUserInformationAsync(Guid userId);
+    Task<AccountInformation?> GetUserInformationAsync(Guid userId);
 }
 
 public class AccountInformation
@@ -35,9 +35,10 @@ public class UserPersistanceService : IUserPersistence
         this.gatewayService = gatewayService;
     }
 
-    public Task<AccountInformation> GetUserInformationAsync(Guid userId)
+    public async Task<AccountInformation?> GetUserInformationAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        var stored = await gatewayService.StrongGet(userId.ToString());
+        return stored == null ? null : JsonHelper.Deserialize<AccountInformation>(stored.Value);
     }
 
     public async Task<bool> StoreUserInformationAsync(AccountInformation userInformation)

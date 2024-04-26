@@ -20,16 +20,12 @@ public class AccountPersistanceActor : ReceiveActor
         _persistenceService = s.ServiceProvider.GetRequiredService<IUserPersistence>();
         Receive<StoreAccountInformationMessage>(msg => StoreAccountInformation(msg));
         Receive<LoginMessage>(msg => Login(msg));
+        Receive<LoginToConfirmMessage>(ConfirmLogin);
     }
 
-    private async void Login(LoginMessage msg)
+    private void ConfirmLogin(LoginToConfirmMessage msg)
     {
-        _log.Info("Logging in {0}", msg.User);
-        var user = await _persistenceService.GetUserInformationAsync(
-            new Guid(ActorHelper.GetActorNameFromPath(msg.SessionActorPath))
-        );
-
-        // new account
+        var user = msg.AccountInformation;
         if (user == null)
         {
             _log.Info("User {0} not found", msg.User);
@@ -61,6 +57,32 @@ public class AccountPersistanceActor : ReceiveActor
         );
     }
 
+    private async Task Login(LoginMessage msg)
+    {
+        _log.Info("Logging in {0}", msg.User);
+
+        await GetAccountInformation(msg).PipeTo(Self, Sender);
+
+        async Task<LoginToConfirmMessage> GetAccountInformation(LoginMessage msg)
+        {
+            var parsable = Guid.TryParse(
+                ActorHelper.GetActorNameFromPath(msg.SessionActorPath),
+                out var userId
+            );
+            var aI = await _persistenceService.GetUserInformationAsync(
+                parsable ? userId : Guid.Empty
+            );
+
+            return new LoginToConfirmMessage(
+                AccountInformation: aI,
+                User: msg.User,
+                Password: msg.Password,
+                SessionActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId
+            );
+        }
+    }
+
     private async Task StoreAccountInformation(StoreAccountInformationMessage msg)
     {
         _log.Info("Storing account information for {0}", msg.AccountInformation.UserName);
@@ -85,6 +107,12 @@ public class AccountPersistanceActor : ReceiveActor
         return spExtension.Props<AccountPersistanceActor>();
     }
 
+    public static Props Props(ActorSystem system)
+    {
+        var spExtension = DependencyResolver.For(system);
+        return spExtension.Props<AccountPersistanceActor>();
+    }
+
     public static Props Props(IServiceProvider serviceProvider)
     {
         return Akka.Actor.Props.Create(() => new AccountPersistanceActor(serviceProvider));
@@ -92,3 +120,11 @@ public class AccountPersistanceActor : ReceiveActor
 }
 
 public record StoreAccountInformationMessage(AccountInformation AccountInformation);
+
+public record LoginToConfirmMessage(
+    AccountInformation? AccountInformation,
+    string User,
+    string Password,
+    string SessionActorPath,
+    string ConnectionId
+);
