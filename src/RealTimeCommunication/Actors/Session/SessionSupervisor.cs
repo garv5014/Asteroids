@@ -5,9 +5,24 @@ using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
-public record GetUserSessionMessage(string ActorPath, string? ConnectionId = "");
+public enum LoginStatus
+{
+    NewAccount,
+    ExistingAccount,
+    InvalidAccount
+}
+
+public record GetUserSessionMessage(string ActorPath, string ConnectionId = "")
+    : HubMessage(SessionActorPath: ActorPath, ConnectionId: ConnectionId);
 
 public record GetUserSessionResponse(IActorRef ActorRef);
+
+public record LoginConfirmedMessage(
+    string ActorPath,
+    string ConnectionId,
+    LoginStatus Status,
+    string User
+) : HubMessage(SessionActorPath: ActorPath, ConnectionId: ConnectionId);
 
 public class SessionSupervisor : ReceiveActor
 {
@@ -15,6 +30,7 @@ public class SessionSupervisor : ReceiveActor
     private readonly IActorRef _accountRelayActor;
     private readonly IActorRef _accountPersistenceActor;
     private readonly IActorRef _lobbySupervisor;
+    private Dictionary<string, string> _userNameToAccountId = new();
     private Dictionary<string, IActorRef> _sessionNameToActor = new();
 
     public SessionSupervisor(
@@ -26,13 +42,40 @@ public class SessionSupervisor : ReceiveActor
         _log.Info("SessionSupervisor created");
 
         _accountRelayActor = accountRelayHub;
-        Receive<LoginMessage>(CreateAccountMessage);
+        Receive<LoginMessage>(LoginMessage);
         Receive<GetUserSessionMessage>(GetUserSessionMessage);
+        Receive<LoginConfirmedMessage>(ConfirmLogin);
         _accountPersistenceActor = accountPersistenceActor;
         _lobbySupervisor = lobbySupervisor;
     }
 
-    private void CreateAccountMessage(LoginMessage lm)
+    private void ConfirmLogin(LoginConfirmedMessage lm)
+    {
+        _log.Info("Creating user {0}", lm.User);
+
+        IActorRef session;
+        var accountId = Guid.NewGuid();
+
+        session = Context.ActorOf(
+            SessionActor.Props(lm.User, _lobbySupervisor),
+            accountId.ToString()
+        );
+
+        _sessionNameToActor.Add(accountId.ToString(), session);
+
+        _userNameToAccountId.Add(lm.User, accountId.ToString());
+
+        _accountRelayActor.Tell(
+            new LoginResponseMessage(
+                lm.ConnectionId,
+                true,
+                "Successfully logged in",
+                session.Path.ToString()
+            )
+        );
+    }
+
+    private void LoginMessage(LoginMessage lm)
     {
         if (lm.User == null || lm.Password == null)
         {
@@ -63,28 +106,13 @@ public class SessionSupervisor : ReceiveActor
             );
             return;
         }
-        _log.Info("Creating user {0}", lm.User);
 
-        IActorRef session;
-        var accountId = Guid.NewGuid();
-
-        session = Context.ActorOf(
-            SessionActor.Props(lm.User, _lobbySupervisor),
-            accountId.ToString()
-        );
-
-        _sessionNameToActor.Add(accountId.ToString(), session);
         _accountPersistenceActor.Tell(
-            new StoreAccountInformationMessage(
-                new AccountInformation(password: lm.Password, userName: lm.User, userId: accountId)
-            )
-        );
-        _accountRelayActor.Tell(
-            new LoginResponseMessage(
+            new LoginMessage(
+                lm.User,
+                lm.Password,
                 lm.ConnectionId,
-                true,
-                "Successfully logged in",
-                session.Path.ToString()
+                lm.SessionActorPath
             )
         );
     }

@@ -12,21 +12,21 @@ public partial class Lobby : ILobbyClient
 
     protected override async Task OnInitializedAsync()
     {
-        connection = new HubConnectionBuilder()
-            .WithUrl(SignalREnv.LobbyHubUrl) // Make sure SignalREnv provides the correct URL for your LobbyHub
-            .Build();
-
         try
         {
+            connection = new HubConnectionBuilder()
+                .WithUrl(SignalREnv.LobbyHubUrl) // Make sure SignalREnv provides the correct URL for your LobbyHub
+                .Build();
+
             hubProxy = connection.ServerProxy<ILobbyHub>();
+            connection.ClientRegistration<ILobbyClient>(this);
+            await connection.StartAsync();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to establish SignalR connection LobbyHub: {ex.Message}");
             throw;
         }
-        connection.ClientRegistration<ILobbyClient>(this);
-        await connection.StartAsync();
 
         await InvokeAsync(StateHasChanged);
     }

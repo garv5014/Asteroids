@@ -14,7 +14,7 @@ public class SessionActor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly string username;
     private string connectionId;
-    private string? lobbyName = string.Empty;
+    private string lobbyName = string.Empty;
     private SessionState state = SessionState.JoinLobby;
 
     private readonly IActorRef lobbySupervisor;
@@ -23,12 +23,12 @@ public class SessionActor : ReceiveActor
     {
         this.username = username;
         this.lobbySupervisor = lobbySupervisor;
-        Receive<CreateLobbyMessage>(msg => CreateLobby(msg));
-        Receive<JoinLobbyMessage>(msg => JoinLobby(msg));
-        Receive<GetLobbiesMessage>(msg => GetLobbies(msg));
-        Receive<GetLobbyStateMessage>(msg => GetLobbyState(msg));
-        Receive<RefreshConnectionId>(msg => ConnectionIdRefresh(msg));
-        Receive<LobbyStateResponse>(msg => PassToLobbySupervisor(msg));
+        Receive<CreateLobbyMessage>(CreateLobby);
+        Receive<JoinLobbyMessage>(JoinLobby);
+        Receive<GetLobbiesMessage>(GetLobbies);
+        Receive<GetLobbyStateMessage>(GetLobbyState);
+        Receive<RefreshConnectionId>(ConnectionIdRefresh);
+        Receive<LobbyStateResponse>(PassToLobbySupervisor);
     }
 
     private void PassToLobbySupervisor(LobbyStateResponse msg)
@@ -68,15 +68,15 @@ public class SessionActor : ReceiveActor
         _log.Info("SessionActor started");
     }
 
-    protected override void PostStop()
-    {
-        _log.Info("SessionActor stopped");
-    }
-
     private void CreateLobby(CreateLobbyMessage msg)
     {
         connectionId = msg.ConnectionId;
         lobbySupervisor.Tell(msg);
+    }
+
+    protected override void PostStop()
+    {
+        _log.Info("SessionActor stopped");
     }
 
     public static Props Props(string username, IActorRef LobbySupervisor)
