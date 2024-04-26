@@ -75,9 +75,6 @@ public class SessionSupervisorTests : TestKit
         var loginMessage = new LoginMessage("user1", "connection1", "password1", "");
         sessionSupervisor.Tell(loginMessage);
 
-        accountPersistenceMock.ExpectMsg<StoreAccountInformationMessage>();
-        accountRelayMock.ExpectMsg<LoginResponseMessage>(msg =>
-            msg.Success && msg.Message == "Successfully logged in"
-        );
+        accountPersistenceMock.ExpectMsg<LoginMessage>(msg => msg.User == "user1");
     }
 }

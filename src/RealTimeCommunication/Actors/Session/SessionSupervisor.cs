@@ -1,6 +1,7 @@
 ﻿using Akka.Actor;
 using Akka.Event;
 using Asteroids.Shared.Messages;
+using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
@@ -63,14 +64,12 @@ public class SessionSupervisor : ReceiveActor
         if (lm.Status == LoginStatus.NewAccount)
         {
             HandleNewAccount(lm);
-            return;
         }
 
         // existing account
         if (lm.Status == LoginStatus.ExistingAccount)
         {
             HandleExistingAccount(lm);
-            return;
         }
     }
 
@@ -96,6 +95,12 @@ public class SessionSupervisor : ReceiveActor
                 true,
                 "Successfully logged in",
                 session.Path.ToString()
+            )
+        );
+
+        _accountPersistenceActor.Tell(
+            new StoreAccountInformationMessage(
+                new AccountInformation(lm.UserName, "", accountId)
             )
         );
     }
