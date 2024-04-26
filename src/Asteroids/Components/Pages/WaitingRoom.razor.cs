@@ -49,6 +49,8 @@ public partial class WaitingRoom : ILobbyClient
         }
 
         SessionActorPath = await localStorage.GetItemAsync<string>("actorPath");
+        await localStorage.SetItemAsync("shipColor", shipColor);
+        await localStorage.SetItemAsync("projectileColor", projectileColor);
         await InvokeAsync(StateHasChanged);
     }
 
