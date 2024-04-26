@@ -5,7 +5,7 @@ using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
-public record GetUserSessionMessage(string ActorPath, string? ConnectionId);
+public record GetUserSessionMessage(string ActorPath, string? ConnectionId = "");
 
 public record GetUserSessionResponse(IActorRef ActorRef);
 
