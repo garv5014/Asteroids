@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 namespace Asteroids.Components.Pages;
 
 public partial class Home : IAccountClient
-{ 
+{
     public string username { get; set; } = "";
     public string password { get; set; } = "";
     private IAccountHub hubProxy = default!;
@@ -41,7 +41,7 @@ public partial class Home : IAccountClient
         }
         else
         {
-            ToastService.ShowError("Login Failed");
+            ToastService.ShowError("Login Failed: " + message?.Message);
             await InvokeAsync(StateHasChanged);
         }
     }
