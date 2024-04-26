@@ -1,7 +1,9 @@
 ﻿using Akka.Actor;
 using Akka.DependencyInjection;
 using Akka.Event;
+using Asteroids.Shared.Messages;
 using Asteroids.Shared.Services;
+using RealTimeCommunication.Actors.Session;
 
 namespace RealTimeCommunication;
 
@@ -17,6 +19,46 @@ public class AccountPersistanceActor : ReceiveActor
         var s = serviceProvider.CreateScope();
         _persistenceService = s.ServiceProvider.GetRequiredService<IUserPersistence>();
         Receive<StoreAccountInformationMessage>(msg => StoreAccountInformation(msg));
+        Receive<LoginMessage>(msg => Login(msg));
+    }
+
+    private async void Login(LoginMessage msg)
+    {
+        _log.Info("Logging in {0}", msg.User);
+        var user = await _persistenceService.GetUserInformationAsync(
+            new Guid(ActorHelper.GetActorNameFromPath(msg.SessionActorPath))
+        );
+
+        // new account
+        if (user == null)
+        {
+            _log.Info("User {0} not found", msg.User);
+            Sender.Tell(
+                new LoginConfirmedMessage(
+                    ActorPath: msg.SessionActorPath,
+                    ConnectionId: msg.ConnectionId,
+                    UserName: msg.User,
+                    Status: LoginStatus.NewAccount
+                )
+            );
+            var acctInfo = new AccountInformation(
+                msg.User,
+                msg.Password,
+                new Guid(ActorHelper.GetActorNameFromPath(msg.SessionActorPath))
+            );
+            Self.Tell(new StoreAccountInformationMessage(acctInfo));
+            return;
+        }
+
+        _log.Info("User {0} found", msg.User);
+        Sender.Tell(
+            new LoginConfirmedMessage(
+                ActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                UserName: msg.User,
+                Status: LoginStatus.ExistingAccount
+            )
+        );
     }
 
     private async Task StoreAccountInformation(StoreAccountInformationMessage msg)

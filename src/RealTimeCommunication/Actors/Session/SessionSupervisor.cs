@@ -1,7 +1,6 @@
 ﻿using Akka.Actor;
 using Akka.Event;
 using Asteroids.Shared.Messages;
-using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
@@ -21,7 +20,7 @@ public record LoginConfirmedMessage(
     string ActorPath,
     string ConnectionId,
     LoginStatus Status,
-    string User
+    string UserName
 ) : HubMessage(SessionActorPath: ActorPath, ConnectionId: ConnectionId);
 
 public class SessionSupervisor : ReceiveActor
@@ -31,7 +30,7 @@ public class SessionSupervisor : ReceiveActor
     private readonly IActorRef _accountPersistenceActor;
     private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, string> _userNameToAccountId = new();
-    private Dictionary<string, IActorRef> _sessionNameToActor = new();
+    private Dictionary<string, IActorRef> _sessionIdToActor = new();
 
     public SessionSupervisor(
         IActorRef lobbySupervisor,
@@ -51,19 +50,45 @@ public class SessionSupervisor : ReceiveActor
 
     private void ConfirmLogin(LoginConfirmedMessage lm)
     {
-        _log.Info("Creating user {0}", lm.User);
+        // wrong password and or username
+        if (lm.Status == LoginStatus.InvalidAccount)
+        {
+            _accountRelayActor.Tell(
+                new LoginResponseMessage(lm.ConnectionId, false, "Invalid username or password", "")
+            );
+            return;
+        }
+
+        // existing account
+        if (lm.Status == LoginStatus.NewAccount)
+        {
+            HandleNewAccount(lm);
+            return;
+        }
+
+        // existing account
+        if (lm.Status == LoginStatus.ExistingAccount)
+        {
+            HandleExistingAccount(lm);
+            return;
+        }
+    }
+
+    private void HandleNewAccount(LoginConfirmedMessage lm)
+    {
+        _log.Info("Creating user {0}", lm.UserName);
 
         IActorRef session;
         var accountId = Guid.NewGuid();
 
         session = Context.ActorOf(
-            SessionActor.Props(lm.User, _lobbySupervisor),
+            SessionActor.Props(lm.UserName, _lobbySupervisor),
             accountId.ToString()
         );
 
-        _sessionNameToActor.Add(accountId.ToString(), session);
+        _sessionIdToActor.Add(accountId.ToString(), session);
 
-        _userNameToAccountId.Add(lm.User, accountId.ToString());
+        _userNameToAccountId.Add(lm.UserName, accountId.ToString());
 
         _accountRelayActor.Tell(
             new LoginResponseMessage(
@@ -73,6 +98,31 @@ public class SessionSupervisor : ReceiveActor
                 session.Path.ToString()
             )
         );
+    }
+
+    private void HandleExistingAccount(LoginConfirmedMessage lm)
+    {
+        _log.Info("Logging in user {0}", lm.UserName);
+
+        if (_userNameToAccountId.ContainsKey(lm.UserName))
+        {
+            var accountId = _userNameToAccountId[lm.UserName];
+            var session = _sessionIdToActor[accountId];
+            _accountRelayActor.Tell(
+                new LoginResponseMessage(
+                    lm.ConnectionId,
+                    true,
+                    "Successfully logged in",
+                    session.Path.ToString()
+                )
+            );
+        }
+        else
+        {
+            _accountRelayActor.Tell(
+                new LoginResponseMessage(lm.ConnectionId, false, "User not found", "")
+            );
+        }
     }
 
     private void LoginMessage(LoginMessage lm)
@@ -90,30 +140,8 @@ public class SessionSupervisor : ReceiveActor
             return;
         }
 
-        if (
-            _sessionNameToActor.ContainsKey(
-                ActorHelper.GetActorNameFromPath(lm?.SessionActorPath ?? "")
-            )
-        )
-        {
-            _accountRelayActor.Tell(
-                new LoginResponseMessage(
-                    lm.ConnectionId,
-                    false,
-                    "Please check your username and password",
-                    ""
-                )
-            );
-            return;
-        }
-
         _accountPersistenceActor.Tell(
-            new LoginMessage(
-                lm.User,
-                lm.Password,
-                lm.ConnectionId,
-                lm.SessionActorPath
-            )
+            new LoginMessage(lm.User, lm.Password, lm.ConnectionId, lm.SessionActorPath)
         );
     }
 
@@ -121,9 +149,9 @@ public class SessionSupervisor : ReceiveActor
     {
         var sessionName = ActorHelper.GetActorNameFromPath(gusm.ActorPath);
         _log.Info("Getting user session for {0}", sessionName);
-        if (_sessionNameToActor.ContainsKey(sessionName))
+        if (_sessionIdToActor.ContainsKey(sessionName))
         {
-            var actor = _sessionNameToActor[sessionName];
+            var actor = _sessionIdToActor[sessionName];
             Sender.Tell(new GetUserSessionResponse(actor));
             return;
         }
