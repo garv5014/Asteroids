@@ -5,7 +5,7 @@ using Asteroids.Shared.Services;
 
 namespace RealTimeCommunication.Actors.Session;
 
-public record GetUserSessionMessage(string ActorPath);
+public record GetUserSessionMessage(string ActorPath, string? ConnectionId);
 
 public record GetUserSessionResponse(IActorRef ActorRef);
 
@@ -15,7 +15,7 @@ public class SessionSupervisor : ReceiveActor
     private readonly IActorRef _accountRelayActor;
     private readonly IActorRef _accountPersistenceActor;
     private readonly IActorRef _lobbySupervisor;
-    private Dictionary<string, IActorRef> _sessions = new();
+    private Dictionary<string, IActorRef> _sessionNameToActor = new();
 
     public SessionSupervisor(
         IActorRef lobbySupervisor,
@@ -34,8 +34,35 @@ public class SessionSupervisor : ReceiveActor
 
     private void CreateAccountMessage(LoginMessage lm)
     {
-        _log.Info("User {0} already exists", lm.User);
-        // Create the user
+        if (lm.User == null || lm.Password == null)
+        {
+            _accountRelayActor.Tell(
+                new LoginResponseMessage(
+                    lm.ConnectionId,
+                    false,
+                    "Username or password cannot be empty",
+                    ""
+                )
+            );
+            return;
+        }
+
+        if (
+            _sessionNameToActor.ContainsKey(
+                ActorHelper.GetActorNameFromPath(lm?.SessionActorPath ?? "")
+            )
+        )
+        {
+            _accountRelayActor.Tell(
+                new LoginResponseMessage(
+                    lm.ConnectionId,
+                    false,
+                    "Please check your username and password",
+                    ""
+                )
+            );
+            return;
+        }
         _log.Info("Creating user {0}", lm.User);
 
         IActorRef session;
@@ -43,10 +70,10 @@ public class SessionSupervisor : ReceiveActor
 
         session = Context.ActorOf(
             SessionActor.Props(lm.User, _lobbySupervisor),
-            Guid.NewGuid().ToString()
+            accountId.ToString()
         );
 
-        _sessions.Add(session.Path.ToString(), session);
+        _sessionNameToActor.Add(accountId.ToString(), session);
         _accountPersistenceActor.Tell(
             new StoreAccountInformationMessage(
                 new AccountInformation(password: lm.Password, userName: lm.User, userId: accountId)
@@ -64,16 +91,17 @@ public class SessionSupervisor : ReceiveActor
 
     public void GetUserSessionMessage(GetUserSessionMessage gusm)
     {
-        _log.Info("Getting user session for {0}", gusm.ActorPath);
-        if (_sessions.ContainsKey(gusm.ActorPath))
+        var sessionName = ActorHelper.GetActorNameFromPath(gusm.ActorPath);
+        _log.Info("Getting user session for {0}", sessionName);
+        if (_sessionNameToActor.ContainsKey(sessionName))
         {
-            var actor = _sessions[gusm.ActorPath];
+            var actor = _sessionNameToActor[sessionName];
             Sender.Tell(new GetUserSessionResponse(actor));
             return;
         }
         else
         {
-            _lobbySupervisor.Tell(new ErrorMessage("Session not found", ""));
+            _lobbySupervisor.Tell(new ErrorMessage("Session not found", gusm?.ConnectionId ?? ""));
         }
     }
 
