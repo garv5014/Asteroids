@@ -21,7 +21,7 @@ public record LoginConfirmedMessage(
     string ActorPath,
     string ConnectionId,
     LoginStatus Status,
-    string UserName
+    AccountInformation AccountInformation
 ) : HubMessage(SessionActorPath: ActorPath, ConnectionId: ConnectionId);
 
 public class SessionSupervisor : ReceiveActor
@@ -75,19 +75,19 @@ public class SessionSupervisor : ReceiveActor
 
     private void HandleNewAccount(LoginConfirmedMessage lm)
     {
-        _log.Info("Creating user {0}", lm.UserName);
+        _log.Info("Creating user {0}", lm.AccountInformation.UserName);
 
         IActorRef session;
         var accountId = Guid.NewGuid();
 
         session = Context.ActorOf(
-            SessionActor.Props(lm.UserName, _lobbySupervisor),
+            SessionActor.Props(lm.AccountInformation.UserName, _lobbySupervisor),
             accountId.ToString()
         );
 
         _sessionIdToActor.Add(accountId.ToString(), session);
 
-        _userNameToAccountId.Add(lm.UserName, accountId.ToString());
+        _userNameToAccountId.Add(lm.AccountInformation.UserName, accountId.ToString());
 
         _accountRelayActor.Tell(
             new LoginResponseMessage(
@@ -100,18 +100,23 @@ public class SessionSupervisor : ReceiveActor
 
         _accountPersistenceActor.Tell(
             new StoreAccountInformationMessage(
-                new AccountInformation(lm.UserName, "", accountId)
+                AccountInformation: new AccountInformation(
+                    userName: lm.AccountInformation.UserName,
+                    password: lm.AccountInformation.Password,
+                    userId: accountId,
+                    salt: lm.AccountInformation.Salt
+                )
             )
         );
     }
 
     private void HandleExistingAccount(LoginConfirmedMessage lm)
     {
-        _log.Info("Logging in user {0}", lm.UserName);
+        _log.Info("Logging in user {0}", lm.AccountInformation.UserName);
 
-        if (_userNameToAccountId.ContainsKey(lm.UserName))
+        if (_userNameToAccountId.ContainsKey(lm.AccountInformation.UserName))
         {
-            var accountId = _userNameToAccountId[lm.UserName];
+            var accountId = _userNameToAccountId[lm.AccountInformation.UserName];
             var session = _sessionIdToActor[accountId];
             _accountRelayActor.Tell(
                 new LoginResponseMessage(
@@ -145,22 +150,23 @@ public class SessionSupervisor : ReceiveActor
             return;
         }
 
+        var potentialActorId = _userNameToAccountId.ContainsKey(lm.User)
+            ? _userNameToAccountId[lm.User]
+            : Guid.Empty.ToString();
+
+        var session = _sessionIdToActor.ContainsKey(potentialActorId)
+            ? _sessionIdToActor[potentialActorId]
+            : null;
+
         _accountPersistenceActor.Tell(
-            new LoginMessage(
-                lm.User,
-                lm.Password,
-                lm.ConnectionId,
-                (lm.SessionActorPath == string.Empty || lm.SessionActorPath == null)
-                    ? "re"
-                    : lm.SessionActorPath
-            )
+            new LoginMessage(lm.User, lm.Password, lm.ConnectionId, session?.Path.ToString() ?? "")
         );
     }
 
     public void GetUserSessionMessage(GetUserSessionMessage gusm)
     {
         var sessionName = ActorHelper.GetActorNameFromPath(gusm.ActorPath);
-        _log.Info("Getting user session for {0}", sessionName);
+        // _log.Info("Getting user session for {0}", sessionName);
         if (_sessionIdToActor.ContainsKey(sessionName))
         {
             var actor = _sessionIdToActor[sessionName];

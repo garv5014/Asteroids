@@ -1,4 +1,6 @@
-﻿using Akka.Actor;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Akka.Actor;
 using Akka.DependencyInjection;
 using Akka.Event;
 using Asteroids.Shared.Messages;
@@ -28,21 +30,26 @@ public class AccountPersistanceActor : ReceiveActor
         var user = msg.AccountInformation;
         if (user == null)
         {
-            _log.Info("User {0} not found", msg.User);
+            CreateAccount(msg);
+            return;
+        }
+
+        if (!CompareAccountInformation(user, msg.Password, msg.User))
+        {
+            _log.Info("User {0} failed comparison", msg.User);
             Sender.Tell(
                 new LoginConfirmedMessage(
                     ActorPath: msg.SessionActorPath,
                     ConnectionId: msg.ConnectionId,
-                    UserName: msg.User,
-                    Status: LoginStatus.NewAccount
+                    AccountInformation: new AccountInformation(
+                        userName: msg.User,
+                        password: msg.Password,
+                        userId: new Guid(ActorHelper.GetActorNameFromPath(msg.SessionActorPath)),
+                        salt: null
+                    ),
+                    Status: LoginStatus.InvalidAccount
                 )
             );
-            var acctInfo = new AccountInformation(
-                msg.User,
-                msg.Password,
-                new Guid(ActorHelper.GetActorNameFromPath(msg.SessionActorPath))
-            );
-            Self.Tell(new StoreAccountInformationMessage(acctInfo));
             return;
         }
 
@@ -51,8 +58,29 @@ public class AccountPersistanceActor : ReceiveActor
             new LoginConfirmedMessage(
                 ActorPath: msg.SessionActorPath,
                 ConnectionId: msg.ConnectionId,
-                UserName: msg.User,
+                AccountInformation: user,
                 Status: LoginStatus.ExistingAccount
+            )
+        );
+    }
+
+    private void CreateAccount(LoginToConfirmMessage msg)
+    {
+        _log.Info("User {0} not found creating user", msg.User);
+
+        var salt = GenerateSalt();
+        var hashedPassword = HashPassword(msg.Password, salt);
+        Sender.Tell(
+            new LoginConfirmedMessage(
+                ActorPath: msg.SessionActorPath,
+                ConnectionId: msg.ConnectionId,
+                AccountInformation: new AccountInformation(
+                    userName: msg.User,
+                    password: hashedPassword,
+                    userId: Guid.Empty,
+                    salt: salt
+                ),
+                Status: LoginStatus.NewAccount
             )
         );
     }
@@ -116,6 +144,57 @@ public class AccountPersistanceActor : ReceiveActor
     public static Props Props(IServiceProvider serviceProvider)
     {
         return Akka.Actor.Props.Create(() => new AccountPersistanceActor(serviceProvider));
+    }
+
+    static string HashPassword(string password, byte[] salt)
+    {
+        using (var sha256 = new SHA256Managed())
+        {
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+            byte[] saltedPassword = new byte[passwordBytes.Length + salt.Length];
+
+            // Concatenate password and salt
+            Buffer.BlockCopy(passwordBytes, 0, saltedPassword, 0, passwordBytes.Length);
+            Buffer.BlockCopy(salt, 0, saltedPassword, passwordBytes.Length, salt.Length);
+
+            // Hash the concatenated password and salt
+            byte[] hashedBytes = sha256.ComputeHash(saltedPassword);
+
+            // Concatenate the salt and hashed password for storage
+            byte[] hashedPasswordWithSalt = new byte[hashedBytes.Length + salt.Length];
+            Buffer.BlockCopy(salt, 0, hashedPasswordWithSalt, 0, salt.Length);
+            Buffer.BlockCopy(
+                hashedBytes,
+                0,
+                hashedPasswordWithSalt,
+                salt.Length,
+                hashedBytes.Length
+            );
+
+            return Convert.ToBase64String(hashedPasswordWithSalt);
+        }
+    }
+
+    static byte[] GenerateSalt()
+    {
+        using (var rng = new RNGCryptoServiceProvider())
+        {
+            byte[] salt = new byte[16]; // Adjust the size based on your security requirements
+            rng.GetBytes(salt);
+            return salt;
+        }
+    }
+
+    private bool CompareAccountInformation(AccountInformation? aI, string password, string userName)
+    {
+        if (aI == null)
+        {
+            _log.Info("Account information not found");
+            return false;
+        }
+        var hashedPassword = HashPassword(password, aI.Salt);
+        _log.Info("Comparing account information for {0}", hashedPassword, aI.Password);
+        return hashedPassword == aI.Password && aI.UserName == userName;
     }
 }
 

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Raft_Library.Gateway.shared;
 using Raft_Library.Models;
 
@@ -12,14 +11,16 @@ public interface IUserPersistence
 
 public class AccountInformation
 {
-    public AccountInformation(string userName, string password, Guid userId)
+    public AccountInformation(string userName, string password, Guid userId, byte[]? salt)
     {
         UserName = userName;
         Password = password;
         UserId = userId;
+        Salt = salt;
     }
 
     public Guid UserId { get; set; }
+    public byte[] Salt { get; }
     public string UserName { get; set; }
     public string Password { get; set; }
 }
@@ -38,6 +39,7 @@ public class UserPersistanceService : IUserPersistence
     public async Task<AccountInformation?> GetUserInformationAsync(Guid userId)
     {
         var stored = await gatewayService.StrongGet(userId.ToString());
+
         return stored == null ? null : JsonHelper.Deserialize<AccountInformation>(stored.Value);
     }
 

@@ -11,6 +11,8 @@ public partial class Home : IAccountClient
     private IAccountHub hubProxy = default!;
     private HubConnection connection = default!;
 
+    private string sessionActorPath = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         connection = new HubConnectionBuilder().WithUrl(SignalREnv.AccountHubUrl).Build();
@@ -27,6 +29,12 @@ public partial class Home : IAccountClient
         await connection.StartAsync();
 
         await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await Task.CompletedTask;
+        sessionActorPath = await LocalStorage.GetItemAsync<string>("actorPath");
     }
 
     public async Task HandleLoginResponse(LoginResponseMessage message)
@@ -48,6 +56,6 @@ public partial class Home : IAccountClient
 
     public void Login()
     {
-        hubProxy.LoginCommand(new LoginMessage(username, password, connection.ConnectionId, null));
+        hubProxy.LoginCommand(new LoginMessage(username, password, "", sessionActorPath));
     }
 }
