@@ -14,7 +14,7 @@ public class SessionActor : ReceiveActor
     private readonly ILoggingAdapter _log = Context.GetLogger();
     private readonly string username;
     private string connectionId;
-    private string lobbyName = string.Empty;
+    private string lobbyName;
     private SessionState state = SessionState.JoinLobby;
 
     private readonly IActorRef lobbySupervisor;
@@ -33,14 +33,14 @@ public class SessionActor : ReceiveActor
 
     private void PassToLobbySupervisor(LobbyStateResponse msg)
     {
-        _log.Info("Passing lobby state to LobbySupervisor for {0}", Self.Path.Name);
+        // _log.Info("Passing lobby state to LobbySupervisor for {0}", Self.Path.Name);
         var mes = new LobbyStateResponse(this.connectionId, msg.SessionActorPath, msg.CurrentState);
         lobbySupervisor.Tell(mes);
     }
 
     private void ConnectionIdRefresh(RefreshConnectionId msg)
     {
-        _log.Info("ConnectionId Refreshed for {0}", Self.Path.Name);
+        // _log.Info("ConnectionId Refreshed for {0}", Self.Path.Name);
         this.connectionId = msg.ConnectionId;
     }
 
@@ -57,7 +57,7 @@ public class SessionActor : ReceiveActor
 
     private void JoinLobby(JoinLobbyMessage msg)
     {
-        lobbyName = msg.LobbyName;
+        this.lobbyName = msg.LobbyName;
         state = SessionState.InLobby;
         connectionId = msg.ConnectionId;
         lobbySupervisor.Tell(msg);

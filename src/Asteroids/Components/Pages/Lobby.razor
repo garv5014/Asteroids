@@ -1,4 +1,5 @@
 ﻿@page "/lobby"
+@using Asteroids.Shared.GameEntities
 @using Blazored.LocalStorage
 @inject NavigationManager NavManager
 @inject IToastService ToastService
@@ -38,7 +39,14 @@
             <td>@lobby.Name</td>
             <td>@lobby.PlayerCount</td>
             <td>
-              <button class="btn btn-success" @onclick="() => JoinLobby(lobby.Name)">Join</button>
+              @if (lobby.Status == LobbyStatus.WaitingForPlayers)
+              {
+                <button class="btn btn-success" @onclick="() => JoinLobby(lobby.Name)">Join</button>
+              }
+              else
+              {
+                <button class="btn btn-secondary" disabled>Join</button>
+              }
             </td>
           </tr>
         }

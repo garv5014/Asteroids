@@ -31,7 +31,7 @@ public class SessionSupervisor : ReceiveActor
     private readonly IActorRef _accountPersistenceActor;
     private readonly IActorRef _lobbySupervisor;
     private Dictionary<string, string> _userNameToAccountId = new();
-    private Dictionary<string, IActorRef> _sessionIdToActor = new();
+    private Dictionary<string, IActorRef> _accountIdToActor = new();
 
     public SessionSupervisor(
         IActorRef lobbySupervisor,
@@ -43,7 +43,7 @@ public class SessionSupervisor : ReceiveActor
 
         _accountRelayActor = accountRelayHub;
         Receive<LoginMessage>(Login);
-        Receive<GetUserSessionMessage>(GetUserSessionMessage);
+        Receive<GetUserSessionMessage>(msg => GetUserSessionMessage(msg));
         Receive<LoginConfirmedMessage>(ConfirmLogin);
         _accountPersistenceActor = accountPersistenceActor;
         _lobbySupervisor = lobbySupervisor;
@@ -85,7 +85,7 @@ public class SessionSupervisor : ReceiveActor
             accountId.ToString()
         );
 
-        _sessionIdToActor.Add(accountId.ToString(), session);
+        _accountIdToActor.Add(accountId.ToString(), session);
 
         _userNameToAccountId.Add(lm.AccountInformation.UserName, accountId.ToString());
 
@@ -117,7 +117,7 @@ public class SessionSupervisor : ReceiveActor
         if (_userNameToAccountId.ContainsKey(lm.AccountInformation.UserName))
         {
             var accountId = _userNameToAccountId[lm.AccountInformation.UserName];
-            var session = _sessionIdToActor[accountId];
+            var session = _accountIdToActor[accountId];
             _accountRelayActor.Tell(
                 new LoginResponseMessage(
                     lm.ConnectionId,
@@ -154,8 +154,8 @@ public class SessionSupervisor : ReceiveActor
             ? _userNameToAccountId[lm.User]
             : Guid.Empty.ToString();
 
-        var session = _sessionIdToActor.ContainsKey(potentialActorId)
-            ? _sessionIdToActor[potentialActorId]
+        var session = _accountIdToActor.ContainsKey(potentialActorId)
+            ? _accountIdToActor[potentialActorId]
             : null;
 
         _accountPersistenceActor.Tell(
@@ -163,13 +163,13 @@ public class SessionSupervisor : ReceiveActor
         );
     }
 
-    public void GetUserSessionMessage(GetUserSessionMessage gusm)
+    public async Task GetUserSessionMessage(GetUserSessionMessage gusm)
     {
-        var sessionName = ActorHelper.GetActorNameFromPath(gusm.ActorPath);
+        var actorId = ActorHelper.GetActorNameFromPath(gusm.ActorPath);
         // _log.Info("Getting user session for {0}", sessionName);
-        if (_sessionIdToActor.ContainsKey(sessionName))
+        if (_accountIdToActor.ContainsKey(actorId))
         {
-            var actor = _sessionIdToActor[sessionName];
+            var actor = _accountIdToActor[actorId];
             Sender.Tell(new GetUserSessionResponse(actor));
             return;
         }

@@ -3,7 +3,7 @@ using Asteroids.Shared.Messages;
 
 namespace Asteroids.Shared;
 
-public record GameLobby(string Name, int PlayerCount);
+public record GameLobby(string Name, int PlayerCount, LobbyStatus Status);
 
 public record GetLobbiesMessage(string SessionActorPath, string ConnectionId)
     : HubMessage(ConnectionId, SessionActorPath);

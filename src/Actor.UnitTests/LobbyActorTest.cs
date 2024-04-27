@@ -34,7 +34,7 @@ public class LobbyActorTests : TestKit
         ExpectNoMsg();
         var getLobbiesMessage = new GetLobbiesMessage("sessionPath", "");
         lobbyActor.Tell(getLobbiesMessage);
-        ExpectMsg(new GameLobby("existingLobby", 1));
+        ExpectMsg(new GameLobby("existingLobby", 1, LobbyStatus.WaitingForPlayers));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class LobbyActorTests : TestKit
         ExpectNoMsg();
         var getLobbiesMessage = new GetLobbiesMessage("sessionPath", "");
         lobbyActor.Tell(getLobbiesMessage);
-        ExpectMsg(new GameLobby("existingLobby", 1));
+        ExpectMsg(new GameLobby("existingLobby", 1, LobbyStatus.WaitingForPlayers));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class LobbyActorTests : TestKit
         ExpectNoMsg();
         var getLobbiesMessage = new GetLobbiesMessage("sessionPath", "");
         lobbyActor.Tell(getLobbiesMessage);
-        ExpectMsg(new GameLobby("existingLobby", 1));
+        ExpectMsg(new GameLobby("existingLobby", 1, LobbyStatus.WaitingForPlayers));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class LobbyActorTests : TestKit
         var lobbyActor = Sys.ActorOf(Props.Create(() => new LobbyActor(lobbyName, owner)));
         var getLobbiesMessage = new GetLobbiesMessage("sessionPath", "");
         lobbyActor.Tell(getLobbiesMessage);
-        ExpectMsg(new GameLobby("existingLobby", 0));
+        ExpectMsg(new GameLobby("existingLobby", 0, LobbyStatus.WaitingForPlayers));
     }
 
     [Fact]

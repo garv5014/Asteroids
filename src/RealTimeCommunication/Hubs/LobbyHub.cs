@@ -65,6 +65,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
         var gusr = await sessionSupervisor.Ask<GetUserSessionResponse>(
             new GetUserSessionMessage(ActorPath: sessionActorPath, Context.ConnectionId)
         );
+        _logger.LogInformation("Session actor ref received {0}", gusr.ActorRef.Path.ToString());
         return gusr.ActorRef;
     }
 
@@ -76,7 +77,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task CreateLobbyPublish(CreateLobbyResponse response)
     {
-        _logger.LogInformation("Sending response to client: {0}", response.ConnectionId);
+        _logger.LogInformation("CreateLobbyResponse {0}", response.ConnectionId);
         await Clients.All.HandleCreateLobbyResponse(response);
     }
 
@@ -94,12 +95,12 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public Task LobbyStatePublish(LobbyStateResponse response)
     {
-        _logger.LogInformation(
-            "Sending {0} response to client : {1} Is owner is {2}",
-            nameof(LobbyStateResponse),
-            response.ConnectionId,
-            response.CurrentState.IsOwner
-        );
+        // _logger.LogInformation(
+        //     "Sending {0} response to client : {1} Is owner is {2}",
+        //     nameof(LobbyStateResponse),
+        //     response.ConnectionId,
+        //     response.CurrentState.IsOwner
+        // );
         Clients.All.HandleRefreshConnectionId();
         return Clients.Client(response.ConnectionId).HandleLobbyStateResponse(response);
     }
@@ -121,7 +122,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task UpdateShipCommand(UpdateShipMessage message)
     {
-        _logger.LogInformation("Update ship command received");
+        // _logger.LogInformation("Update ship command received");
 
         var lobbyActorRef = await GetLobbyByName(message.LobbyName);
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
@@ -139,7 +140,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     public async Task RefreshConnectionIdCommand(RefreshConnectionIdMessage message)
     {
-        _logger.LogInformation("Refresh connection id command received");
+        // _logger.LogInformation("Refresh connection id command received");
         var mes = new RefreshConnectionId(ConnectionId: Context.ConnectionId);
         var sessionActorRef = await GetSessionActor(message.SessionActorPath);
         sessionActorRef.Tell(mes);
@@ -160,7 +161,7 @@ public class LobbyHub : Hub<ILobbyClient>, ILobbyHub
 
     private async Task<IActorRef> GetLobbyByName(string lobbyName)
     {
-        _logger.LogInformation("Getting lobby name {0}", lobbyName);
+        // _logger.LogInformation("Getting lobby name {0}", lobbyName);
         var res = await lobbySupervisor.Ask<GetLobbyResponse>(
             new GetLobbyMessage(LobbyName: lobbyName)
         );

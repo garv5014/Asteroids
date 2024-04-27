@@ -17,7 +17,7 @@ public class AccountHubRelay : ActorPublisher
         {
             ExecuteAndPipeToSelf(async () =>
             {
-                _log.Info("Sending response to client: {0}", response.Message);
+                // _log.Info("Sending response to client: {0}", response.Message);
                 Client = hubConnection.ServerProxy<IAccountHub>();
                 await Client.LoginPublish(response);
             });

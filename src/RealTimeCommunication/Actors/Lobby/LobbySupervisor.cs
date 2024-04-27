@@ -144,13 +144,12 @@ public class LobbySupervisor : ReceiveActor
             return;
         }
 
-        _log.Info("Getting lobby state from child");
         lobbyActor.Item1.Tell(msg);
     }
 
     private void GetLobbies(GetLobbiesMessage msg)
     {
-        _log.Info($"{nameof(LobbySupervisor)}Getting lobbies in ");
+        // _log.Info($"{nameof(LobbySupervisor)} Getting lobbies in ");
         GettingLobbyStates(msg).PipeTo(_lobbyRelayActor);
     }
 
@@ -168,9 +167,7 @@ public class LobbySupervisor : ReceiveActor
                     )
                 )
                 .Result;
-            var glId = new GameLobby(gl.Name, gl.PlayerCount);
-            _log.Info("Lobby: {0}", glId);
-            lobbiesState.Add(glId);
+            lobbiesState.Add(gl);
         }
 
         return Task.FromResult(

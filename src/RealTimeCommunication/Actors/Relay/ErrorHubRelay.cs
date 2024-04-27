@@ -17,7 +17,7 @@ public class ErrorHubRelay : ActorPublisher
         {
             ExecuteAndPipeToSelf(async () =>
             {
-                _log.Info("Sending Error response to client: {0}", response.Message);
+                // _log.Info("Sending Error response to client: {0}", response.Message);
                 Client = hubConnection.ServerProxy<IErrorHub>();
                 await Client.ErrorPublish(response);
             });

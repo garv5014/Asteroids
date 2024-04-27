@@ -77,7 +77,6 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void SaveLobbyState(SaveLobbyStateMessage message)
     {
-        _log.Info("Saving lobby state");
         Context.Parent.Tell(
             new StoreLobbyInformationMessage(
                 new LobbySnapShot(
@@ -103,7 +102,6 @@ public class LobbyActor : ReceiveActor, IWithTimers
     {
         if (LobbyStatus.Equals(LobbyStatus.InGame))
         {
-            _log.Info("Game loop tick");
             GameState.Tick();
             UpdateClients();
             if (isGameOver())
@@ -131,8 +129,6 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void UpdateClients()
     {
-        _log.Info("Updating clients");
-
         foreach (var session in _sessionsToUpdate)
         {
             // _log.Info("Sending lobby state to {0}", session.Path);
@@ -252,8 +248,8 @@ public class LobbyActor : ReceiveActor, IWithTimers
 
     private void GetLobbies(GetLobbiesMessage msg)
     {
-        _log.Info("Getting lobbies in Lobby Actor: {0}", Self.Path.Name);
-        var gl = new GameLobby(LobbyName, NumberOfPlayers);
+        // _log.Info("Getting lobbies in Lobby Actor: {0}", Self.Path.Name);
+        var gl = new GameLobby(LobbyName, NumberOfPlayers, LobbyStatus);
         Sender.Tell(gl);
     }
 
