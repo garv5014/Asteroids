@@ -50,7 +50,7 @@ services:
     <<: *akka_actor_base
 
   actor-node-1:
-    container_name: GD_AkkaNode_1
+    container_name: GD_Akka_Node_1
     environment:
       ActorOptions__ActorRoles: "Lobbies"
       ActorOptions__ActorHostName: "actor-node-1"
@@ -58,7 +58,7 @@ services:
     <<: *akka_actor_base
 
   actor-node-2:
-    container_name: GD_AkkaNode_2
+    container_name: GD_Akka_Node_2
     environment:
       ActorOptions__ActorRoles: "Lobbies"
       ActorOptions__ActorHostName: "actor-node-2"
