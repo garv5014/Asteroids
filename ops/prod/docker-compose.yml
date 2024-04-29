@@ -38,6 +38,7 @@ services:
   lighthouse:
     # https://github.com/petabridge/lighthouse
     image: petabridge/lighthouse:latest
+    container_name: GD_lighthouse
     hostname: lighthouse
     ports:
       - "9110:9110"
