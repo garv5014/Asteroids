@@ -35,6 +35,19 @@ x-asteroid_client_base: &asteroid_client_base
 
 services:
 
+  lighthouse:
+    # https://github.com/petabridge/lighthouse
+    image: petabridge/lighthouse:latest
+    hostname: lighthouse
+    ports:
+      - "9110:9110"
+      - "4053:4053"
+    environment:
+      ACTORSYSTEM: "Asteroids"
+      CLUSTER_PORT: 4053
+      CLUSTER_IP: "lighthouse"
+      CLUSTER_SEEDS: "akka.tcp://Asteroids@lighthouse:4053"
+    restart: unless-stopped
   nginx:
     container_name: GD_asteroids_swag
     image: lscr.io/linuxserver/swag
