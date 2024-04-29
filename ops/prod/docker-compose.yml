@@ -87,7 +87,7 @@ services:
       ObservabilityOptions__ServiceName: "AsteroidClient1"
 
   asteroid-client-2:
-    container_name: GD_Client_1
+    container_name: GD_Client_2
     <<: *asteroid_client_base
     environment:
       <<: *asteroid_client_env
