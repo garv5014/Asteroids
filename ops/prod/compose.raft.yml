@@ -2,6 +2,8 @@ x-node_base: &node_base
   build:
     context: ./../../src/
     dockerfile: ./Raft_Node/Dockerfile
+  networks:
+    - GD_Network
 
 x-node-environment: &node-environment
   ASPNETCORE_ENVIRONMENT: Development
@@ -12,8 +14,6 @@ x-node-environment: &node-environment
   ApiOptions__NodeServicePort: 8080
   ApiOptions__LogMessageIntervalSeconds: 30
   TZ: America/Denver
-  networks:
-    - GD_Network
 
 services:
   gateway:
@@ -55,4 +55,3 @@ services:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 3
       ObservabilityOptions__ServiceName: Node3
-

@@ -11,14 +11,14 @@ x-akka_actor_env: &akka_actor_env
   ActorOptions__ActorSeeds: "akka.tcp://Asteroids@lighthouse:4053"
   DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
   TZ: America/Denver
-  networks:
-    - GD_Network
 
 x-akka_actor_base: &akka_actor_base
   build:
     context: ./../../src/
     dockerfile: ./RealTimeCommunication/Dockerfile
     target: development
+  networks:
+    - GD_Network
 
 x-asteroid_client_env: &asteroid_client_env
   ASPNETCORE_ENVIRONMENT: Development
@@ -36,6 +36,8 @@ x-asteroid_client_base: &asteroid_client_base
   build:
     context: ./../../src/
     dockerfile: ./Asteroids/Dockerfile
+  networks:
+    - GD_Network
 
 services:
 
