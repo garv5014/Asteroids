@@ -184,7 +184,7 @@ public partial class WaitingRoom : ILobbyClient
             )
         );
     }
-    
+
     private async void OnShipColorChanged(string color)
     {
         shipColor = color;

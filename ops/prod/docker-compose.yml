@@ -57,29 +57,38 @@ services:
 
   realtime:
     container_name: GD_asteroids_realtime
-    build:
-      context: ./../../src/
-      dockerfile: ./RealTimeCommunication/Dockerfile
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ObservabilityOptions__ServiceName: "Websockets"
-      ObservabilityOptions__CollectorUrl: http://collector:4317
-      RaftConnectionOptions__GatewayUrl: http://gateway:8080
-      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
-      TZ: America/Denver
+      ActorOptions__ActorRoles: "SignalR"
+      ActorOptions__ActorHostName: "realtime"
+      <<: *akka_actor_env
+    <<: *akka_actor_base
 
-  asteroid-client:
-    container_name: GD_asteroids_client
-    build:
-      context: ./../../src/
-      dockerfile: ./Asteroids/Dockerfile
+  actor-node-1:
+    container_name: GD_Akka_Node_1
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      SignalREnv__AccountHubUrl: http://realtime:8080/accountHub
-      SignalREnv__LobbyHubUrl: http://realtime:8080/lobbyHub
-      ObservabilityOptions__CollectorUrl: http://collector:4317
-      ObservabilityOptions__ServiceName: "AsteroidClient"
-      DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
-      TZ: America/Denver
+      ActorOptions__ActorRoles: "Lobbies"
+      ActorOptions__ActorHostName: "actor-node-1"
+      <<: *akka_actor_env
+    <<: *akka_actor_base
+
+  actor-node-2:
+    container_name: GD_Akka_Node_2
+    environment:
+      ActorOptions__ActorRoles: "Lobbies"
+      ActorOptions__ActorHostName: "actor-node-2"
+      <<: *akka_actor_env
+    <<: *akka_actor_base
+
+  asteroid-client-1:
+    container_name: GD_Client_1
+    <<: *asteroid_client_base
+    environment:
+      <<: *asteroid_client_env
+      ObservabilityOptions__ServiceName: "AsteroidClient1"
+
+  asteroid-client-2:
+    container_name: GD_Client_1
+    <<: *asteroid_client_base
+    environment:
+      <<: *asteroid_client_env
+      ObservabilityOptions__ServiceName: "AsteroidClient2"
