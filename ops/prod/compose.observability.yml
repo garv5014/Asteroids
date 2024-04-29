@@ -1,5 +1,3 @@
-include:
-
 services:
   collector:
     container_name: GD_Collector
@@ -21,7 +19,7 @@ services:
       - loki
 
   prometheus:
-    container_name: Gd_Prometheus
+    container_name: GD_Prometheus
     image: prom/prometheus:latest
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
