@@ -56,6 +56,11 @@ public partial class Home : IAccountClient
 
     public void Login()
     {
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            ToastService.ShowError("Username and Password are required");
+            return;
+        }
         hubProxy.LoginCommand(new LoginMessage(username, password, "", sessionActorPath));
     }
 }
