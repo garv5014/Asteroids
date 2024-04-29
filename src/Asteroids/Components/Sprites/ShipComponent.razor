@@ -7,7 +7,7 @@
 
   private string GetTranslateStyle()
   {
-    return $"transform: translate({Ship.XCoordinate}px, {Ship.YCoordinate}px)";
+    return $"transform: translate({Ship.XCoordinate}px, {Ship.YCoordinate - 50}px)";
   }
 
   private string GetRotationStyle()
@@ -42,7 +42,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
+    position: absolute;
     height: 50px;
     width: 50px;
   }
