@@ -56,7 +56,7 @@ services:
     networks:
       - GD_Network
   nginx:
-    container_name: GD_asteroids_swag
+    container_name: GD_swag
     image: lscr.io/linuxserver/swag
     cap_add:
       - NET_ADMIN
