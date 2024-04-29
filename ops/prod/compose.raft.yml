@@ -18,6 +18,7 @@ services:
     build:
       context: ./../../src/
       dockerfile: ./Raft_Gateway/Dockerfile
+    container_name: GD_Gateway
     environment:
       ApiOptions__NodeCount: 3
       ApiOptions__NodeServiceName: gateway
@@ -29,6 +30,7 @@ services:
 
   raftnode1:
     <<: *node_base
+    container_name: GD_RaftNode1
     environment:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 1
@@ -36,6 +38,7 @@ services:
 
   raftnode2:
     <<: *node_base
+    container_name: GD_RaftNode2
     environment:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 2
@@ -43,6 +46,7 @@ services:
 
   raftnode3:
     <<: *node_base
+    container_name: GD_RaftNode3
     environment:
       <<: *node-environment
       ApiOptions__NodeIdentifier: 3
