@@ -19,8 +19,8 @@ public class Game
         Projectiles = game.Projectiles;
     }
 
-    public int BoardHeight { get; set; }
-    public int BoardWidth { get; set; }
+    public int BoardHeight { get; private set; }
+    public int BoardWidth { get; private set; }
 
     private List<((int xEdge, int yEdge), (int headingMin, int headingMax))> Edges { get; set; } =
         [
@@ -182,7 +182,6 @@ public class Game
             }
         }
 
-        // Now remove the projectiles that need to be removed.
         foreach (var projectile in projectilesToRemove)
         {
             Projectiles.Remove(projectile);
