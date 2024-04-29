@@ -23,7 +23,7 @@ services:
     container_name: GD_Gateway
     environment:
       ApiOptions__NodeCount: 3
-      ApiOptions__NodeServiceName: gateway
+      ApiOptions__NodeServiceName: raftnode
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ObservabilityOptions__ServiceName: "gateway"
