@@ -17,6 +17,8 @@ services:
       - tempo
       - prometheus
       - loki
+    networks:
+      - GD_Network
 
   prometheus:
     container_name: GD_Prometheus
@@ -28,11 +30,15 @@ services:
       - config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./../shared/config-files/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    networks:
+      - GD_Network
 
   loki:
     container_name: GD_Loki
     image: grafana/loki:latest
     command: [ "-config.file=/etc/loki/local-config.yaml" ]
+    networks:
+      - GD_Network
 
   grafana:
     container_name: GD_Grafana
@@ -51,6 +57,8 @@ services:
       - prometheus
       - loki
       - collector
+    networks:
+      - GD_Network
 
   tempo:
     container_name: GD_Tempo
@@ -61,3 +69,5 @@ services:
     # - "4317" # otlp grpc
     volumes:
       - ./../shared/config-files/tempo.yaml:/etc/tempo.yaml
+    networks:
+      - GD_Network

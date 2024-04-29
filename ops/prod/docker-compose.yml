@@ -11,6 +11,8 @@ x-akka_actor_env: &akka_actor_env
   ActorOptions__ActorSeeds: "akka.tcp://Asteroids@lighthouse:4053"
   DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
   TZ: America/Denver
+  networks:
+    - GD_Network
 
 x-akka_actor_base: &akka_actor_base
   build:
@@ -27,6 +29,8 @@ x-asteroid_client_env: &asteroid_client_env
   ObservabilityOptions__CollectorUrl: http://collector:4317
   DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH: 1
   TZ: America/Denver
+  networks:
+    - GD_Network
 
 x-asteroid_client_base: &asteroid_client_base
   build:
@@ -49,6 +53,8 @@ services:
       CLUSTER_IP: "lighthouse"
       CLUSTER_SEEDS: "akka.tcp://Asteroids@lighthouse:4053"
     restart: unless-stopped
+    networks:
+      - GD_Network
   nginx:
     container_name: GD_asteroids_swag
     image: lscr.io/linuxserver/swag
@@ -68,6 +74,8 @@ services:
     ports:
       - 0.0.0.0:4325:443
     restart: unless-stopped
+    networks:
+      - GD_Network
 
   realtime:
     container_name: GD_asteroids_realtime
@@ -106,3 +114,6 @@ services:
     environment:
       <<: *asteroid_client_env
       ObservabilityOptions__ServiceName: "AsteroidClient2"
+
+networks:
+  GD_Network:
