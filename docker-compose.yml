@@ -96,6 +96,13 @@ services:
       <<: *akka_actor_env
     <<: *akka_actor_base
 
+  actor-node-3:
+    environment:
+      ActorOptions__ActorRoles: "Lobbies"
+      ActorOptions__ActorHostName: "actor-node-3"
+      <<: *akka_actor_env
+    <<: *akka_actor_base
+
   asteroid-client-1:
     <<: *asteroid_client_base
     environment:
