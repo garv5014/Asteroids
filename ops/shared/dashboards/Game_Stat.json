@@ -243,8 +243,8 @@
     "list": []
   },
   "time": {
-    "from": "2024-04-21T03:56:58.004Z",
-    "to": "2024-04-21T03:58:42.482Z"
+    "from": "now-5m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
